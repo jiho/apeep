@@ -62,7 +62,7 @@ img_width  = dims[1]
 window = img[range(0,window_size),]
 window.shape
 cap.release()
-log.debug('frame dimensions height x width : ' + str(img_height) + ' x ' + str(img_width) )
+log.info('frame dimensions height x width : ' + str(img_height) + ' x ' + str(img_width) )
 
 
 # initialise moving window and image container
@@ -78,9 +78,9 @@ if debug() :
     cv2.imwrite('window.png', window)
     cv2.imwrite('output.png', output)
 
-log.debug('initialised data containers:')
-log.debug('  moving average window: ' + str(window.shape))
-log.debug('  output image: ' + str(output.shape))
+log.info('initialised data containers:')
+log.info('  moving average window: ' + str(window.shape))
+log.info('  output image: ' + str(output.shape))
 
 
 ## Loop over avi files ----------------------------------------------------
@@ -104,7 +104,7 @@ for i_avi in range(0,len(all_avi)-1) :
     # number of frames
     n_frames = int(round(cap.get(cv.CV_CAP_PROP_FRAME_COUNT))) + 1
     # NB: frame count should be 430. This gives 429, assuming the first is number 0
-    log.debug(avi_file + ' has ' + str(n_frames) + ' frames')
+    log.info('  file has ' + str(n_frames) + ' frames')
 
     # time between this and the next file
     time_now = datetime.strptime(all_avi[i_avi], './%Y%m%d%H%M%S.%f.avi')
@@ -117,7 +117,7 @@ for i_avi in range(0,len(all_avi)-1) :
     # intervals:  1 2 3    ...
     frame_step = (time_next - time_now).total_seconds() / n_frames
     line_step = frame_step / img_height
-    log.info('time step for one frame is ' + \
+    log.info('  time step for one frame is ' + \
                str(round(frame_step, ndigits=5)) + ' s')
     # convert to time spans
     frame_step = timedelta(seconds=frame_step)
