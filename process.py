@@ -94,9 +94,9 @@ if debug() :
 for i_avi in range(0,len(all_avi)-1) :
     # NB: we stop on file before the end to be able to compute framerate
     # TODO change this and assume the frame rate did not change
-    
+
     avi_file = all_avi[i_avi]
-    
+
     # open avi file
     log.info('open file ' + avi_file)
     cap = cv2.VideoCapture(avi_file)
@@ -114,8 +114,8 @@ for i_avi in range(0,len(all_avi)-1) :
 
     # compute time step for each frame or each scanned line
     # for 2 successive avi files with n_frames = 3
-    # file     : 1     2   ...     
-    # frames   : 1 2 3 1 2 ...  
+    # file     : 1     2   ...
+    # frames   : 1 2 3 1 2 ...
     # intervals:  1 2 3    ...
     frame_step = (time_next - time_now).total_seconds() / n_frames
     line_step = frame_step / img_height
@@ -142,7 +142,7 @@ for i_avi in range(0,len(all_avi)-1) :
         # TODO check what happens if we just select the first colour channel
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # cv2.imshow('frame', img)
-        
+
         # convert to floating point (for mean, division, etc.)
         img = img * 1.0
         # img.dtype
@@ -156,11 +156,11 @@ for i_avi in range(0,len(all_avi)-1) :
             #     line_counter += 1
 
             current_line = img[i_l,]
-            
+
             # add the line to the moving window
             window[i_w,] = current_line
             # cv2.imshow('window', window)
-            
+
             # compute mean per column
             m = np.mean(window, 0)
             # TODO check if removing the contribution of the old line and adding the new line is faster
@@ -183,16 +183,16 @@ for i_avi in range(0,len(all_avi)-1) :
                 # base filename based on time
                 time_end = time_now + frame_step * i_f + line_step * i_l
                 time_start = time_end - line_step * output_size
-                
+
                 output_file_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f.png')
                 # output_file_name = 'output.png'
                 log.debug('output processed image to: ' + output_file_name)
-                
+
                 # prepare the output image
                 # rescale to [0,1]
                 output = output - output.min()
                 output = output / output.max()
-                
+
                 # reconvert to 8-bit grey level
                 output = (output * 255.0)
 
