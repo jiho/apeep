@@ -88,6 +88,8 @@ log.info('  output image: ' + str(output.shape))
 # index of lines of pixels in the
 i_w = 0     # moving window
 i_o = 0     # output buffer
+if debug() :
+    line_counter = 1
 
 for i_avi in range(0,len(all_avi)-1) :
     # NB: we stop on file before the end to be able to compute framerate
@@ -127,9 +129,9 @@ for i_avi in range(0,len(all_avi)-1) :
     for i_f in range(0, n_frames):
 
         # read a frame
+        log.debug('read frame nb ' + str(i_f+1))
         return_code, img = cap.read()
-        # log.debug('read frame ', str(i_f))
-        
+
         # check the frame was read correctly
         # if not exit the loop on this file to jump to the next
         if not return_code :
@@ -148,6 +150,11 @@ for i_avi in range(0,len(all_avi)-1) :
 
         # loop over scanned lines in that frame
         for i_l in range(0, img_height):
+            # if debug() :
+            #     log.debug('process line nb ' + str(line_counter))
+            #     print 'process line nb ' + str(line_counter)
+            #     line_counter += 1
+
             current_line = img[i_l,]
             
             # add the line to the moving window
