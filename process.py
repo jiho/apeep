@@ -24,6 +24,7 @@ output_dir = 'out'
 window_size = 1000   # in px
 output_size = 2048*10   # in px
 top = 'right'
+scan_per_s = 28000
 
 
 ## Setup ------------------------------------------------------------------
@@ -176,9 +177,7 @@ i_o = 0     # output buffer
 if debug() :
     line_counter = 1
 
-for i_avi in range(0,len(all_avi)-1) :
-    # NB: we stop on file before the end to be able to compute framerate
-    # TODO change this and assume the frame rate did not change
+for i_avi in range(0,len(all_avi)) :
 
     avi_file = all_avi[i_avi]
 
@@ -186,43 +185,38 @@ for i_avi in range(0,len(all_avi)-1) :
     log.info('open file ' + avi_file)
     cap = cv2.VideoCapture(avi_file)
 
-    # compute sampling frequency
-
-    # number of frames
-    n_frames = int(round(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))) + 1
-    # TODO this does not seem to be hyper accurate and we should probably revert to reading until it fails and count frames this way
-    # NB: frame count should be 430. This gives 429, assuming the first is number 0
-    log.info('  file has ' + str(n_frames) + ' frames')
-
-    # time between this and the next file
+    # parse the start time of the current avi file from its name
     time_now = datetime.strptime(all_avi[i_avi], input_dir + '/%Y%m%d%H%M%S.%f.avi')
-    time_next = datetime.strptime(all_avi[i_avi+1], input_dir + '/%Y%m%d%H%M%S.%f.avi')
 
     # compute time step for each frame or each scanned line
-    # for 2 successive avi files with n_frames = 3
-    # file     : 1     2   ...
-    # frames   : 1 2 3 1 2 ...
-    # intervals:  1 2 3    ...
-    frame_step = (time_next - time_now).total_seconds() / n_frames
-    line_step = frame_step / img_height
-    log.info('  time step for one frame is ' + \
-               str(round(frame_step, ndigits=5)) + ' s')
+    line_step = 1. / scan_per_s
+    frame_step = line_step * img_height
     # convert to time spans
-    frame_step = timedelta(seconds=frame_step)
     line_step = timedelta(seconds=line_step)
-
+    frame_step = timedelta(seconds=frame_step)
+    # TODO verify that the computed span is close to this
+    # time_next = datetime.strptime(all_avi[i_avi+1], input_dir + '/%Y%m%d%H%M%S.%f.avi')
+    # # for 2 successive avi files with n_frames = 3
+    # # file     : 1     2   ...
+    # # frames   : 1 2 3 1 2 ...
+    # # intervals:  1 2 3    ...
+    # frame_step = (time_next - time_now).total_seconds() / n_frames
+    # line_step = frame_step / img_height
+    # log.info('  time step for one frame is ' + \
+    #            str(round(frame_step, ndigits=5)) + ' s')
 
     # loop over frames of that file
-    for i_f in range(0, n_frames):
+    i_f = 0
+    while True:
 
         # read a frame
-        log.debug('read frame nb ' + str(i_f+1))
+        log.debug('read frame ' + str(i_f))
         return_code, img = cap.read()
 
         # check the frame was read correctly
         # if not exit the loop on this file to jump to the next
         if not return_code :
-            log.warning('abnormal termination of file ' + avi_file)
+            log.info('termination of file ' + avi_file)
             break
 
         # convert to gray scale
@@ -297,6 +291,10 @@ for i_avi in range(0,len(all_avi)-1) :
                 #     it is for imshow
                 # cv2.imshow('output', output_rotated.astype('uint8'))
 
+
+
+        # increment frame counter
+        i_f += 1
 
     # finished reading the frames, close the avi file
     log.info('close file ' + avi_file)
