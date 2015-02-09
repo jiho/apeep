@@ -226,8 +226,8 @@ for i_avi in range(0,len(all_avi)-1) :
             break
 
         # convert to gray scale
-        # TODO check what happens if we just select the first colour channel
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = img[:,:,1]
         # cv2.imshow('frame', img)
 
         # convert to floating point (for mean, division, etc.)
