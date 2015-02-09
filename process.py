@@ -124,6 +124,9 @@ all_avi = glob.glob(input_dir + '/*.avi')
 
 n_avi = len(all_avi)
 log.info('detected ' + str(n_avi) + ' avi files')
+if n_avi == 0:
+    log.error('no avi files to process in ' + input_dir)
+    sys.exit()
 
 
 # initialise moving window
