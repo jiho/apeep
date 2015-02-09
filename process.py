@@ -190,6 +190,7 @@ for i_avi in range(0,len(all_avi)-1) :
 
     # number of frames
     n_frames = int(round(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))) + 1
+    # TODO this does not seem to be hyper accurate and we should probably revert to reading until it fails and count frames this way
     # NB: frame count should be 430. This gives 429, assuming the first is number 0
     log.info('  file has ' + str(n_frames) + ' frames')
 
@@ -298,11 +299,14 @@ for i_avi in range(0,len(all_avi)-1) :
 
 
     # finished reading the frames, close the avi file
-    cap.release()
     log.info('close file ' + avi_file)
+    cap.release()
 
 # # Contrast stretching
+# TODO try to cleanup the background by moving light greys towards white
 # p1, p2 = np.percentile(img, (0.01, 99.99))
 # img_exp = exposure.rescale_intensity(img, in_range=(p1, p2))
 # cv2.imshow('frame', img_exp)
 # cv2.imshow('frame', img)
+
+log.info('---END---')
