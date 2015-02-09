@@ -260,7 +260,7 @@ for i_avi in range(0,len(all_avi)) :
                 i_o = 0
 
                 # compute filename based on time
-                time_end = time_now + frame_step * i_f + line_step * i_l
+                time_end = time_now + (i_f * img_height + i_l) * line_step
                 time_start = time_end - line_step * output_size
 
                 output_file_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f.png')
