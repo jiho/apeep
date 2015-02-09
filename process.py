@@ -29,27 +29,37 @@ top = 'right'
 ## Setup ------------------------------------------------------------------
 
 import numpy as np
-import logging as log
+import logging
 import cv2 as cv2
 import glob
 from datetime import datetime, timedelta
 import sys
 # from skimage import exposure
 
+# setup logging
+log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
 
-# set log
-log_file = output_dir + '/process_log.txt'
-# TODO add current time to the name
-log.basicConfig (
-    level=log.DEBUG,
-    format='%(asctime)s : %(levelname)s : %(message)s',
-    filename=log_file,
-    filemode = 'w',
-)
+log = logging.getLogger('my_log')
+log.setLevel(logging.DEBUG)
+
+# setup console log
+console_log = logging.StreamHandler()
+console_log.setFormatter(log_formatter)
+log.addHandler(console_log)
 
 def debug():
     """detect if log level is DEBUG"""
-    return log.getLogger().isEnabledFor(log.DEBUG)
+    return logging.getLogger().isEnabledFor(logging.DEBUG)
+    # TODO find a better way to do this, like have a debug switch as command line arg
+
+# once this is OK, create a log file
+log_file = os.path.join(output_dir, 'process_log.txt')
+# TODO add current time to the name and switch to mode='w'
+file_log = logging.FileHandler(log_file)
+file_log.setFormatter(log_formatter)
+log.addHandler(file_log)
+
+log.info('---START---')
 
 
 ## Initialisation ---------------------------------------------------------
