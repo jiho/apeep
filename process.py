@@ -122,17 +122,13 @@ if n_avi == 0:
     sys.exit()
 
 
-# initialise moving window
+# initialise moving window with first file
 cap = cv2.VideoCapture(all_avi[0])
-# # get dimensions from `cap` properties
-# img_width = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
-# img_height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-# # and create a black moving window
-# window = np.zeros((window_size, img_width), dtype=np.uint8)
 # read first frame
 return_code, img = cap.read()
 if not return_code:
-    sys.exit('error initialising moving window for averaging')
+    log.error('error reading file ' + all_avi[0] + ' to initialise moving window')
+    sys.exit()
 cap.release()
 # convert it to grey scale
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -140,10 +136,14 @@ img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 dims = img.shape
 img_height = dims[0]
 img_width  = dims[1]
+log.info('frame dimensions height x width : ' + str(img_height) + ' x ' + str(img_width) )
+if window_size > img_height:
+    log.error('window_size should be < ', img_height, ' (less than the size of a frame)')
+    sys.exit()
 # cut the appropriate part of the image to initialise the moving window
 window = img[range(0,window_size),]
-log.info('frame dimensions height x width : ' + str(img_height) + ' x ' + str(img_width) )
-
+# initialise the column-wise mean
+m = np.mean(window, 0)
 
 # initialise output image
 output_size = output_size * img_height
@@ -159,6 +159,7 @@ if debug() :
 
 log.info('initialised data containers:')
 log.info('  moving average window: ' + str(window.shape))
+log.info('  moving average: ' + str(m.shape))
 log.info('  output image: ' + str(output.shape))
 
 
@@ -232,15 +233,16 @@ for i_avi in range(0,len(all_avi)) :
             #     print 'process line nb ' + str(line_counter)
             #     line_counter += 1
 
+            # get line scan of interest
             current_line = img[i_l,]
 
-            # add the line to the moving window
-            window[i_w,] = current_line
-            # cv2.imshow('window', window)
+            # update column-wise mean
+            m = m + (current_line - window[i_w,]) / window_size
+            # NB: considerably faster than recomputing the whole mean every time
+            #     computing the median is another order of magnitude slower
 
-            # compute mean per column
-            m = np.mean(window, 0)
-            # TODO check if removing the contribution of the old line and adding the new line is faster
+            # update content of the moving window
+            window[i_w,] = current_line
 
             # compute flat field = divide by mean
             output[i_o,] = current_line / m
