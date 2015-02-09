@@ -37,7 +37,8 @@ import sys
 
 
 # set log
-log_file='process_log.txt'
+log_file = output_dir + '/process_log.txt'
+# TODO add current time to the name
 log.basicConfig (
     level=log.DEBUG,
     format='%(asctime)s : %(levelname)s : %(message)s',
