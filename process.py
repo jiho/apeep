@@ -34,6 +34,9 @@ import cv2 as cv2
 import glob
 from datetime import datetime, timedelta
 import sys
+import tempfile
+import os
+import errno
 # from skimage import exposure
 
 # setup logging
@@ -52,6 +55,29 @@ def debug():
     return logging.getLogger().isEnabledFor(logging.DEBUG)
     # TODO find a better way to do this, like have a debug switch as command line arg
 
+# check options
+
+# check that output directory exists and is writable
+if os.path.isdir(output_dir):
+    log.debug('output_dir exists')
+    # try writing in it
+    try:
+        ret, tmpname = tempfile.mkstemp(dir=output_dir)
+    except:
+        log.error('cannot write to output directory')
+        raise
+    log.debug('output_dir is writable')
+    os.remove(tmpname)
+else:
+    log.info('output directory : \'' + output_dir + '\' does not exist, creating it')
+    try:
+        os.makedirs(output_dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            log.error('cannot create output directory')
+            raise
+    log.debug('output_dir created')
+
 # once this is OK, create a log file
 log_file = os.path.join(output_dir, 'process_log.txt')
 # TODO add current time to the name and switch to mode='w'
@@ -60,6 +86,34 @@ file_log.setFormatter(log_formatter)
 log.addHandler(file_log)
 
 log.info('---START---')
+
+# check input dir
+if not os.path.isdir(input_dir):
+    log.error('input directory does not exist')
+    sys.exit()
+
+# check top orientation
+if not top in ('right', 'left') :
+    log.error('incorrect \'top\' argument, should be right or left')
+    sys.exit()
+
+# check image sizes
+if not isinstance(window_size, (int, long, float)) :
+    log.error('window_size must be a number')
+    sys.exit()
+
+if not isinstance(output_size, (int, long, float)) :
+    log.error('output_size must be a number')
+    sys.exit()
+
+if window_size > output_size :
+    log.error('window_size should be smaller than output_size')
+    sys.exit()
+
+if output_size < 2048 :
+    log.warning('output images are small ('+str(output_size)+'px), this may lead to many cut organisms and difficult image recognition')
+
+
 
 
 ## Initialisation ---------------------------------------------------------
