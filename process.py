@@ -22,7 +22,7 @@
 input_dir = 'in'
 output_dir = 'out'
 window_size = 1000   # in px
-output_size = 2048*10   # in px
+output_size = 5     # in nb of frames
 top = 'right'
 scan_per_s = 28000
 
@@ -106,15 +106,7 @@ if not isinstance(window_size, (int, long, float)) :
 if not isinstance(output_size, (int, long, float)) :
     log.error('output_size must be a number')
     sys.exit()
-
-if window_size > output_size :
-    log.error('window_size should be smaller than output_size')
-    sys.exit()
-
-if output_size < 2048 :
-    log.warning('output images are small ('+str(output_size)+'px), this may lead to many cut organisms and difficult image recognition')
-
-
+output_size = int(round(output_size))
 
 
 ## Initialisation ---------------------------------------------------------
@@ -154,6 +146,7 @@ log.info('frame dimensions height x width : ' + str(img_height) + ' x ' + str(im
 
 
 # initialise output image
+output_size = output_size * img_height
 output = np.zeros((output_size, img_width))
 # output.shape
 # output.dtype
