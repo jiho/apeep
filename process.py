@@ -220,9 +220,6 @@ for i_avi in range(0,len(all_avi)-1) :
                 elif top == 'left' :
                     output_rotated = np.fliplr(output.T)
                     # TODO check that this keeps the direction of motion from left to right in the final image
-                else :
-                    log.error('incorrect \'top\' argument, should be right or left')
-                    sys.exit('incorrect \'top\' argument, should be right or left')
 
                 # output the file
                 # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
