@@ -194,8 +194,8 @@ for i_avi in range(0,len(all_avi)-1) :
     log.info('  file has ' + str(n_frames) + ' frames')
 
     # time between this and the next file
-    time_now = datetime.strptime(all_avi[i_avi], './%Y%m%d%H%M%S.%f.avi')
-    time_next = datetime.strptime(all_avi[i_avi+1], './%Y%m%d%H%M%S.%f.avi')
+    time_now = datetime.strptime(all_avi[i_avi], input_dir + '/%Y%m%d%H%M%S.%f.avi')
+    time_next = datetime.strptime(all_avi[i_avi+1], input_dir + '/%Y%m%d%H%M%S.%f.avi')
 
     # compute time step for each frame or each scanned line
     # for 2 successive avi files with n_frames = 3
@@ -271,6 +271,7 @@ for i_avi in range(0,len(all_avi)-1) :
                 time_start = time_end - line_step * output_size
 
                 output_file_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f.png')
+                output_file_name = os.path.join(output_dir, output_file_name)
                 log.debug('output processed image to: ' + output_file_name)
 
                 # prepare the output image
