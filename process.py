@@ -7,8 +7,8 @@
 ## Options ----------------------------------------------------------------
 input_dir = '.'
 output_dir = '.'
-window_size = 300      # in px
-output_size = 2048*10  # in px
+window_size = 300   # in px
+output_size = 500   # in px
 top = 'right'
 
 
@@ -165,27 +165,25 @@ for i_avi in range(0,len(all_avi)-1) :
             m = np.mean(window, 0)
             # TODO check if removing the contribution of the old line and adding the new line is faster
 
-            # compute flat field
-            # divide by mean
+            # compute flat field = divide by mean
             output[i_o,] = current_line / m
-            
-            # shift the indexes of the window and output buffer
+
+            # shift the indexes of the moving window
             i_w += 1
-            i_o += 1
             if i_w == window_size :
                 i_w = 0
                 # log.debug('loop over moving window')
-                
 
+            # and of the output buffer. act on the image when it is complete
+            i_o += 1
             if i_o == output_size :
                 i_o = 0
-                
-                # base filename based on time
+
+                # compte filename based on time
                 time_end = time_now + frame_step * i_f + line_step * i_l
                 time_start = time_end - line_step * output_size
 
                 output_file_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f.png')
-                # output_file_name = 'output.png'
                 log.debug('output processed image to: ' + output_file_name)
 
                 # prepare the output image
@@ -214,7 +212,7 @@ for i_avi in range(0,len(all_avi)-1) :
                 # cv2.imshow('output', output_rotated.astype('uint8'))
 
 
-    # finished reading the frames, close the avi file  
+    # finished reading the frames, close the avi file
     cap.release()
     log.info('close file ' + avi_file)
 
