@@ -18,6 +18,7 @@
 
 
 ## Options ----------------------------------------------------------------
+
 input_dir = '.'
 output_dir = '.'
 window_size = 300   # in px
@@ -61,9 +62,9 @@ n_avi = len(all_avi)
 log.info('detected ' + str(n_avi) + ' avi files')
 
 
-# get image dimensions from first avi file
+# initialise moving window
 cap = cv2.VideoCapture(all_avi[0])
-ret, img = cap.read()
+# # get dimensions from `cap` properties
 # img_width = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
 # img_height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
 # # and create a black moving window
@@ -75,24 +76,22 @@ if not return_code:
 cap.release()
 # convert it to grey scale
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# extract dimensions
 dims = img.shape
 img_height = dims[0]
 img_width  = dims[1]
+# cut the appropriate part of the image to initialise the moving window
 window = img[range(0,window_size),]
-window.shape
-cap.release()
 log.info('frame dimensions height x width : ' + str(img_height) + ' x ' + str(img_width) )
 
 
-# initialise moving window and image container
-# window = np.zeros((window_size, img_width), dtype=np.uint8)
-# window.shape
-# window.dtype
-# TODO initialise the window with actual data form the first avi file
-# TODO clean this up
+# initialise output image
 output = np.zeros((output_size, img_width))
 # output.shape
 # output.dtype
+
+
+# information messages
 if debug() :
     cv2.imwrite('window.png', window)
     cv2.imwrite('output.png', output)
@@ -144,6 +143,7 @@ for i_avi in range(0,len(all_avi)-1) :
     frame_step = timedelta(seconds=frame_step)
     line_step = timedelta(seconds=line_step)
 
+
     # loop over frames of that file
     for i_f in range(0, n_frames):
 
@@ -193,12 +193,13 @@ for i_avi in range(0,len(all_avi)-1) :
                 i_w = 0
                 # log.debug('loop over moving window')
 
-            # and of the output buffer. act on the image when it is complete
+            # and of the output buffer
             i_o += 1
+            # act on the image when it is complete
             if i_o == output_size :
                 i_o = 0
 
-                # compte filename based on time
+                # compute filename based on time
                 time_end = time_now + frame_step * i_f + line_step * i_l
                 time_start = time_end - line_step * output_size
 
@@ -234,13 +235,6 @@ for i_avi in range(0,len(all_avi)-1) :
     # finished reading the frames, close the avi file
     cap.release()
     log.info('close file ' + avi_file)
-
-
-# gray = cv2.cv2tColor(frame, cv2.COLOR_BGR2GRAY)
-#
-# cv2.imshow('frame',gray)
-# if cv2.waitKey(1) & 0xFF == ord('q'):
-#     break
 
 # # Contrast stretching
 # p1, p2 = np.percentile(img, (0.01, 99.99))
