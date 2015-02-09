@@ -205,6 +205,7 @@ for i_avi in range(0,len(all_avi)) :
         # read a frame
         log.debug('read frame ' + str(i_f))
         return_code, img = cap.read()
+        # log.debug('frame read')
 
         # check the frame was read correctly
         # if not exit the loop on this file to jump to the next
@@ -215,10 +216,12 @@ for i_avi in range(0,len(all_avi)) :
         # convert to gray scale
         # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = img[:,:,1]
+        # log.debug('frame converted to grayscale')
         # cv2.imshow('frame', img)
 
         # convert to floating point (for mean, division, etc.)
         img = img * 1.0
+        # log.debug('frame converted to float')
         # img.dtype
         # cv2.imshow('frame', img)
 
