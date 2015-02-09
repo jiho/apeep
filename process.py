@@ -19,10 +19,10 @@
 
 ## Options ----------------------------------------------------------------
 
-input_dir = '.'
-output_dir = '.'
-window_size = 300   # in px
-output_size = 500   # in px
+input_dir = 'in'
+output_dir = 'out'
+window_size = 1000   # in px
+output_size = 2048*10   # in px
 top = 'right'
 
 
