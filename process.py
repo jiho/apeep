@@ -130,8 +130,8 @@ if not return_code:
     log.error('error reading file ' + all_avi[0] + ' to initialise moving window')
     sys.exit()
 cap.release()
-# convert it to grey scale
-img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# convert it to grey scale (=keep only first channel)
+img = img[:,:,1]
 # extract dimensions
 dims = img.shape
 img_height = dims[0]
