@@ -1,7 +1,20 @@
 #!/usr/bin/env python2
-# Should be python3 but getting opencv2 to compile with python3 bindings is complex
+#
+# Search the input directory for avi files
+# Consider the avi files as a stream of line scans:
+#     open each file
+#     read each frame
+#     process each line of each frame (from top to bottom)
+# On this stream of incoming lines:
+#     compute a basic moving average of the grey intensity
+#     divide each line by the moving average to remove constant "lines" artefacts
+#     store the result in a buffer
+#     once the buffer is full
+#         post process it
+#         save it as an image
+#
 
-
+# TODO swicth to python3 (but getting opencv2 to compile with python3 bindings is complex)
 
 
 ## Options ----------------------------------------------------------------
