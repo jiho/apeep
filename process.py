@@ -66,8 +66,15 @@ cap = cv2.VideoCapture(all_avi[0])
 ret, img = cap.read()
 # img_width = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
 # img_height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+# # and create a black moving window
+# window = np.zeros((window_size, img_width), dtype=np.uint8)
+# read first frame
+return_code, img = cap.read()
+if not return_code:
+    sys.exit('error initialising moving window for averaging')
+cap.release()
+# convert it to grey scale
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-# TODO check return_code
 dims = img.shape
 img_height = dims[0]
 img_width  = dims[1]
