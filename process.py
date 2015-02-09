@@ -26,17 +26,15 @@ top = 'right'
 
 
 ## Setup ------------------------------------------------------------------
+
 import numpy as np
-import cv2 as cv2
-from cv2 import cv as cv
-from skimage import exposure
-# from matplotlib import pyplot as p
 import logging as log
+import cv2 as cv2
 import glob
-# from skimage import data, img_as_float
-# from scipy import toimage
-# import seaborn as sb
 from datetime import datetime, timedelta
+import sys
+# from skimage import exposure
+
 
 # set log
 log_file='process_log.txt'
@@ -64,9 +62,9 @@ log.info('detected ' + str(n_avi) + ' avi files')
 
 # get image dimensions from first avi file
 cap = cv2.VideoCapture(all_avi[0])
-# img_width = int(cap.get(cv.CV_CAP_PROP_FRAME_WIDTH))
-# img_height = int(cap.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
 ret, img = cap.read()
+# img_width = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
+# img_height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 # TODO check return_code
 dims = img.shape
@@ -117,7 +115,7 @@ for i_avi in range(0,len(all_avi)-1) :
     # compute sampling frequency
 
     # number of frames
-    n_frames = int(round(cap.get(cv.CV_CAP_PROP_FRAME_COUNT))) + 1
+    n_frames = int(round(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))) + 1
     # NB: frame count should be 430. This gives 429, assuming the first is number 0
     log.info('  file has ' + str(n_frames) + ' frames')
 
