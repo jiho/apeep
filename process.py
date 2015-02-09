@@ -146,11 +146,10 @@ window = img[range(0,window_size),]
 m = np.mean(window, 0)
 
 # initialise output image
+# compute output_size in pixels
 output_size = output_size * img_height
+# create a blank output image
 output = np.zeros((output_size, img_width))
-# output.shape
-# output.dtype
-
 
 # information messages
 if debug() :
@@ -215,13 +214,12 @@ for i_avi in range(0,len(all_avi)) :
             break
 
         # convert to gray scale
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = img[:,:,1]
         # log.debug('frame converted to grayscale')
-        # cv2.imshow('frame', img)
 
         # convert to floating point (for mean, division, etc.)
         img = img * 1.0
+        # TODO try not to convert it and force conversion when computing the mean
         # log.debug('frame converted to float')
         # img.dtype
         # cv2.imshow('frame', img)
@@ -264,6 +262,7 @@ for i_avi in range(0,len(all_avi)) :
                 time_start = time_end - line_step * output_size
 
                 output_file_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f.png')
+                # TODO add end time or sampling freq?
                 output_file_name = os.path.join(output_dir, output_file_name)
                 log.debug('output processed image to: ' + output_file_name)
 
@@ -283,13 +282,11 @@ for i_avi in range(0,len(all_avi)) :
                     # TODO check that this keeps the direction of motion from left to right in the final image
 
                 # output the file
+                # cv2.imshow('output', output_rotated.astype('uint8'))
                 # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
                 cv2.imwrite(output_file_name, output_rotated)
                 # NB: apparently, the conversion to int is not necessary for imwrite
                 #     it is for imshow
-                # cv2.imshow('output', output_rotated.astype('uint8'))
-
-
 
         # increment frame counter
         i_f += 1
