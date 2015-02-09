@@ -196,11 +196,22 @@ for i_avi in range(0,len(all_avi)-1) :
                 # reconvert to 8-bit grey level
                 output = (output * 255.0)
 
+                # rotate to account for the orientation
+                if top == 'right' :
+                    output_rotated = np.flipud(output.T)
+                elif top == 'left' :
+                    output_rotated = np.fliplr(output.T)
+                    # TODO check that this keeps the direction of motion from left to right in the final image
+                else :
+                    log.error('incorrect \'top\' argument, should be right or left')
+                    sys.exit('incorrect \'top\' argument, should be right or left')
+
                 # output the file
-                # cv2.imwrite(output_file_name, output.astype('uint8'))
-                cv2.imwrite(output_file_name, output)
-                # NB: apparently, the conversion to int is not necessary
-                # cv2.imshow('output', output.astype('uint8'))
+                # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
+                cv2.imwrite(output_file_name, output_rotated)
+                # NB: apparently, the conversion to int is not necessary for imwrite
+                #     it is for imshow
+                # cv2.imshow('output', output_rotated.astype('uint8'))
 
 
     # finished reading the frames, close the avi file  
