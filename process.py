@@ -22,7 +22,7 @@
 input_dir = 'in'
 output_dir = 'out'
 window_size = 1000   # in px
-output_size = 5     # in nb of frames
+output_size = 10     # in nb of frames
 top = 'right'
 scan_per_s = 28000
 lighten = 0.2
