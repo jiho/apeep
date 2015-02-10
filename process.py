@@ -272,25 +272,34 @@ for i_avi in range(0,len(all_avi)) :
 
                 # prepare the output image
                 # rescale to [0,1]
+                # s = time.time()
                 output = output - output.min()
                 output = output / output.max()
+                # log.debug('output image rescaled : ' + str(time.time() - s))
 
                 # reconvert to 8-bit grey level
+                # s = time.time()
                 output = (output * 255.0)
+                # log.debug('output image converted to 8-bit : ' + str(time.time() - s))
 
                 # rotate to account for the orientation
+                # s = time.time()
                 if top == 'right' :
                     output_rotated = np.flipud(output.T)
                 elif top == 'left' :
                     output_rotated = np.fliplr(output.T)
                     # TODO check that this keeps the direction of motion from left to right in the final image
+                # log.debug('output image rotated : ' + str(time.time() - s))
 
                 # output the file
+                # s = time.time()
                 # cv2.imshow('output', output_rotated.astype('uint8'))
                 # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
                 cv2.imwrite(output_file_name, output_rotated)
+                # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
                 # NB: apparently, the conversion to int is not necessary for imwrite
                 #     it is for imshow
+                # log.debug('output image written to disk : ' + str(time.time() - s))
 
         # increment frame counter
         i_f += 1
