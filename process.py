@@ -170,6 +170,14 @@ i_o = 0     # output buffer
 if debug() :
     line_counter = 1
 
+# compute time step for each frame or each scanned line
+line_step = 1. / scan_per_s
+frame_step = line_step * img_height
+# convert to time spans
+line_step = timedelta(seconds=line_step)
+frame_step = timedelta(seconds=frame_step)
+
+# loop over files
 for i_avi in range(0,len(all_avi)) :
 
     avi_file = all_avi[i_avi]
@@ -181,12 +189,6 @@ for i_avi in range(0,len(all_avi)) :
     # parse the start time of the current avi file from its name
     time_now = datetime.strptime(all_avi[i_avi], input_dir + '/%Y%m%d%H%M%S.%f.avi')
 
-    # compute time step for each frame or each scanned line
-    line_step = 1. / scan_per_s
-    frame_step = line_step * img_height
-    # convert to time spans
-    line_step = timedelta(seconds=line_step)
-    frame_step = timedelta(seconds=frame_step)
     # TODO verify that the computed span is close to this
     # time_next = datetime.strptime(all_avi[i_avi+1], input_dir + '/%Y%m%d%H%M%S.%f.avi')
     # # for 2 successive avi files with n_frames = 3
