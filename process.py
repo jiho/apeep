@@ -25,6 +25,7 @@ window_size = 1000   # in px
 output_size = 5     # in nb of frames
 top = 'right'
 scan_per_s = 28000
+lighten = 0.2
 
 
 ## Setup ------------------------------------------------------------------
@@ -38,7 +39,8 @@ import sys
 import tempfile
 import os
 import errno
-# from skimage import exposure
+import time
+from skimage import exposure
 
 # setup logging
 log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
@@ -97,6 +99,11 @@ if not os.path.isdir(input_dir):
 if not top in ('right', 'left') :
     log.error('incorrect \'top\' argument, should be right or left')
     sys.exit()
+
+if ( lighten < 0. ) or ( lighten > 1. ) :
+    log.error('lighten should be in [0,1] (0, no change; 1 clip to white)')
+    sys.exit()
+
 
 # check image sizes
 if not isinstance(window_size, (int, long, float)) :
@@ -276,6 +283,16 @@ for i_avi in range(0,len(all_avi)) :
                 output = output - output.min()
                 output = output / output.max()
                 # log.debug('output image rescaled : ' + str(time.time() - s))
+
+                # stretch contrast
+                s = time.time()
+                # p1, p2 = np.percentile(output, (0.01, 99.99))
+                # output = exposure.rescale_intensity(output, in_range=(0, 230))
+                if lighten > 0.001 :
+                    # NB: only lighten when necessary
+                    output = exposure.rescale_intensity(output, in_range=(0., 1.-lighten))
+                # NB: stretches to [0,1]
+                log.debug('output image contrasted : ' + str(time.time() - s))
 
                 # reconvert to 8-bit grey level
                 # s = time.time()
