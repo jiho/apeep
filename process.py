@@ -142,8 +142,12 @@ if window_size > img_height:
     sys.exit()
 # cut the appropriate part of the image to initialise the moving window
 window = img[range(0,window_size),]
+window = window.astype(np.int16)
 # initialise the column-wise mean
 m = np.mean(window, 0)
+
+# create a floating point version of window_size for computation
+window_size_f = float(window_size)
 
 # initialise output image
 # compute output_size in pixels
@@ -220,10 +224,8 @@ for i_avi in range(0,len(all_avi)) :
         # log.debug('frame converted to grayscale')
 
         # convert to floating point (for mean, division, etc.)
-        img = img * 1.0
-        # TODO try not to convert it and force conversion when computing the mean
-        # log.debug('frame converted to float')
-        # img.dtype
+        img = img.astype(np.int16)
+        # log.debug('frame converted')
         # cv2.imshow('frame', img)
 
         # loop over scanned lines in that frame
@@ -237,7 +239,7 @@ for i_avi in range(0,len(all_avi)) :
             current_line = img[i_l,]
 
             # update column-wise mean
-            m = m + (current_line - window[i_w,]) / window_size
+            m = m + (current_line - window[i_w,]) / window_size_f
             # NB: considerably faster than recomputing the whole mean every time
             #     computing the median is another order of magnitude slower
 
