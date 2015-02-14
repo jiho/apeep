@@ -38,6 +38,50 @@ threshold=150
 dilate=4
 pad=4
 
+import csv
+csv_file = 'particles/particles.csv'
+csv_handle = open(csv_file, 'wb')
+csv_writer = csv.writer(csv_handle)
+
+
+properties_labels = ['area',
+                     'convex_area',
+                     'filled_area',
+                     'eccentricity',
+                     'equivalent_diameter',
+                     'euler_number',
+                     'inertia_tensor_eigvals',
+                     'major_axis_length',
+                     'minor_axis_length',
+                     'max_intensity',
+                     'mean_intensity',
+                     'min_intensity',
+                     'moments_hu',
+                     'weighted_moments_hu',
+                     'perimeter',
+                     'orientation',
+                     'centroid']
+properties_names  = ['name',
+                     'date_time',
+                     'area',
+                     'convex_area',
+                     'filled_area',
+                     'eccentricity',
+                     'equivalent_diameter',
+                     'euler_number',
+                     'inertia_tensor_eigval1', 'inertia_tensor_eigval2',
+                     'major_axis_length',
+                     'minor_axis_length',
+                     'max_intensity',
+                     'mean_intensity',
+                     'min_intensity',
+                     'moment_hu1', 'moment_hu2', 'moment_hu3', 'moment_hu4', 'moment_hu5', 'moment_hu6', 'moment_hu7',  
+                     'weighted_moment_hu1', 'weighted_moment_hu2', 'weighted_moment_hu3', 'weighted_moment_hu4', 'weighted_moment_hu5', 'weighted_moment_hu6', 'weighted_moment_hu7', 
+                     'perimeter',
+                     'orientation',
+                     'centroidx','centroidy']
+csv_writer.writerow(properties_names)
+
 
 
 # def segment(img, time_start, time_step, output_dir, min_area=300, threshold=150, dilate=4, pad=4):
@@ -90,78 +134,51 @@ particles_properties = [x for x in particles_properties if x.area > min_area]
 len(particles_properties)
 
 
-properties_labels = ['area',
-                     'convex_area',
-                     'filled_area',
-                     'eccentricity',
-                     'equivalent_diameter',
-                     'euler_number',
-                     'inertia_tensor_eigvals',
-                     'major_axis_length',
-                     'minor_axis_length',
-                     'max_intensity',
-                     'mean_intensity',
-                     'min_intensity',
-                     'moments_hu',
-                     'weighted_moments_hu',
-                     'perimeter',
-                     'orientation',
-                     'centroid']
-properties_names  = ['area',
-                     'convex_area',
-                     'filled_area',
-                     'eccentricity',
-                     'equivalent_diameter',
-                     'euler_number',
-                     'inertia_tensor_eigval1', 'inertia_tensor_eigval2',
-                     'major_axis_length',
-                     'minor_axis_length',
-                     'max_intensity',
-                     'mean_intensity',
-                     'min_intensity',
-                     'moment_hu1', 'moment_hu2', 'moment_hu3', 'moment_hu4', 'moment_hu5', 'moment_hu6', 'moment_hu7',  
-                     'weighted_moment_hu1', 'weighted_moment_hu2', 'weighted_moment_hu3', 'weighted_moment_hu4', 'weighted_moment_hu5', 'weighted_moment_hu6', 'weighted_moment_hu7', 
-                     'perimeter',
-                     'orientation',
-                     'centroidx','centroidy']
+
 
 for x in particles_properties :
+    # extract the particle pixels (with padding)
+    imgmasked = np.where(imglabels == x.label, imgpadded, 255)
+    particle = imgmasked[(x.bbox[0]-pad):(x.bbox[2]+pad), (x.bbox[1]-pad):(x.bbox[3]+pad)]
+    #                     x.bbox = (min_row, min_col, max_row, max_col)
+    # make of a copy of the array in memory to be able to compute its md5 sum
+    particle = np.copy(particle, order='C')
+    # view(particle)
+    
+    # TODO cf x.orientation for rotation
+    
+    # compute md5 hash which is used as a name
+    md5 = hashlib.md5(particle).hexdigest()
+    
+    # compute file name and save image
+    file_name = os.path.join(output_dir, md5 + '.png')
+    ret = cv2.imwrite(file_name, particle)
+    if not ret:
+        log.warning('could not write particle image')
+    
+    # extract metadata
+    props = []
+    for label in properties_labels:
+        prop = x[label]
+        if isinstance(prop, (tuple, np.ndarray)) :
+            expanded_prop = [el for el in prop]
+            props = props + expanded_prop
+        else:
+            props = props + [prop]
+    
+    # TODO convert pixel based properties into mm
+    
+    # compute particle capture date and time
+    # start time + number of columns until the centroid * time per column
+    date_time = time_start + int(round(x.centroid[1])) * time_step
+    
+    # add particle name (md5) and date
+    props = [md5, date_time] + props
+    
+    # save to csv
+    csv_writer.writerow(props)
 
-# extract the particle pixels (with padding)
-imgmasked = np.where(imglabels == x.label, imgpadded, 255)
-particle = imgmasked[(x.bbox[0]-pad):(x.bbox[2]+pad), (x.bbox[1]-pad):(x.bbox[3]+pad)]
-#                     x.bbox = (min_row, min_col, max_row, max_col)
-# make of a copy of the array in memory to be able to compute its md5 sum
-particle = np.copy(particle, order='C')
-# view(particle)
 
-# TODO cf x.orientation for rotation
 
-# compute md5 hash which is used as a name
-md5 = hashlib.md5(particle).hexdigest()
-
-# compute file name and save image
-file_name = os.path.join(output_dir, md5 + '.png')
-ret = cv2.imwrite(file_name, particle)
-if not ret:
-    log.warning('could not write particle image')
-
-# extract metadata
-props = []
-for label in properties_labels:
-    prop = x[label]
-    if isinstance(prop, (tuple, np.ndarray)) :
-        print label
-        expanded_prop = [el for el in prop]
-        print len(expanded_prop)
-        props = props + expanded_prop
-    else:
-        props = props + [prop]
-
-# compute particle capture date and time
-# start time + number of columns until the centroid * time per column
-date_time = time_start + int(round(x.centroid[1])) * time_step
-
-# add particle name (md5) and date
-props = [md5, date_time] + props
-
+# close csv file
+csv_handle.close()
