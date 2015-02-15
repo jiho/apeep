@@ -44,6 +44,7 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
     """
 
     # pad original image with white to make sure we can extract particles on the border
+    s = t.b()
     if pad > 0 :
         dims = img.shape
         # horizontal array to pad top and bottom
@@ -58,27 +59,45 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
     else :
         imgpadded = img
     # view(imgpadded)
+    log.debug('segment: image padded')
+    t.e(s, 'pad')
 
     # threshold image, make particles black
+    s = t.b()
     #           where(condition            , true value, false value)
     imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 
     # view(imgthr)
-
+    t.e(s, 'threshold')
+    # log.debug('segment: image thresholded')
+    
     # dilate particles, to consider what may be around the thresholded regions
+    s = t.b()
     imgdilated = morphology.binary_erosion(imgthr, np.ones((dilate, dilate)))
     # view(imgdilated)
+    t.e(s, 'dilate')
+    # log.debug('segment: image dilated')
+    
 
     # label (i.e. give a sequential number to) particles
+    s = t.b()
     imglabelled = measure.label(imgdilated, background=1.)
-    # view(imglabels)
+    # view(imglabelled)
+    t.e(s, 'label')
+    # log.debug('segment: image labelled')
 
     # measure particles
+    s = t.b()
     particles_properties = measure.regionprops(label_image=imglabelled, intensity_image=imgpadded)
+    t.e(s, 'measure particles')
+    # log.debug('segment: particles measured')
 
     # keep only large ones
-    particles_properties = [x for x in particles_properties if x.area > min_area]
-    # TODO check wether it is faster to remove small particles from the mask image and measure with intensity image afterwards
+    s = t.b()
+    particles_properties = [x for x in particles_properties if x['area'] > min_area]
     # len(particles_properties)
+    t.e(s, 'select large particles')
+    # log.debug('segment: large particles selected')
+    
 
     # for each particle:
     # - construct an image of the particle over blank space
@@ -94,10 +113,16 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
             (x.bbox[0]-pad):(x.bbox[2]+pad),
             (x.bbox[1]-pad):(x.bbox[3]+pad)]
         # NB: x.bbox = (min_row, min_col, max_row, max_col)
+        s = t.b()
+        t.e(s, 'mask outside particle')
+        # log.debug('segment: particle ' + str(x.label) + ': background masked')
+        s = t.b()
         # make of a copy of the array in memory to be able to compute its md5 digest
         particle = np.copy(particle, order='C')
         # view(particle)
         particles = particles + [particle]
+        t.e(s, 'extract particle')
+        # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
     
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
     
