@@ -15,7 +15,7 @@ from skimage import morphology
 from img import view    # interactive image plot
 import timers as t      # simple timers for profiling
 
-def segment(img, time_start, time_step, threshold=150, dilate=4, min_area=300, pad=4):
+def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
     """
     Segment an image into particles
     
@@ -23,10 +23,6 @@ def segment(img, time_start, time_step, threshold=150, dilate=4, min_area=300, p
     ----------
     img : a 2D numpy.ndarray of dtype uint8
         an 8-bit grey scale image from which to extract particles
-    time_start : a datetime object
-        date and time of the first scan of the image
-    time_step : a timedelta object
-        the time taken to scan one line of pixels (= 1 divided by the sample rate)
     threshold : int (default 150)
        a grey level (0-255); all pixels darker than threshold will be considered
        as part of particles
