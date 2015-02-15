@@ -14,7 +14,7 @@
 #         save it as an image
 #
 
-# TODO swicth to python3 (but getting opencv2 to compile with python3 bindings is complex)
+# TODO switch to python3 (but getting opencv2 to compile with python3 bindings is complex)
 
 
 ## Options ----------------------------------------------------------------
