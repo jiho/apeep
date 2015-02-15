@@ -15,73 +15,6 @@ from skimage import morphology
 from img import view    # interactive image plot
 import timers as t      # simple timers for profiling
 
-
-from datetime import datetime, timedelta
-
-file_name = 'out/20130723215019_683964.png'
-img = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
-# im = imread('out/20130723215019_683964.png')
-view(img)
-
-time_start = datetime.strptime(file_name, 'out/%Y%m%d%H%M%S_%f.png')
-
-scan_per_s = 28000
-time_step = 1. / scan_per_s
-# convert to time spans
-time_step = timedelta(seconds=time_step)
-
-output_dir = 'particles'
-min_area=300
-threshold=150
-dilate=4
-pad=4
-
-import csv
-csv_file = 'particles/particles.csv'
-csv_handle = open(csv_file, 'wb')
-csv_writer = csv.writer(csv_handle)
-
-
-properties_labels = ['area',
-                     'convex_area',
-                     'filled_area',
-                     'eccentricity',
-                     'equivalent_diameter',
-                     'euler_number',
-                     'inertia_tensor_eigvals',
-                     'major_axis_length',
-                     'minor_axis_length',
-                     'max_intensity',
-                     'mean_intensity',
-                     'min_intensity',
-                     'moments_hu',
-                     'weighted_moments_hu',
-                     'perimeter',
-                     'orientation',
-                     'centroid']
-properties_names  = ['name',
-                     'date_time',
-                     'area',
-                     'convex_area',
-                     'filled_area',
-                     'eccentricity',
-                     'equivalent_diameter',
-                     'euler_number',
-                     'inertia_tensor_eigval1', 'inertia_tensor_eigval2',
-                     'major_axis_length',
-                     'minor_axis_length',
-                     'max_intensity',
-                     'mean_intensity',
-                     'min_intensity',
-                     'moment_hu1', 'moment_hu2', 'moment_hu3', 'moment_hu4', 'moment_hu5', 'moment_hu6', 'moment_hu7',  
-                     'weighted_moment_hu1', 'weighted_moment_hu2', 'weighted_moment_hu3', 'weighted_moment_hu4', 'weighted_moment_hu5', 'weighted_moment_hu6', 'weighted_moment_hu7', 
-                     'perimeter',
-                     'orientation',
-                     'centroidx','centroidy']
-csv_writer.writerow(properties_names)
-
-
-
 def segment(img, time_start, time_step, threshold=150, dilate=4, min_area=300, pad=4):
     """
     Segment an image into particles
@@ -236,5 +169,3 @@ def extract_properties(particle_properties, names) :
 
 
 
-# close csv file
-csv_handle.close()
