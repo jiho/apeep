@@ -1,21 +1,19 @@
 #!/usr/bin/env python2
 
-
-import numpy as np
-import logging as log
-
-from skimage.io import imread
-from skimage.transform import resize
-from skimage import measure
-from skimage import morphology
-import cv2
-
-from img import view
-
+# import logging as log
 import hashlib
 import os
+import logging as log
 
+import numpy as np
+import cv2
+# from skimage.io import imread
+# from skimage.transform import resize
+from skimage import measure
+from skimage import morphology
 
+from img import view    # interactive image plot
+import timers as t      # simple timers for profiling
 
 
 from datetime import datetime, timedelta
