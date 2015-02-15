@@ -43,15 +43,17 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
         a list of list of particles properties (in the same order)
     """
 
-    # pad original image with white to make sure we can extract particles on the border
-    s = t.b()
-    if pad > 0 :
+    # add padding outside the original image with white to make sure we can extract particles on the border
+    # NB: padding should take in account, the amount of padding in the particles images AND the amount of dilation of particles (because a black dot on the border would be dilated)
+    # s = t.b()
+    img_padding = pad + dilate
+    if (pad + dilate) > 0 :
         dims = img.shape
         # horizontal array to pad top and bottom
-        hpad = np.ones((pad, dims[1])) * 255
+        hpad = np.ones((img_padding, dims[1])) * 255
         hpad = hpad.astype('uint8')
         # vertical array to pad left and right
-        vpad = np.ones((dims[0]+2*pad, pad)) * 255
+        vpad = np.ones((dims[0]+2*img_padding, img_padding)) * 255
         vpad = vpad.astype('uint8')
         # pad original image
         imgpadded = np.concatenate((hpad, img, hpad))
