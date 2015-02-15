@@ -4,3 +4,5 @@
 *.bmp
 *.tif
 *.tiff
+#
+*.pyc
