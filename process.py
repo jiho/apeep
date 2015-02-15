@@ -25,7 +25,27 @@ window_size = 1000   # in px
 output_size = 10     # in nb of frames
 top = 'right'
 scan_per_s = 28000
-lighten = 0.2
+lighten = 0.3
+# csv_file = 'particles/particles.csv'
+properties_labels = ['label',
+                     'area',
+                     'convex_area',
+                     'filled_area',
+                     'eccentricity',
+                     'equivalent_diameter',
+                     'euler_number',
+                     'inertia_tensor_eigvals',
+                     'major_axis_length',
+                     'minor_axis_length',
+                     'max_intensity',
+                     'mean_intensity',
+                     'min_intensity',
+                     'moments_hu',
+                     'weighted_moments_hu',
+                     'perimeter',
+                     'orientation',
+                     'centroid']
+
 
 
 ## Setup ------------------------------------------------------------------
@@ -41,6 +61,9 @@ import os
 import errno
 import time
 from skimage import exposure
+import segment
+import csv
+from img import view
 
 # setup logging
 log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
@@ -80,6 +103,30 @@ else:
             log.error('cannot create output directory')
             raise
     log.debug('output_dir created')
+
+output_dir_raw = os.path.join(output_dir, 'raw')
+try:
+    os.makedirs(output_dir_raw)
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        log.error('cannot create output directory for frames')
+        raise
+output_dir_particles = os.path.join(output_dir, 'particles')
+try:
+    os.makedirs(output_dir_particles)
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        log.error('cannot create output directory for particles')
+        raise
+
+
+# initiate csv file
+try:
+    csv_handle = open(os.path.join(output_dir_particles, 'particles.csv'), 'wb')
+except Exception as e:
+    log.error('cannot initiate csv file for particles')
+    raise e
+csv_writer = csv.writer(csv_handle)
 
 # once this is OK, create a log file
 log_file = os.path.join(output_dir, 'process_log.txt')
@@ -180,6 +227,7 @@ i_w = 0     # moving window
 i_o = 0     # output buffer
 if debug() :
     line_counter = 1
+first_row = True    # switch to detect when we are writing the first row of the csv files for particles
 
 # compute time step for each frame or each scanned line
 line_step = 1. / scan_per_s
@@ -267,15 +315,11 @@ for i_avi in range(0,len(all_avi)) :
             # act on the image when it is complete
             if i_o == output_size :
                 i_o = 0
+                log.debug('output image')
 
-                # compute filename based on time
+                # compute time of the first scan of this image
                 time_end = time_now + (i_f * img_height + i_l) * line_step
                 time_start = time_end - line_step * output_size
-
-                output_file_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f.png')
-                # TODO add end time or sampling freq?
-                output_file_name = os.path.join(output_dir, output_file_name)
-                log.debug('output processed image to: ' + output_file_name)
 
                 # prepare the output image
                 # rescale to [0,1]
@@ -302,9 +346,55 @@ for i_avi in range(0,len(all_avi)) :
                 elif top == 'left' :
                     output_rotated = np.fliplr(output.T)
                     # TODO check that this keeps the direction of motion from left to right in the final image
-                log.debug('output image rotated')
+                # log.debug('output image rotated')
+
+                #--------------------------------------------------------------------------
+                # measure particles
+                particles, properties = segment.segment(output_rotated, log)
+                log.debug('extracted ' + str(len(particles)) + ' particles')
+                # view(particles[0], interactive=False)
+                # print len(particles)
+                # print len(properties)
+                
+                # write labels for csv file
+                if first_row:
+                    properties_names = segment.extract_properties_names(properties[0], properties_labels)
+                    properties_names = ['md5','date_time'] + properties_names
+                    csv_writer.writerow(properties_names)
+                    log.info('initialised csv file with header')
+                    first_row = False
+                
+                # compute date and time of each particle
+                complete_props = []
+                for i in range(len(particles)):
+
+                    # write image
+                    c_md5 = segment.write_particle_image(particles[i], output_dir_particles, log)
+
+                    # extract properties of current particle
+                    c_props = properties[i]
+                    
+                    # compute date time of capture of this particle
+                    c_date_time = time_start + int(round(c_props.centroid[1])) * line_step
+                    
+                    c_props = segment.extract_properties(c_props, properties_labels)
+
+                    csv_line = [c_md5, c_date_time] + c_props
+                    
+                    complete_props = complete_props + [csv_line]
+                log.debug('extracted properties and saved particles images')
+               
+                csv_writer.writerows(complete_props)
+                log.debug('increment csv file')
+                #--------------------------------------------------------------------------
 
                 # output the file
+                output_file_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f.png')
+                # TODO add end time or sampling freq?
+                output_file_name = os.path.join(output_dir_raw, output_file_name)
+                log.debug('output processed image to: ' + output_file_name)
+                
+                
                 # cv2.imshow('output', output_rotated.astype('uint8'))
                 # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
                 cv2.imwrite(output_file_name, output_rotated)
@@ -320,11 +410,9 @@ for i_avi in range(0,len(all_avi)) :
     cap.release()
     log.debug('closed file ' + avi_file)
 
-# # Contrast stretching
-# TODO try to cleanup the background by moving light greys towards white
-# p1, p2 = np.percentile(img, (0.01, 99.99))
-# img_exp = exposure.rescale_intensity(img, in_range=(p1, p2))
-# cv2.imshow('frame', img_exp)
-# cv2.imshow('frame', img)
+
+csv_handle.close()
+log.debug('closed particles csv file')
+# TODO close and reopen the file for each frame to be safer?
 
 log.info('---END---')
