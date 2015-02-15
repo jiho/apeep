@@ -136,42 +136,45 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
     return particles, particles_properties
 #
 
-
-def extract_properties(particle_properties, names) :
+def extract_properties(properties, names) :
     """
     Extract and flatten particles properties
     
+    Given a list of properties such as
+        [1, (3.2, 1.4), 'foo']
+    this function flattens it to
+        [1, 3.2, 1.4, 'foo']
+    
     Parameters
     ----------
-    particle_properties : list of RegionProperties
-        list of particles properties lists, returned by skimage.measure.regionprops;
-        one element per particle
+    properties : object of type RegionProperties
+        properties of one particle; i.e. one element of the list returned
+        by skimage.measure.regionprops
     names : list of strings
         names of properties to extract
     
     Returns
     -------
-    props : list of lists
-        selected particles properties with multi-element properties flattened;
-        one element per particle
+    props : list
+        selected particles properties, with multi-element properties flattened
     """
-    props = []
-    
-    # loop over particles
-    for particle in particle_properties:
-        particle_props = []
+    extracted_properties = []
         
-        # select properties of interest for this particle
-        for name in names:
-            prop = prop_list[name]
-            
+    # loop over names of properties to extract
+    for name in names:
+        # extract property
+        prop = properties[name]
+        # TODO convert pixel based properties into mm
+        
+        if isinstance(prop, (tuple, np.ndarray)) :
             # if the property has several elements, flatten it
-            if isinstance(prop, (tuple, np.ndarray)) :
-                expanded_prop = [el for el in prop]
-                particle_props = props + expanded_prop
-                # TODO considered expanding the names (foo -> foo1, foo2) here but consider performance concerns in doing so for every particle
-            else:
-                particle_props = props + [prop]
+            expanded_prop = [element for element in prop]
+            extracted_properties = extracted_properties + expanded_prop
+        else:
+            extracted_properties = extracted_properties + [prop]
+
+    return extracted_properties
+#
         
         props = props + element_props
     
