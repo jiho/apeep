@@ -216,8 +216,35 @@ def extract_properties_names(properties, names) :
 
     return extracted_names
 #
+
+def write_particle_image(particle, output_dir) :
+    """Write a particle to a file
     
-    return props
+    Parameters
+    ----------
+    particles: numpy.ndarray of dtype uint8
+        particle images data
+    output_dir: string
+        directory to write the file in. should exist. is not checked
+    
+    Returns
+    -------
+    md5s: string
+        md5 digest of the particle, used as file name
+    """
+    # compute md5 digest which is used as a name
+    md5 = hashlib.md5(particle).hexdigest()
+    
+    # prepare name
+    file_name = os.path.join(output_dir, md5 + '.png')
+    
+    # write image
+    ret = cv2.imwrite(file_name, particle)
+    if not ret:
+        log.warning('could not write particle image')
+
+    return(md5)
+#
 
 
 
