@@ -1,9 +1,7 @@
 #!/usr/bin/env python2
 
-# import logging as log
 import hashlib
 import os
-import logging as log
 
 import numpy as np
 import cv2
@@ -253,5 +251,69 @@ def write_particle_image(particle, output_dir, log) :
     return(md5)
 #
 
+# TODO def save_particles
+#   write particles
+#   compute time
+#   compute properties
+#   concatenate all metadata
+#   save everything
+#
+# segment_image
+#     segments particles
+#     saves particles
+#
+# segment_images_in_folder
+#     read images in a folder
+#     compute start time for each image
+#     segment_image on each image
 
-
+# file_name = 'out/20130723215019_683964.png'
+# img = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+# # im = imread('out/20130723215019_683964.png')
+# # view(img)
+#
+# particles, properties = segment(img)
+# print len(particles)
+# print len(properties)
+# # print len(properties[0])
+# # print(dir(properties))
+#
+# properties_labels = ['area',
+#                      'convex_area',
+#                      'filled_area',
+#                      'eccentricity',
+#                      'equivalent_diameter',
+#                      'euler_number',
+#                      'inertia_tensor_eigvals',
+#                      'major_axis_length',
+#                      'minor_axis_length',
+#                      'max_intensity',
+#                      'mean_intensity',
+#                      'min_intensity',
+#                      'moments_hu',
+#                      'weighted_moments_hu',
+#                      'perimeter',
+#                      'orientation',
+#                      'centroid']
+#
+# properties_names = extract_properties_names(properties[0], properties_labels)
+# print properties_names
+#
+# properties = [extract_properties(x, properties_labels) for x in properties]
+# print len(properties)
+# print len(properties[0])
+#
+#
+# md5 = [write_particle_image(x, 'particles') for x in particles]
+#
+# import csv
+# csv_file = 'particles/particles.csv'
+# csv_handle = open(csv_file, 'wb')
+# csv_writer = csv.writer(csv_handle)
+# csv_writer.writerow(properties_names)
+# csv_writer.writerows(properties)
+# csv_handle.close()
+#
+#
+#
+#
