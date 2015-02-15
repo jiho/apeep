@@ -266,7 +266,7 @@ for i_avi in range(0,len(all_avi)) :
         # read a frame
         log.debug('read frame ' + str(i_f))
         return_code, img = cap.read()
-        log.debug('frame read')
+        # log.debug('frame read')
 
         # check the frame was read correctly
         # if not exit the loop on this file to jump to the next
@@ -276,11 +276,11 @@ for i_avi in range(0,len(all_avi)) :
 
         # convert to gray scale
         img = img[:,:,1]
-        log.debug('frame converted to grayscale')
+        # log.debug('frame converted to grayscale')
 
         # convert to floating point (for mean, division, etc.)
         img = img.astype(np.int16)
-        log.debug('frame converted')
+        # log.debug('frame converted')
         # cv2.imshow('frame', img)
 
         # loop over scanned lines in that frame
@@ -308,7 +308,7 @@ for i_avi in range(0,len(all_avi)) :
             i_w += 1
             if i_w == window_size :
                 i_w = 0
-                log.debug('loop over moving window')
+                # log.debug('loop over moving window')
 
             # and of the output buffer
             i_o += 1
@@ -325,7 +325,7 @@ for i_avi in range(0,len(all_avi)) :
                 # rescale to [0,1]
                 output = output - output.min()
                 output = output / output.max()
-                log.debug('output image rescaled')
+                # log.debug('output image rescaled')
 
                 # stretch contrast
                 # p1, p2 = np.percentile(output, (0.01, 99.99))
@@ -334,11 +334,11 @@ for i_avi in range(0,len(all_avi)) :
                     # NB: only lighten when necessary
                     output = exposure.rescale_intensity(output, in_range=(0., 1.-lighten))
                 # NB: stretches to [0,1]
-                log.debug('output image contrasted')
+                # log.debug('output image contrasted')
 
                 # reconvert to 8-bit grey level
                 output = (output * 255.0)
-                log.debug('output image converted to 8-bit')
+                # log.debug('output image converted to 8-bit')
 
                 # rotate to account for the orientation
                 if top == 'right' :
