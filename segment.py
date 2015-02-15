@@ -120,6 +120,7 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
         # blank out the pixels outside the particle
         particle = np.where(particle_mask == x.label, particle, 255)
+        # view(particle, False)
         # imgmasked = np.where(imglabelled == x.label, imgpadded, 255)
         # t.e(s, 'mask outside particle')
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
@@ -128,7 +129,7 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         # make of a copy of the array in memory to be able to compute its md5 digest
         particle = np.copy(particle, order='C')
         # TODO check if that is necessary
-        # view(particle)
+        # view(particle, False)
         particles = particles + [particle]
         # t.e(s, 'extract particle')
         # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
