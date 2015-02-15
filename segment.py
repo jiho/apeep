@@ -175,8 +175,47 @@ def extract_properties(properties, names) :
 
     return extracted_properties
 #
+
+def extract_properties_names(properties, names) :
+    """
+    Create a list of names for flattened particles properties
+    
+    See 'extract_properties' for extracting and flattening properties
+    lists. For a list of properties with names
+        ['number', 'coord', 'name']
+    this function creates the names for the flattened list
+        ['number', 'coord1', 'coord2', 'name']
+    
+    Parameters
+    ----------
+    properties : object of type RegionProperties
+        properties of one particle; i.e. one element of the list returned
+        by skimage.measure.regionprops
+    names : list of strings
+        names of properties to extract
+    
+    Returns
+    -------
+    names : list
+        flattened list of properties names
+    """
+    extracted_names = []
         
-        props = props + element_props
+    # loop over names of properties to extract
+    for name in names:
+        # extract property
+        prop = properties[name]
+        
+        if isinstance(prop, (tuple, np.ndarray)) :
+            # if the property has several elements, repeat the name and add a numeric suffix
+            n = len(prop)
+            repeated_name = [name + str(x) for x in range(1,(n+1))]
+            extracted_names = extracted_names + repeated_name
+        else:
+            extracted_names = extracted_names + [name]
+
+    return extracted_names
+#
     
     return props
 
