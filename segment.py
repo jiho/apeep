@@ -61,44 +61,44 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     else :
         imgpadded = img
     # view(imgpadded)
-    log.debug('segment: image padded')
-    t.e(s, 'pad')
+    # log.debug('segment: image padded')
+    # t.e(s, 'pad')
 
     # threshold image, make particles black
-    s = t.b()
+    # s = t.b()
     #           where(condition            , true value, false value)
     imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 
     # view(imgthr)
-    t.e(s, 'threshold')
+    # t.e(s, 'threshold')
     # log.debug('segment: image thresholded')
     
     # dilate particles, to consider what may be around the thresholded regions
-    s = t.b()
+    # s = t.b()
     imgdilated = morphology.binary_erosion(imgthr, np.ones((dilate, dilate)))
     # view(imgdilated)
-    t.e(s, 'dilate')
+    # t.e(s, 'dilate')
     # log.debug('segment: image dilated')
     
 
     # label (i.e. give a sequential number to) particles
-    s = t.b()
+    # s = t.b()
     imglabelled = measure.label(imgdilated, background=1.)
     # view(imglabelled)
-    t.e(s, 'label')
+    # t.e(s, 'label')
     # log.debug('segment: image labelled')
 
     # measure particles
-    s = t.b()
+    # s = t.b()
     particles_properties = measure.regionprops(label_image=imglabelled, intensity_image=imgpadded)
-    t.e(s, 'measure particles')
+    # t.e(s, 'measure particles')
     # log.debug('segment: particles measured')
 
     # keep only large ones
-    s = t.b()
+    # s = t.b()
     particles_properties = [x for x in particles_properties if x['area'] > min_area]
     # TODO this is long, look into how to make it faster
     # len(particles_properties)
-    t.e(s, 'select large particles')
+    # t.e(s, 'select large particles')
     # log.debug('segment: large particles selected')
     
 
@@ -110,7 +110,7 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     
     for x in particles_properties :
         
-        s = t.b()
+        # s = t.b()
         # extract the particle (with padding) and its mask
         x_start = x.bbox[0] - pad
         x_stop  = x.bbox[2] + pad
@@ -121,19 +121,20 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         # blank out the pixels outside the particle
         particle = np.where(particle_mask == x.label, particle, 255)
         # imgmasked = np.where(imglabelled == x.label, imgpadded, 255)
-        t.e(s, 'mask outside particle')
+        # t.e(s, 'mask outside particle')
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
         
-        s = t.b()
+        # s = t.b()
         # make of a copy of the array in memory to be able to compute its md5 digest
         particle = np.copy(particle, order='C')
         # TODO check if that is necessary
         # view(particle)
         particles = particles + [particle]
-        t.e(s, 'extract particle')
+        # t.e(s, 'extract particle')
         # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
     
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
+    log.debug('segment: ' + str(len(particles)) + ' particles extracted')
     
     return particles, particles_properties
 #
