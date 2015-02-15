@@ -106,16 +106,21 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
     particles = []
     
     for x in particles_properties :
-        # blank out the pixels which are not part of the particle of interest
-        imgmasked = np.where(imglabels == x.label, imgpadded, 255)
-        # extract the particle (with padding) into a rectangle
-        particle = imgmasked[
-            (x.bbox[0]-pad):(x.bbox[2]+pad),
-            (x.bbox[1]-pad):(x.bbox[3]+pad)]
-        # NB: x.bbox = (min_row, min_col, max_row, max_col)
+        
         s = t.b()
+        # extract the particle (with padding) and its mask
+        x_start = x.bbox[0] - pad
+        x_stop  = x.bbox[2] + pad
+        y_start = x.bbox[1] - pad
+        y_stop  = x.bbox[3] + pad
+        particle = imgpadded[x_start:x_stop, y_start:y_stop]
+        particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
+        # blank out the pixels outside the particle
+        particle = np.where(particle_mask == x.label, particle, 255)
+        # imgmasked = np.where(imglabelled == x.label, imgpadded, 255)
         t.e(s, 'mask outside particle')
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
+        
         s = t.b()
         # make of a copy of the array in memory to be able to compute its md5 digest
         particle = np.copy(particle, order='C')
