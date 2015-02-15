@@ -218,7 +218,7 @@ for i_avi in range(0,len(all_avi)) :
         # read a frame
         log.debug('read frame ' + str(i_f))
         return_code, img = cap.read()
-        # log.debug('frame read')
+        log.debug('frame read')
 
         # check the frame was read correctly
         # if not exit the loop on this file to jump to the next
@@ -228,11 +228,11 @@ for i_avi in range(0,len(all_avi)) :
 
         # convert to gray scale
         img = img[:,:,1]
-        # log.debug('frame converted to grayscale')
+        log.debug('frame converted to grayscale')
 
         # convert to floating point (for mean, division, etc.)
         img = img.astype(np.int16)
-        # log.debug('frame converted')
+        log.debug('frame converted')
         # cv2.imshow('frame', img)
 
         # loop over scanned lines in that frame
@@ -260,7 +260,7 @@ for i_avi in range(0,len(all_avi)) :
             i_w += 1
             if i_w == window_size :
                 i_w = 0
-                # log.debug('loop over moving window')
+                log.debug('loop over moving window')
 
             # and of the output buffer
             i_o += 1
@@ -279,51 +279,46 @@ for i_avi in range(0,len(all_avi)) :
 
                 # prepare the output image
                 # rescale to [0,1]
-                # s = time.time()
                 output = output - output.min()
                 output = output / output.max()
-                # log.debug('output image rescaled : ' + str(time.time() - s))
+                log.debug('output image rescaled')
 
                 # stretch contrast
-                s = time.time()
                 # p1, p2 = np.percentile(output, (0.01, 99.99))
                 # output = exposure.rescale_intensity(output, in_range=(0, 230))
                 if lighten > 0.001 :
                     # NB: only lighten when necessary
                     output = exposure.rescale_intensity(output, in_range=(0., 1.-lighten))
                 # NB: stretches to [0,1]
-                log.debug('output image contrasted : ' + str(time.time() - s))
+                log.debug('output image contrasted')
 
                 # reconvert to 8-bit grey level
-                # s = time.time()
                 output = (output * 255.0)
-                # log.debug('output image converted to 8-bit : ' + str(time.time() - s))
+                log.debug('output image converted to 8-bit')
 
                 # rotate to account for the orientation
-                # s = time.time()
                 if top == 'right' :
                     output_rotated = np.flipud(output.T)
                 elif top == 'left' :
                     output_rotated = np.fliplr(output.T)
                     # TODO check that this keeps the direction of motion from left to right in the final image
-                # log.debug('output image rotated : ' + str(time.time() - s))
+                log.debug('output image rotated')
 
                 # output the file
-                # s = time.time()
                 # cv2.imshow('output', output_rotated.astype('uint8'))
                 # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
                 cv2.imwrite(output_file_name, output_rotated)
                 # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
                 # NB: apparently, the conversion to int is not necessary for imwrite
                 #     it is for imshow
-                # log.debug('output image written to disk : ' + str(time.time() - s))
+                log.debug('output image written to disk')
 
         # increment frame counter
         i_f += 1
 
     # finished reading the frames, close the avi file
-    log.info('close file ' + avi_file)
     cap.release()
+    log.debug('closed file ' + avi_file)
 
 # # Contrast stretching
 # TODO try to cleanup the background by moving light greys towards white
