@@ -15,7 +15,7 @@ from skimage import morphology
 from img import view    # interactive image plot
 import timers as t      # simple timers for profiling
 
-def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
+def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     """
     Segment an image into particles
     
@@ -219,7 +219,7 @@ def extract_properties_names(properties, names) :
     return extracted_names
 #
 
-def write_particle_image(particle, output_dir) :
+def write_particle_image(particle, output_dir, log) :
     """Write a particle to a file
     
     Parameters
