@@ -94,6 +94,7 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
     # keep only large ones
     s = t.b()
     particles_properties = [x for x in particles_properties if x['area'] > min_area]
+    # TODO this is long, look into how to make it faster
     # len(particles_properties)
     t.e(s, 'select large particles')
     # log.debug('segment: large particles selected')
@@ -124,6 +125,7 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
         s = t.b()
         # make of a copy of the array in memory to be able to compute its md5 digest
         particle = np.copy(particle, order='C')
+        # TODO check if that is necessary
         # view(particle)
         particles = particles + [particle]
         t.e(s, 'extract particle')
