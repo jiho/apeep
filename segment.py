@@ -140,7 +140,7 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
     log.debug('segment: ' + str(len(particles)) + ' particles extracted')
     
-    return particles, particles_properties
+    return (particles, particles_properties)
 #
 
 def extract_properties(properties, names) :
