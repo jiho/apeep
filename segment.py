@@ -133,26 +133,8 @@ def segment(img, threshold=150, dilate=4, min_area=300, pad=4):
     
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
     
-        # compute md5 digest which is used as a name
-        # md5 = hashlib.md5(particle).hexdigest()
-
-        # TODO convert pixel based properties into mm
-        #
-        # # compute particle capture date and time
-        # # start time + number of columns until the centroid * time per column
-        # date_time = time_start + int(round(x.centroid[1])) * time_step
-        #
-        # # add particle name (md5) and date
-        # props = [md5, date_time] + props
-        #
-        # # save to csv
-        # csv_writer.writerow(props)
-        #
-        # compute file name and save image
-        # file_name = os.path.join(output_dir, md5 + '.png')
-        # ret = cv2.imwrite(file_name, particle)
-        # if not ret:
-        #     log.warning('could not write particle image')
+    return particles, particles_properties
+#
 
 
 def extract_properties(particle_properties, names) :
