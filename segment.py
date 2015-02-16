@@ -43,7 +43,7 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
 
     # add padding outside the original image with white to make sure we can extract particles on the border
     # NB: padding should take in account, the amount of padding in the particles images AND the amount of dilation of particles (because a black dot on the border would be dilated)
-    # s = t.b()
+    s = t.b()
     img_padding = pad + dilate
     if (pad + dilate) > 0 :
         dims = img.shape
@@ -59,45 +59,40 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     else :
         imgpadded = img
     # view(imgpadded)
-    # log.debug('segment: image padded')
-    # t.e(s, 'pad')
+    log.debug('segment: image padded' + t.e(s))
 
     # threshold image, make particles black
-    # s = t.b()
+    s = t.b()
     #           where(condition            , true value, false value)
     imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 
     # view(imgthr)
-    # t.e(s, 'threshold')
-    # log.debug('segment: image thresholded')
+    log.debug('segment: image thresholded' + t.e(s))
     
     # dilate particles, to consider what may be around the thresholded regions
-    # s = t.b()
+    s = t.b()
     imgdilated = morphology.binary_erosion(imgthr, np.ones((dilate, dilate)))
     # view(imgdilated)
-    # t.e(s, 'dilate')
-    # log.debug('segment: image dilated')
+    log.debug('segment: image dilated' + t.e(s))
     
 
     # label (i.e. give a sequential number to) particles
-    # s = t.b()
+    s = t.b()
     imglabelled = measure.label(imgdilated, background=1.)
     # view(imglabelled)
-    # t.e(s, 'label')
-    # log.debug('segment: image labelled')
+    log.debug('segment: image labelled' + t.e(s))
 
     # measure particles
-    # s = t.b()
+    s = t.b()
     particles_properties = measure.regionprops(label_image=imglabelled, intensity_image=imgpadded)
     # t.e(s, 'measure particles')
-    # log.debug('segment: particles measured')
+    log.debug('segment: particles measured' + t.e(s))
 
     # keep only large ones
-    # s = t.b()
+    s = t.b()
     particles_properties = [x for x in particles_properties if x['area'] > min_area]
     # TODO this is long, look into how to make it faster
     # len(particles_properties)
-    # t.e(s, 'select large particles')
-    # log.debug('segment: large particles selected')
+    log.debug('segment: large particles selected' + t.e(s))
     
 
     # for each particle:
@@ -106,9 +101,9 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     # save them in
     particles = []
     
+    s = t.b()
     for x in particles_properties :
         
-        # s = t.b()
         # extract the particle (with padding) and its mask
         x_start = x.bbox[0] - pad
         x_stop  = x.bbox[2] + pad
@@ -132,11 +127,10 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         # view(particle, False)
         
         particles = particles + [particle]
-        # t.e(s, 'extract particle')
         # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
     
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
-    log.debug('segment: ' + str(len(particles)) + ' particles extracted')
+    log.debug('segment: ' + str(len(particles)) + ' particles extracted' + t.e(s))
     
     return (particles, particles_properties)
 #
