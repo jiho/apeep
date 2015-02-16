@@ -418,7 +418,7 @@ for i_avi in range(0,len(all_avi)) :
                 # OUTPUT PARTICLES
                 
                 # measure particles
-                particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad, return_mask=True)
+                particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
                 log.info('found ' + str(len(particles)) + ' particles')
                 # view(particles[0], interactive=False)
                 # print len(particles)

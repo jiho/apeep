@@ -13,7 +13,7 @@ from skimage import morphology
 from img import view    # interactive image plot
 import timers as t      # simple timers for profiling
 
-def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4, return_mask=False):
+def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     """
     Segment an image into particles
     
@@ -39,14 +39,16 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4, return_mask=
         a list of particle images
     particles_properties : list of RegionProperties
         a list of list of particles properties (in the same order)
+    particles_mask : numpy.ndarray
+        the original image with only particles of interest displayed
     """
 
     # add padding outside the original image with white to make sure we can extract particles on the border
     # NB: padding should take in account, the amount of padding in the particles images AND the amount of dilation of particles (because a black dot on the border would be dilated)
     s = t.b()
     img_padding = pad + dilate
+    dims = img.shape
     if (pad + dilate) > 0 :
-        dims = img.shape
         # horizontal array to pad top and bottom
         hpad = np.ones((img_padding, dims[1])) * 255
         hpad = hpad.astype('uint8')
@@ -94,41 +96,29 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4, return_mask=
     n_part = len(particles_properties)
     log.debug('segment: ' + str(n_part) + ' large particles selected' + t.e(s))
     
-    # compute mask for large particles
-    if return_mask :
-        s = t.b()
-        # get labels of large particles
-        labels = [x.label for x in particles_properties]
-
-        # prepare storage for the masks for each particle = n_particles repetitions of the image array
-        dims = imglabelled.shape
-        large_particle_masks = np.ndarray(shape=(dims[0], dims[1], n_part), dtype=bool)
-
-        # compute the mask for each particle
-        for i in range(n_part):
-            large_particle_masks[:,:,i] = (imglabelled == labels[i])
-        # compute the total mask (1=particle, 0=background)
-        large_particle_mask = np.sum(large_particle_masks, 2)
-        log.debug('segment: particles mask computed' + t.e(s))
-    
     # for each particle:
     # - construct an image of the particle over blank space
     # - extract the measurements of interest
-    # save them in
     particles = []
     
+    # prepare a mask over the whole image on which retained particles will be shown
+    
     s = t.b()
+    particles_mask = np.ones_like(imglabelled)
     for x in particles_properties :
         
-        # extract the particle (with padding) and its mask
+        # extract the particle (with padding)
         x_start = x.bbox[0] - pad
         x_stop  = x.bbox[2] + pad
         y_start = x.bbox[1] - pad
         y_stop  = x.bbox[3] + pad
         particle = imgpadded[x_start:x_stop, y_start:y_stop]
+        # and its mask
         particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
         # blank out the pixels outside the particle
         particle = np.where(particle_mask == x.label, particle, 255)
+        # put the mask in the total image mask
+        particles_mask[x_start:x_stop, y_start:y_stop] = np.where(particle_mask == x.label, 0, 1)
         # TODO make sure we are not editing the actual image here
         # view(particle, False)
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
@@ -144,12 +134,11 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4, return_mask=
         # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
     
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
-    log.debug('segment: ' + str(len(particles)) + ' particles extracted' + t.e(s))
+    # remove padding from the mask
+    particles_mask = particles_mask[img_padding:(img_padding+dims[0]),img_padding:(img_padding+dims[1])]
+    log.debug('segment: ' + str(n_part) + ' particles extracted' + t.e(s))
     
-    if return_mask:
-        return (particles, particles_properties, large_particle_mask)
-    else:
-        return (particles, particles_properties)
+    return (particles, particles_properties, particles_mask)
 #
 
 def extract_properties(properties, names) :
