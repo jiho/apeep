@@ -47,7 +47,6 @@ properties_labels = ['label',
                      'centroid']
 
 
-
 ## Setup ------------------------------------------------------------------
 
 import numpy as np
@@ -179,24 +178,34 @@ if n_avi == 0:
 # initialise moving window with first file
 cap = cv2.VideoCapture(all_avi[0])
 # read first frame
-return_code, img = cap.read()
+return_code, init_img = cap.read()
 if not return_code:
-    log.error('error reading file ' + all_avi[0] + ' to initialise moving window')
+    log.error('error reading frame from file ' + all_avi[0] + ' to initialise moving window')
     sys.exit()
-cap.release()
 # convert it to grey scale (=keep only first channel)
-img = img[:,:,1]
+init_img = init_img[:,:,1]
+# TODO make that into a read frame function
 # extract dimensions
-dims = img.shape
+dims = init_img.shape
 img_height = dims[0]
 img_width  = dims[1]
 log.info('frame dimensions height x width : ' + str(img_height) + ' x ' + str(img_width) )
-if window_size > img_height:
-    log.error('window_size should be < ', img_height, ' (less than the size of a frame)')
-    sys.exit()
+
+while window_size > init_img.shape[0] :
+    return_code, img = cap.read()
+    if not return_code:
+        log.error('error reading frame from file ' + all_avi[0] + ' to initialise moving window')
+        sys.exit()
+    img = img[:,:,1]
+    init_img = np.vstack((init_img, img))
+    
 # cut the appropriate part of the image to initialise the moving window
-window = img[range(0,window_size),]
+window = init_img[range(0,window_size),]
 window = window.astype(np.int16)
+
+cap.release()
+
+
 # initialise the column-wise mean
 m = np.mean(window, 0)
 
