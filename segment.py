@@ -115,8 +115,6 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         particle = np.where(particle_mask == x.label, particle, 255)
         # TODO make sure we are not editing the actual image here
         # view(particle, False)
-        # imgmasked = np.where(imglabelled == x.label, imgpadded, 255)
-        # t.e(s, 'mask outside particle')
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
         
         # s = t.b()
