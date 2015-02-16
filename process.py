@@ -177,6 +177,19 @@ if not isinstance(output_size, (int, long, float)) :
 # it is a number of frames = integer
 output_size = int(round(output_size))
 
+## Configuration log ------------------------------------------------------
+
+log.info('input data : ' + input_dir)
+log.info('output data : ' + output_dir)
+log.info('moving window size (in px) : ' + str(window_size))
+log.info('output image size (in number of frames): ' + str(output_size))
+log.info('top of image: ' + top)
+log.info('scanning rate: ' + str(scan_per_s))
+log.info('lighten: ' + str(lighten))
+log.info('threshold: ' + str(threshold))
+log.info('dilate: ' + str(dilate))
+log.info('min_area: ' + str(min_area))
+log.info('pad: ' + str(pad))
 
 ## Initialisation ---------------------------------------------------------
 
