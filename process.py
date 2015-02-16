@@ -353,11 +353,14 @@ for i_avi in range(0,len(all_avi)) :
             # act on the image when it is complete
             if i_o == output_size :
                 i_o = 0
-                log.debug('output image')
 
                 # compute time of the first scan of this image
                 time_end = time_now + (i_f * img_height + i_l) * line_step
                 time_start = time_end - line_step * output_size
+
+                # compute output name from time
+                output_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f')
+                log.info('output for ' + output_name)
 
                 # prepare the output image
                 # rescale to [0,1]
@@ -387,9 +390,24 @@ for i_avi in range(0,len(all_avi)) :
                 # log.debug('output image rotated')
 
                 #--------------------------------------------------------------------------
+
+                # output the file
+                output_file_name = output_name + '.png'
+                # TODO add end time or sampling freq?
+                output_file_name = os.path.join(output_dir_raw, output_file_name)
+
+                # cv2.imshow('output', output_rotated.astype('uint8'))
+                # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
+                cv2.imwrite(output_file_name, output_rotated)
+                # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
+                # NB: apparently, the conversion to int is not necessary for imwrite
+                #     it is for imshow
+                log.debug('output image written to disk')
+
+                #--------------------------------------------------------------------------
                 # measure particles
                 particles, properties = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
-                log.debug('extracted ' + str(len(particles)) + ' particles')
+                log.info('found ' + str(len(particles)) + ' particles')
                 # view(particles[0], interactive=False)
                 # print len(particles)
                 # print len(properties)
@@ -399,7 +417,7 @@ for i_avi in range(0,len(all_avi)) :
                     properties_names = segment.extract_properties_names(properties[0], properties_labels)
                     properties_names = ['md5','date_time'] + properties_names
                     csv_writer.writerow(properties_names)
-                    log.info('initialised csv file with header')
+                    log.debug('initialised csv file with header')
                     first_row = False
                 
                 # compute date and time of each particle
@@ -420,26 +438,11 @@ for i_avi in range(0,len(all_avi)) :
                     csv_line = [c_md5, c_date_time] + c_props
                     
                     complete_props = complete_props + [csv_line]
-                log.debug('extracted properties and saved particles images')
-               
+                log.debug('extracted relevant properties and saved particles images to disk')
+
                 csv_writer.writerows(complete_props)
                 log.debug('increment csv file')
                 #--------------------------------------------------------------------------
-
-                # output the file
-                output_file_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f.png')
-                # TODO add end time or sampling freq?
-                output_file_name = os.path.join(output_dir_raw, output_file_name)
-                log.debug('output processed image to: ' + output_file_name)
-                
-                
-                # cv2.imshow('output', output_rotated.astype('uint8'))
-                # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
-                cv2.imwrite(output_file_name, output_rotated)
-                # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
-                # NB: apparently, the conversion to int is not necessary for imwrite
-                #     it is for imshow
-                log.debug('output image written to disk')
 
         # increment frame counter
         i_f += 1
