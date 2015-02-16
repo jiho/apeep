@@ -84,30 +84,32 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4, return_mask=
     # measure particles
     s = t.b()
     particles_properties = measure.regionprops(label_image=imglabelled, intensity_image=imgpadded)
-    log.debug('segment: particles measured' + t.e(s))
+    n_part = len(particles_properties)
+    log.debug('segment: ' + str(n_part) + ' particles measured' + t.e(s))
 
     # keep only large ones
     s = t.b()
     particles_properties = [x for x in particles_properties if x['area'] > min_area]
     # TODO this is long, look into how to make it faster
-    # len(particles_properties)
-    log.debug('segment: large particles selected' + t.e(s))
+    n_part = len(particles_properties)
+    log.debug('segment: ' + str(n_part) + ' large particles selected' + t.e(s))
     
     # compute mask for large particles
     if return_mask :
+        s = t.b()
         # get labels of large particles
         labels = [x.label for x in particles_properties]
-        n_particles = len(labels)
 
         # prepare storage for the masks for each particle = n_particles repetitions of the image array
         dims = imglabelled.shape
-        large_particle_masks = np.ndarray(shape=(dims[0], dims[1], n_particles), dtype=bool)
+        large_particle_masks = np.ndarray(shape=(dims[0], dims[1], n_part), dtype=bool)
 
         # compute the mask for each particle
-        for i in range(n_particles):
+        for i in range(n_part):
             large_particle_masks[:,:,i] = (imglabelled == labels[i])
         # compute the total mask (1=particle, 0=background)
         large_particle_mask = np.sum(large_particle_masks, 2)
+        log.debug('segment: particles mask computed' + t.e(s))
     
     # for each particle:
     # - construct an image of the particle over blank space
