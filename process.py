@@ -107,6 +107,8 @@ else:
             log.error('cannot create output directory')
             raise
     log.debug('output_dir created')
+# TODO make this into a function, used for each directory creation
+
 # once this is OK, create a log file
 log_file = os.path.join(output_dir, 'process_log.txt')
 # TODO add current time to the name and switch to mode='w'
@@ -114,6 +116,10 @@ file_log = logging.FileHandler(log_file)
 file_log.setFormatter(log_formatter)
 log.addHandler(file_log)
 
+
+log.info('---START---')
+
+# create directory for flat-fielded frames
 output_dir_raw = os.path.join(output_dir, 'raw')
 try:
     os.makedirs(output_dir_raw)
@@ -121,6 +127,9 @@ except OSError as e:
     if e.errno != errno.EEXIST:
         log.error('cannot create output directory for frames')
         raise
+log.debug('output directory for raw frames is OK')
+
+# create directory for particles
 output_dir_particles = os.path.join(output_dir, 'particles')
 try:
     os.makedirs(output_dir_particles)
@@ -128,18 +137,15 @@ except OSError as e:
     if e.errno != errno.EEXIST:
         log.error('cannot create output directory for particles')
         raise
+log.debug('output directory for particles is OK')
 
-
-# initiate csv file
+# initiate csv file to store particles data
 try:
     csv_handle = open(os.path.join(output_dir_particles, 'particles.csv'), 'wb')
 except Exception as e:
     log.error('cannot initiate csv file for particles')
     raise e
 csv_writer = csv.writer(csv_handle)
-
-
-log.info('---START---')
 
 # check input dir
 if not os.path.isdir(input_dir):
@@ -151,10 +157,10 @@ if not top in ('right', 'left') :
     log.error('incorrect \'top\' argument, should be right or left')
     sys.exit()
 
+# check lighten argument
 if ( lighten < 0. ) or ( lighten > 1. ) :
     log.error('lighten should be in [0,1] (0, no change; 1 clip to white)')
     sys.exit()
-
 
 # check image sizes
 if not isinstance(window_size, (int, long, float)) :
@@ -164,6 +170,7 @@ if not isinstance(window_size, (int, long, float)) :
 if not isinstance(output_size, (int, long, float)) :
     log.error('output_size must be a number')
     sys.exit()
+# it is a number of frames = integer
 output_size = int(round(output_size))
 
 
