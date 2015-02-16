@@ -84,7 +84,6 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4, return_mask=
     # measure particles
     s = t.b()
     particles_properties = measure.regionprops(label_image=imglabelled, intensity_image=imgpadded)
-    # t.e(s, 'measure particles')
     log.debug('segment: particles measured' + t.e(s))
 
     # keep only large ones
