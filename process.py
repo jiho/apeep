@@ -123,29 +123,9 @@ log.addHandler(file_log)
 
 log.info('---START---')
 
-# create directory for flat-fielded frames
-output_dir_raw = os.path.join(output_dir, 'raw')
-try:
-    os.makedirs(output_dir_raw)
-except OSError as e:
-    if e.errno != errno.EEXIST:
-        log.error('cannot create output directory for frames')
-        raise
-log.debug('output directory for raw frames is OK')
-
-# create directory for particles
-output_dir_particles = os.path.join(output_dir, 'particles')
-try:
-    os.makedirs(output_dir_particles)
-except OSError as e:
-    if e.errno != errno.EEXIST:
-        log.error('cannot create output directory for particles')
-        raise
-log.debug('output directory for particles is OK')
-
 # initiate csv file to store particles data
 try:
-    csv_handle = open(os.path.join(output_dir_particles, 'particles.csv'), 'wb')
+    csv_handle = open(os.path.join(output_dir, 'particles.csv'), 'wb')
 except Exception as e:
     log.error('cannot initiate csv file for particles')
     raise e
@@ -361,7 +341,39 @@ for i_avi in range(0,len(all_avi)) :
                 # compute output name from time
                 output_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f')
                 log.info('output for ' + output_name)
+                current_output_dir = os.path.join(output_dir, output_name)
+                try:
+                    os.makedirs(current_output_dir)
+                except OSError as e:
+                    if e.errno != errno.EEXIST:
+                        log.error('cannot create output directory')
+                        raise
+                log.debug('output directory created')
+                
+                # create directory for flat-fielded frame
+                current_output_dir_image = os.path.join(current_output_dir, 'image')
+                try:
+                    os.makedirs(current_output_dir_image)
+                except OSError as e:
+                    if e.errno != errno.EEXIST:
+                        log.error('cannot create output directory for full image')
+                        raise
+                log.debug('output directory for full image created')
 
+                # create directory for particles
+                current_output_dir_particles = os.path.join(current_output_dir, 'particles')
+                try:
+                    os.makedirs(current_output_dir_particles)
+                except OSError as e:
+                    if e.errno != errno.EEXIST:
+                        log.error('cannot create output directory for particles')
+                        raise
+                log.debug('output directory for particles created')
+                
+
+                #--------------------------------------------------------------------------
+                # OUTPUT IMAGE
+                
                 # prepare the output image
                 # rescale to [0,1]
                 output = output - output.min()
@@ -389,13 +401,10 @@ for i_avi in range(0,len(all_avi)) :
                     # TODO check that this keeps the direction of motion from left to right in the final image
                 # log.debug('output image rotated')
 
-                #--------------------------------------------------------------------------
-
                 # output the file
                 output_file_name = output_name + '.png'
                 # TODO add end time or sampling freq?
-                output_file_name = os.path.join(output_dir_raw, output_file_name)
-
+                output_file_name = os.path.join(current_output_dir_image, output_file_name)
                 # cv2.imshow('output', output_rotated.astype('uint8'))
                 # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
                 cv2.imwrite(output_file_name, output_rotated)
@@ -405,6 +414,8 @@ for i_avi in range(0,len(all_avi)) :
                 log.debug('output image written to disk')
 
                 #--------------------------------------------------------------------------
+                # OUTPUT PARTICLES
+                
                 # measure particles
                 particles, properties = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
                 log.info('found ' + str(len(particles)) + ' particles')
@@ -415,7 +426,7 @@ for i_avi in range(0,len(all_avi)) :
                 # write labels for csv file
                 if first_row:
                     properties_names = segment.extract_properties_names(properties[0], properties_labels)
-                    properties_names = ['md5','date_time'] + properties_names
+                    properties_names = ['dir','md5','date_time'] + properties_names
                     csv_writer.writerow(properties_names)
                     log.debug('initialised csv file with header')
                     first_row = False
@@ -425,7 +436,7 @@ for i_avi in range(0,len(all_avi)) :
                 for i in range(len(particles)):
 
                     # write image
-                    c_md5 = segment.write_particle_image(particles[i], output_dir_particles, log)
+                    c_md5 = segment.write_particle_image(particles[i], current_output_dir_particles, log)
 
                     # extract properties of current particle
                     c_props = properties[i]
@@ -435,13 +446,13 @@ for i_avi in range(0,len(all_avi)) :
                     
                     c_props = segment.extract_properties(c_props, properties_labels)
 
-                    csv_line = [c_md5, c_date_time] + c_props
-                    
+                    csv_line = [current_output_dir, c_md5, c_date_time] + c_props
+
                     complete_props = complete_props + [csv_line]
                 log.debug('extracted relevant properties and saved particles images to disk')
 
                 csv_writer.writerows(complete_props)
-                log.debug('increment csv file')
+                log.debug('written information in particles.csv file')
                 #--------------------------------------------------------------------------
 
         # increment frame counter
