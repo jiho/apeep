@@ -13,7 +13,7 @@ from skimage import morphology
 from img import view    # interactive image plot
 import timers as t      # simple timers for profiling
 
-def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
+def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4, return_mask=False):
     """
     Segment an image into particles
     
@@ -94,7 +94,22 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     # len(particles_properties)
     log.debug('segment: large particles selected' + t.e(s))
     
+    # compute mask for large particles
+    if return_mask :
+        # get labels of large particles
+        labels = [x.label for x in particles_properties]
+        n_particles = len(labels)
 
+        # prepare storage for the masks for each particle = n_particles repetitions of the image array
+        dims = imglabelled.shape
+        large_particle_masks = np.ndarray(shape=(dims[0], dims[1], n_particles), dtype=bool)
+
+        # compute the mask for each particle
+        for i in range(n_particles):
+            large_particle_masks[:,:,i] = (imglabelled == labels[i])
+        # compute the total mask (1=particle, 0=background)
+        large_particle_mask = np.sum(large_particle_masks, 2)
+    
     # for each particle:
     # - construct an image of the particle over blank space
     # - extract the measurements of interest
@@ -130,7 +145,10 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
     log.debug('segment: ' + str(len(particles)) + ' particles extracted' + t.e(s))
     
-    return (particles, particles_properties)
+    if return_mask:
+        return (particles, particles_properties, large_particle_mask)
+    else:
+        return (particles, particles_properties)
 #
 
 def extract_properties(properties, names) :

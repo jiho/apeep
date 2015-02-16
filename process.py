@@ -68,6 +68,7 @@ from skimage import exposure
 import segment
 import csv
 from img import view
+from img import make_mask_image
 
 # setup logging
 log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
@@ -417,11 +418,18 @@ for i_avi in range(0,len(all_avi)) :
                 # OUTPUT PARTICLES
                 
                 # measure particles
-                particles, properties = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
+                particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad, return_mask=True)
                 log.info('found ' + str(len(particles)) + ' particles')
                 # view(particles[0], interactive=False)
                 # print len(particles)
                 # print len(properties)
+                
+                output_mask_name = output_name + '_mask.png'
+                # TODO add end time or sampling freq?
+                output_mask_name = os.path.join(current_output_dir_image, output_mask_name)
+                # cv2.imshow('output', output_rotated.astype('uint8'))
+                # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
+                cv2.imwrite(output_mask_name, make_mask_image(particles_mask))
                 
                 # write labels for csv file
                 if first_row:
