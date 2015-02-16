@@ -27,6 +27,10 @@ top = 'right'
 scan_per_s = 28000
 lighten = 0.3
 debug = False
+threshold=150
+dilate=4
+min_area=300
+pad=4
 # csv_file = 'particles/particles.csv'
 properties_labels = ['label',
                      'area',
@@ -371,7 +375,7 @@ for i_avi in range(0,len(all_avi)) :
 
                 #--------------------------------------------------------------------------
                 # measure particles
-                particles, properties = segment.segment(output_rotated, log)
+                particles, properties = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
                 log.debug('extracted ' + str(len(particles)) + ' particles')
                 # view(particles[0], interactive=False)
                 # print len(particles)
