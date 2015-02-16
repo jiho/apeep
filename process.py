@@ -107,6 +107,12 @@ else:
             log.error('cannot create output directory')
             raise
     log.debug('output_dir created')
+# once this is OK, create a log file
+log_file = os.path.join(output_dir, 'process_log.txt')
+# TODO add current time to the name and switch to mode='w'
+file_log = logging.FileHandler(log_file)
+file_log.setFormatter(log_formatter)
+log.addHandler(file_log)
 
 output_dir_raw = os.path.join(output_dir, 'raw')
 try:
@@ -132,12 +138,6 @@ except Exception as e:
     raise e
 csv_writer = csv.writer(csv_handle)
 
-# once this is OK, create a log file
-log_file = os.path.join(output_dir, 'process_log.txt')
-# TODO add current time to the name and switch to mode='w'
-file_log = logging.FileHandler(log_file)
-file_log.setFormatter(log_formatter)
-log.addHandler(file_log)
 
 log.info('---START---')
 
