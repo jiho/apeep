@@ -16,10 +16,8 @@ b = begin
 
 def end(start, message=''):
     elapsed = time.time() - start
-    if message == '':
-        message = 'elapsed time'
-    print(message + ' : %f s' % elapsed)
-    pass
+    message = message + ' (%f s)' % elapsed
+    return message
 
 e = end
 
