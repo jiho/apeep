@@ -26,6 +26,7 @@ output_size = 10     # in nb of frames
 top = 'right'
 scan_per_s = 28000
 lighten = 0.3
+debug = False
 # csv_file = 'particles/particles.csv'
 properties_labels = ['label',
                      'area',
@@ -68,7 +69,11 @@ from img import view
 log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
 
 log = logging.getLogger('my_log')
-log.setLevel(logging.DEBUG)
+if debug :
+    log_level = logging.DEBUG
+else :
+    log_level = logging.INFO
+log.setLevel(log_level)
 
 # setup console log
 console_log = logging.StreamHandler()
