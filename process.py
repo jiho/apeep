@@ -68,7 +68,7 @@ from skimage import exposure
 import segment
 import csv
 from img import view
-from img import make_mask_image
+import timers as t
 
 # setup logging
 log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
@@ -352,7 +352,7 @@ for i_avi in range(0,len(all_avi)) :
                 log.debug('output directory created')
                 
                 # create directory for flat-fielded frame
-                current_output_dir_image = os.path.join(current_output_dir, 'image')
+                current_output_dir_image = os.path.join(output_dir, 'full')
                 try:
                     os.makedirs(current_output_dir_image)
                 except OSError as e:
@@ -360,6 +360,15 @@ for i_avi in range(0,len(all_avi)) :
                         log.error('cannot create output directory for full image')
                         raise
                 log.debug('output directory for full image created')
+
+                current_output_dir_mask = os.path.join(output_dir, 'mask')
+                try:
+                    os.makedirs(current_output_dir_mask)
+                except OSError as e:
+                    if e.errno != errno.EEXIST:
+                        log.error('cannot create output directory for mask image')
+                        raise
+                log.debug('output directory for mask image created')
 
                 # create directory for particles
                 current_output_dir_particles = os.path.join(current_output_dir, 'particles')
@@ -424,13 +433,25 @@ for i_avi in range(0,len(all_avi)) :
                 # print len(particles)
                 # print len(properties)
                 
-                output_mask_name = output_name + '_mask.png'
-                # TODO add end time or sampling freq?
-                output_mask_name = os.path.join(current_output_dir_image, output_mask_name)
-                # cv2.imshow('output', output_rotated.astype('uint8'))
-                # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
-                cv2.imwrite(output_mask_name, make_mask_image(particles_mask))
-                
+                # write full image with detected particles highlighted in red
+                s = t.b()
+                output_masked_name = output_name + '.png'
+                # output_masked_name = output_name + '_mask.png'
+                output_masked_name = os.path.join(current_output_dir_mask, output_masked_name)
+                # prepare a colour image (channels order = B G R (A))
+                dims = output_rotated.shape
+                output_masked = np.zeros((dims[0], dims[1], 3))
+                # make the mask a bit less "opaque"
+                mask = np.where(particles_mask == 0, 0.4, 1)
+                output_masked[:,:,0] = output_rotated * mask
+                output_masked[:,:,1] = output_rotated * mask
+                output_masked[:,:,2] = output_rotated
+                log.debug('output mask image created' + t.e(s))
+                # write the file
+                s = t.b()
+                cv2.imwrite(output_masked_name, output_masked)
+                log.debug('output mask image written to disk' + t.e(s))
+
                 # write labels for csv file
                 if first_row:
                     properties_names = segment.extract_properties_names(properties[0], properties_labels)
