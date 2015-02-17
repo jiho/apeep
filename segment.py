@@ -10,8 +10,8 @@ import cv2
 from skimage import measure
 from skimage import morphology
 
-from image_utils import view    # interactive image plot
-import timers as t      # simple timers for profiling
+import image_utils as iu   # image plot, mask creation, ...
+import timers as t         # timers for simple profiling
 
 def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, min_area=300, pad=4):
     """
@@ -64,7 +64,7 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         imgpadded = np.concatenate((vpad, imgpadded, vpad), 1)
     else :
         imgpadded = img
-    # view(imgpadded)
+    # iu.view(imgpadded)
     log.debug('segment: image padded' + t.e(s))
 
     # threshold image, make particles black
@@ -77,7 +77,7 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         log.error('Unknown threshold_method : ' + threshold_method)
     #           where(condition            , true value, false value)
     imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 
-    # view(imgthr)
+    # iu.view(imgthr)
     log.debug('segment: image thresholded' + t.e(s))
     
     # dilate particles, to consider what may be around the thresholded regions
@@ -86,14 +86,14 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         imgdilated = morphology.binary_erosion(imgthr, np.ones((dilate, dilate)))
     else :
         imgdilated = imgthr
-    # view(imgdilated)
+    # iu.view(imgdilated)
     log.debug('segment: image dilated' + t.e(s))
     
 
     # label (i.e. give a sequential number to) particles
     s = t.b()
     imglabelled = measure.label(imgdilated, background=1.)
-    # view(imglabelled)
+    # iu.view(imglabelled)
     log.debug('segment: image labelled' + t.e(s))
 
     # measure particles
@@ -130,7 +130,7 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
         # blank out the pixels outside the particle
         particle = np.where(particle_mask == x.label, particle, 255)
-        # view(particle, False)
+        # iu.view(particle, False)
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
 
         # put the mask in the full image mask

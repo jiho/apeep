@@ -57,21 +57,23 @@ properties_labels = ['label',
 
 ## Setup ------------------------------------------------------------------
 
-import numpy as np
 import logging
-import cv2
 import glob
 from datetime import datetime, timedelta
 import sys
 import os
-import time
+import csv
+
+import cv2
+import numpy as np
 from skimage import exposure
 from skimage.transform import rescale
+
 import segment
-import csv
-from image_utils import view
 import timers as t
 import os_utils as osu
+import image_utils as iu
+
 
 # setup logging
 log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
@@ -89,9 +91,8 @@ console_log.setFormatter(log_formatter)
 log.addHandler(console_log)
 # the log will also be saved to a log file in the output directory
 
-# check options
 
-# check that output directories exists and are writable
+# check that output directories exist and are writable
 # create them if needed
 osu.checkmakedirs(output_dir)
 if write_full_image :
@@ -109,6 +110,7 @@ file_log.setFormatter(log_formatter)
 log.addHandler(file_log)
 
 
+# check options
 log.info('---START---')
 
 # initiate csv file to store particles data
@@ -147,6 +149,7 @@ output_size = int(round(output_size))
 
 ## Configuration log ------------------------------------------------------
 
+log.info('CONFIGURATION:')
 log.info('input data : ' + input_dir)
 log.info('output data : ' + output_dir)
 log.info('moving window size (in px) : ' + str(window_size))
@@ -159,7 +162,10 @@ log.info('dilate: ' + str(dilate))
 log.info('min_area: ' + str(min_area))
 log.info('pad: ' + str(pad))
 
+
 ## Initialisation ---------------------------------------------------------
+
+log.info('INITIALISATION:')
 
 # list available avi files
 log.info('looking for avi files in : ' + input_dir)
@@ -384,7 +390,7 @@ for i_avi in range(0,len(all_avi)) :
                     # measure particles
                     particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
                     log.info('found ' + str(len(particles)) + ' particles')
-                    # view(particles[0], interactive=False)
+                    # iu.view(particles[0], interactive=False)
                     # print len(particles)
                     # print len(properties)
                 
