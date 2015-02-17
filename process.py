@@ -113,13 +113,14 @@ log.addHandler(file_log)
 # check options
 log.info('---START---')
 
-# initiate csv file to store particles data
-try:
-    csv_handle = open(os.path.join(output_dir, 'particles.csv'), 'wb')
-except Exception as e:
-    log.error('cannot initiate csv file for particles')
-    raise e
-csv_writer = csv.writer(csv_handle)
+if detect_particles :
+    # initiate csv file to store particles data
+    try:
+        csv_handle = open(os.path.join(output_dir, 'particles.csv'), 'wb')
+    except Exception as e:
+        log.error('cannot initiate csv file for particles')
+        raise e
+    csv_writer = csv.writer(csv_handle)
 
 # check input dir
 if not os.path.isdir(input_dir):
@@ -147,6 +148,9 @@ if not isinstance(output_size, (int, long, float)) :
 # it is a number of frames = integer
 output_size = int(round(output_size))
 
+# TODO check other inputs
+
+
 ## Configuration log ------------------------------------------------------
 
 log.info('CONFIGURATION:')
@@ -173,7 +177,7 @@ n_avi = len(all_avi)
 if n_avi == 0:
     log.error('no avi files to process in ' + input_dir)
     sys.exit()
-log.info('found ' + str(n_avi) + ' avi files in ' + input_dir)
+log.info('found ' + str(n_avi) + ' avi files in \'' + input_dir + '\'')
 
 
 # get frame dimensions from first file
@@ -199,20 +203,21 @@ while window_size > window.shape[0] :
         log.error('error reading frame from file ' + first_avi + ' to initialise moving window')
         sys.exit()
     window = np.vstack((window, next_frame))
-    
-# cut the appropriate part of the image to initialise the moving window
-window = window[range(0,window_size),]
-window = window.astype(np.int16)
 
 # close the video
 cap.release()
 
-
+# cut the appropriate part of the image to initialise the moving window
+window = window[range(0,window_size),]
+# convert it to int16 because that is what read later
+window = window.astype(np.int16)
 # initialise the column-wise mean
 m = np.mean(window, 0)
 
+
 # create a floating point version of window_size for computation
 window_size_f = float(window_size)
+
 
 # initialise output image
 # compute output_size in pixels
@@ -231,14 +236,9 @@ log.info('  moving average: ' + str(m.shape))
 log.info('  output image: ' + str(output.shape))
 
 
-## Loop over avi files ----------------------------------------------------
+# switch to detect when we are writing the first row of the csv files for particles
+first_row = True
 
-# index of lines of pixels in the
-i_w = 0     # moving window
-i_o = 0     # output buffer
-if debug :
-    line_counter = 1
-first_row = True    # switch to detect when we are writing the first row of the csv files for particles
 
 # compute time step for each frame or each scanned line
 line_step = 1. / scan_per_s
@@ -246,6 +246,15 @@ frame_step = line_step * img_height
 # convert to time spans
 line_step = timedelta(seconds=line_step)
 frame_step = timedelta(seconds=frame_step)
+
+
+## Loop over avi files ----------------------------------------------------
+
+log.info('MAIN LOOP:')
+
+# index of lines of pixels in the
+i_w = 0     # moving window
+i_o = 0     # output buffer
 
 # loop over files
 for i_avi in range(0,len(all_avi)) :
@@ -257,7 +266,7 @@ for i_avi in range(0,len(all_avi)) :
     cap = cv2.VideoCapture(avi_file)
 
     # parse the start time of the current avi file from its name
-    time_now = datetime.strptime(all_avi[i_avi], input_dir + '/%Y%m%d%H%M%S.%f.avi')
+    time_start_avi = datetime.strptime(all_avi[i_avi], input_dir + '/%Y%m%d%H%M%S.%f.avi')
 
     # TODO verify that the computed span is close to this
     # time_next = datetime.strptime(all_avi[i_avi+1], input_dir + '/%Y%m%d%H%M%S.%f.avi')
@@ -265,7 +274,7 @@ for i_avi in range(0,len(all_avi)) :
     # # file     : 1     2   ...
     # # frames   : 1 2 3 1 2 ...
     # # intervals:  1 2 3    ...
-    # frame_step = (time_next - time_now).total_seconds() / n_frames
+    # frame_step = (time_next - time_start_avi).total_seconds() / n_frames
     # line_step = frame_step / img_height
     # log.info('  time step for one frame is ' + \
     #            str(round(frame_step, ndigits=5)) + ' s')
@@ -275,27 +284,24 @@ for i_avi in range(0,len(all_avi)) :
     while True:
 
         # read a frame
-        log.debug('read frame ' + str(i_f))
+        s = t.b()
         img = iu.read_grey_frame(cap, log)
         if img is None :
             break
-        # log.debug('frame read')
+        log.debug('frame ' + str(i_f) + ' read' + t.e(s))
 
-        # convert to floating point (for mean, division, etc.)
+        # convert to 16-bit integers (for mean, division, etc.)
+        s = t.b()
         img = img.astype(np.int16)
-        # log.debug('frame converted')
-        # cv2.imshow('frame', img)
+        log.debug('frame converted' + t.e(s))
+        # iu.show('frame', img)
 
         # loop over scanned lines in that frame
         for i_l in range(0, img_height):
-            # if debug() :
-            #     log.debug('process line nb ' + str(line_counter))
-            #     print 'process line nb ' + str(line_counter)
-            #     line_counter += 1
 
             # get line scan of interest
             current_line = img[i_l,]
-
+            
             # update column-wise mean
             m = m + (current_line - window[i_w,]) / window_size_f
             # NB: considerably faster than recomputing the whole mean every time
@@ -307,113 +313,96 @@ for i_avi in range(0,len(all_avi)) :
             # compute flat field = divide by mean
             output[i_o,] = current_line / m
 
-            # shift the indexes of the moving window
+            # shift the index of the moving window
             i_w += 1
+            # when the window is full, loop over the window
             if i_w == window_size :
                 i_w = 0
                 # log.debug('loop over moving window')
 
             # and of the output buffer
             i_o += 1
+            
             # act on the image when it is complete
             if i_o == output_size :
                 i_o = 0
 
                 # compute time of the first scan of this image
-                time_end = time_now + (i_f * img_height + i_l) * line_step
-                time_start = time_end - line_step * output_size
-
+                time_end = time_start_avi + (i_f * img_height + i_l) * line_step
+                time_start_frame = time_end - line_step * output_size
                 # compute output name from time
-                output_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f')
+                output_name = datetime.strftime(time_start_frame, '%Y%m%d%H%M%S_%f')
                 log.info('output for ' + output_name)
-                
-                
-                output_dir_particles = os.path.join(output_dir, output_name)
-                osu.checkmakedirs(output_dir_particles)
-                log.debug('output directory for particles created')
-                #--------------------------------------------------------------------------
-                # OUTPUT IMAGE
-                
+
+                # Create image
+                #----------------------------------------------------------
                 # prepare the output image
                 # rescale to [0,1]
+                s = t.b()
                 output = output - output.min()
                 output = output / output.max()
-                # log.debug('output image rescaled')
+                log.debug('output image rescaled' + t.e(s))
 
                 # stretch contrast
-                # p1, p2 = np.percentile(output, (0.01, 99.99))
-                # output = exposure.rescale_intensity(output, in_range=(0, 230))
                 if lighten > 0.001 :
+                    s = t.b()
                     # NB: only lighten when necessary
                     output = exposure.rescale_intensity(output, in_range=(0., 1.-lighten))
-                # NB: stretches to [0,1]
-                # log.debug('output image contrasted')
-
+                    # NB: stretches to [0,1]
+                    log.debug('output image contrasted' + t.e(s))
+                    
                 # reconvert to 8-bit grey level
+                s = t.b()
                 output = (output * 255.0)
-                # log.debug('output image converted to 8-bit')
+                log.debug('output image converted to 8-bit' + t.e(s))
 
                 # rotate to account for the orientation
+                s = t.b()
                 if top == 'right' :
                     output_rotated = np.flipud(output.T)
                 elif top == 'left' :
                     output_rotated = np.fliplr(output.T)
                     # TODO check that this keeps the direction of motion from left to right in the final image
-                # log.debug('output image rotated')
+                log.debug('output image rotated' + t.e(s))
 
+                # Save full image
+                #----------------------------------------------------------
                 if write_full_image :
-                    # output the file
-                    output_file_name = output_name + '.png'
+                    s = t.b()
+                    output_file_name = os.path.join(output_dir_full, output_name + '.png')
                     # TODO add end time or sampling freq?
-                    output_file_name = os.path.join(output_dir_full, output_file_name)
-                    # cv2.imshow('output', output_rotated.astype('uint8'))
-                    # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
-                    cv2.imwrite(output_file_name, output_rotated)
-                    # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
-                    # NB: apparently, the conversion to int is not necessary for imwrite
-                    #     it is for imshow
-                    log.debug('output image written to disk')
 
-                #--------------------------------------------------------------------------
-                # OUTPUT PARTICLES
-                
+                    cv2.imwrite(output_file_name, output_rotated)
+                    # NB: apparently, the conversion to int is not necessary for imwrite
+                    # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
+                    log.debug('output image written to disk' + t.e(s))
+
+                # Extract particles
+                #----------------------------------------------------------
                 if detect_particles :
+                    # create output directory for particles
+                    output_dir_particles = os.path.join(output_dir, output_name)
+                    osu.checkmakedirs(output_dir_particles)
+                    log.debug('output directory for particles created')
+                    
                     # measure particles
                     particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
                     log.info('found ' + str(len(particles)) + ' particles')
-                    # iu.view(particles[0], interactive=False)
-                    # print len(particles)
-                    # print len(properties)
-                
-                    if write_mask_image :
-                        # write full image with detected particles highlighted in red
-                        output_masked_name = os.path.join(output_dir_mask, output_name + '.png')
 
-                        # resize the source images to make the masked image a bit smaller
-                        s = t.b()
-                        output_rotated_small = rescale(output_rotated / 255., scale=0.5) * 255
-                        particles_mask_small = rescale(particles_mask * 1.0, scale=0.5)
-                        log.debug('output mask images rescaled' + t.e(s))
-
-                        # create the masked image
-                        s = t.b()
-                        output_masked = iu.mask_image(output_rotated_small, particles_mask_small)
-                        log.debug('output masked image created' + t.e(s))
-
-                        # write the file
-                        s = t.b()
-                        cv2.imwrite(output_masked_name, output_masked)
-                        log.debug('output mask image written to disk' + t.e(s))
-
-                    # write labels for csv file
+                    # write column headers on the first line of the csv file
                     if first_row:
+                        # compute column names with repetition for multi-element properties
                         properties_names = segment.extract_properties_names(properties[0], properties_labels)
+                        # prepend other columns of interest
                         properties_names = ['dir','md5','date_time'] + properties_names
+                        # write the header
                         csv_writer.writerow(properties_names)
                         log.debug('initialised csv file with header')
+                        # turn the switch off!
                         first_row = False
                 
-                    # compute date and time of each particle
+                    # process each particle
+                    s = t.b()
                     complete_props = []
                     for i in range(len(particles)):
 
@@ -424,29 +413,64 @@ for i_avi in range(0,len(all_avi)) :
                         c_props = properties[i]
                     
                         # compute date time of capture of this particle
-                        c_date_time = time_start + int(round(c_props.centroid[1])) * line_step
+                        c_date_time = time_start_frame + int(round(c_props.centroid[1])) * line_step
                     
+                        # extract and flatten properties of interest
                         c_props = segment.extract_properties(c_props, properties_labels)
 
-                        csv_line = [output_dir_particles, c_md5, c_date_time] + c_props
+                        # create a new line in the array of properties of interest
+                        # NB: should match the headers written above
+                        c_line = [output_dir_particles, c_md5, c_date_time] + c_props
+                        # store it in the total list
+                        complete_props = complete_props + [c_line]
 
-                        complete_props = complete_props + [csv_line]
-                    log.debug('extracted relevant properties and saved particles images to disk')
+                    log.debug('particles properties and images processed' + t.e(s))
 
+                    # write properties in the csv file
+                    s = t.b()
                     csv_writer.writerows(complete_props)
-                    log.debug('written information in particles.csv file')
-                    #--------------------------------------------------------------------------
+                    # TODO check if we can reduce the number of decimal to reduce file size
+                    log.debug('particles properties written to csv file' + t.e(s))
+                    
+                    # Write particles mask image
+                    #------------------------------------------------------
+                    if write_mask_image :
 
+                        output_masked_name = os.path.join(output_dir_mask, output_name + '.png')
+
+                        # resize the source images to make the masked image a bit smaller
+                        s = t.b()
+                        output_rotated_small = rescale(output_rotated / 255., scale=0.5) * 255
+                        particles_mask_small = rescale(particles_mask * 1.0, scale=0.5)
+                        log.debug('output masked image rescaled' + t.e(s))
+
+                        # create the masked image
+                        s = t.b()
+                        output_masked = iu.mask_image(output_rotated_small, particles_mask_small)
+                        log.debug('output masked image created' + t.e(s))
+
+                        # write the file
+                        s = t.b()
+                        cv2.imwrite(output_masked_name, output_masked)
+                        log.debug('output masked image written to disk' + t.e(s))
+
+                    # end if write_mask_image
+
+                # end if detect_particles
+            
+            # end process output image
+
+        # end loop on frame lines
+        
         # increment frame counter
         i_f += 1
 
-    # finished reading the frames, close the avi file
-    cap.release()
-    log.debug('closed file ' + avi_file)
+    # end loop over avi file frames
 
+# end loop over avi files
 
 csv_handle.close()
-log.debug('closed particles csv file')
+log.debug('particles csv file closed')
 # TODO close and reopen the file for each frame to be safer?
 
 log.info('---END---')
