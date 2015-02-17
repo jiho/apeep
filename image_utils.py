@@ -18,7 +18,7 @@ def view(x, interactive=True):
     p.show()
     
     pass
-
+#
 
 def make_mask_image(x, intensity=150):
     """
@@ -43,29 +43,40 @@ def make_mask_image(x, intensity=150):
     img[:,:,3] = x - 255
     
     return img
+#
 
 def mask_image(image, mask):
     """
-    Make composite image from a source image and mask
+    Make composite image from a source image and its mask
     
     image : ndarray
         ndarray
     mask : ndarray
         'binary' ndarray; pixels = 1 show, pixels = 0 do not
+        
+    NB: 'image' and 'mask' must have the same dimensions. This is not
+        explicitly checked
+    
+    Returns
+    masked : 3 dimensional ndarray
+        colour image with channels BGR
     """
     import numpy as np
 
+    # create an empty composite image
     dims = image.shape
-
-    output = np.zeros((dims[0], dims[1], 3))
+    masked = np.zeros((dims[0], dims[1], 3))
 
     # make the mask a bit less "opaque"
     mask = np.where(mask == 0, 0.4, 1)
-    output[:,:,0] = image * mask
-    output[:,:,1] = image * mask
-    output[:,:,2] = image
     
-    return output
+    # fill the composite image, not masking pixels in the red channel
+    masked[:,:,0] = image * mask    # Blue
+    masked[:,:,1] = image * mask    # Green
+    masked[:,:,2] = image           # Red
+    
+    return masked
+#
 
 # TODO make a function: read next frame
     
