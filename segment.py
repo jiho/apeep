@@ -10,7 +10,7 @@ import cv2
 from skimage import measure
 from skimage import morphology
 
-from img import view    # interactive image plot
+from image_utils import view    # interactive image plot
 import timers as t      # simple timers for profiling
 
 def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, min_area=300, pad=4):

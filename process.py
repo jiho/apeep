@@ -69,7 +69,7 @@ from skimage import exposure
 from skimage.transform import rescale
 import segment
 import csv
-from img import view
+from image_utils import view
 import timers as t
 import os_utils as osu
 
