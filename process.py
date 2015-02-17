@@ -31,6 +31,9 @@ threshold=150
 dilate=4
 min_area=300
 pad=4
+write_full_image=False
+write_mask_image=True
+detect_particles=True
 # csv_file = 'particles/particles.csv'
 properties_labels = ['label',
                      'area',
@@ -413,83 +416,86 @@ for i_avi in range(0,len(all_avi)) :
                     # TODO check that this keeps the direction of motion from left to right in the final image
                 # log.debug('output image rotated')
 
-                # output the file
-                output_file_name = output_name + '.png'
-                # TODO add end time or sampling freq?
-                output_file_name = os.path.join(current_output_dir_image, output_file_name)
-                # cv2.imshow('output', output_rotated.astype('uint8'))
-                # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
-                cv2.imwrite(output_file_name, output_rotated)
-                # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
-                # NB: apparently, the conversion to int is not necessary for imwrite
-                #     it is for imshow
-                log.debug('output image written to disk')
+                if write_full_image :
+                    # output the file
+                    output_file_name = output_name + '.png'
+                    # TODO add end time or sampling freq?
+                    output_file_name = os.path.join(current_output_dir_image, output_file_name)
+                    # cv2.imshow('output', output_rotated.astype('uint8'))
+                    # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
+                    cv2.imwrite(output_file_name, output_rotated)
+                    # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
+                    # NB: apparently, the conversion to int is not necessary for imwrite
+                    #     it is for imshow
+                    log.debug('output image written to disk')
 
                 #--------------------------------------------------------------------------
                 # OUTPUT PARTICLES
                 
-                # measure particles
-                particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
-                log.info('found ' + str(len(particles)) + ' particles')
-                # view(particles[0], interactive=False)
-                # print len(particles)
-                # print len(properties)
+                if detect_particles :
+                    # measure particles
+                    particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
+                    log.info('found ' + str(len(particles)) + ' particles')
+                    # view(particles[0], interactive=False)
+                    # print len(particles)
+                    # print len(properties)
                 
-                # write full image with detected particles highlighted in red
-                s = t.b()
-                output_masked_name = output_name + '.png'
-                # output_masked_name = output_name + '_mask.png'
-                output_masked_name = os.path.join(current_output_dir_mask, output_masked_name)
-                # resize the image
-                s = t.b()
-                output_rotated_small = rescale(output_rotated / 255., scale=0.5)*255
-                particles_mask_small = rescale(particles_mask * 1.0, scale=0.5)
-                log.debug('output mask image rescaled' + t.e(s))
-                # prepare a colour image (channels order = B G R (A))
-                dims = output_rotated_small.shape
-                output_masked = np.zeros((dims[0], dims[1], 3))
-                # make the mask a bit less "opaque"
-                particles_mask_small = np.where(particles_mask_small == 0, 0.4, 1)
-                output_masked[:,:,0] = output_rotated_small * particles_mask_small
-                output_masked[:,:,1] = output_rotated_small * particles_mask_small
-                output_masked[:,:,2] = output_rotated_small
-                log.debug('output mask image created' + t.e(s))
-                # write the file
-                s = t.b()
-                cv2.imwrite(output_masked_name, output_masked)
-                log.debug('output mask image written to disk' + t.e(s))
+                    if write_mask_image :
+                        # write full image with detected particles highlighted in red
+                        s = t.b()
+                        output_masked_name = output_name + '.png'
+                        # output_masked_name = output_name + '_mask.png'
+                        output_masked_name = os.path.join(current_output_dir_mask, output_masked_name)
+                        # resize the image
+                        s = t.b()
+                        output_rotated_small = rescale(output_rotated / 255., scale=0.5)*255
+                        particles_mask_small = rescale(particles_mask * 1.0, scale=0.5)
+                        log.debug('output mask image rescaled' + t.e(s))
+                        # prepare a colour image (channels order = B G R (A))
+                        dims = output_rotated_small.shape
+                        output_masked = np.zeros((dims[0], dims[1], 3))
+                        # make the mask a bit less "opaque"
+                        particles_mask_small = np.where(particles_mask_small == 0, 0.4, 1)
+                        output_masked[:,:,0] = output_rotated_small * particles_mask_small
+                        output_masked[:,:,1] = output_rotated_small * particles_mask_small
+                        output_masked[:,:,2] = output_rotated_small
+                        log.debug('output mask image created' + t.e(s))
+                        # write the file
+                        s = t.b()
+                        cv2.imwrite(output_masked_name, output_masked)
+                        log.debug('output mask image written to disk' + t.e(s))
 
-                # write labels for csv file
-                if first_row:
-                    properties_names = segment.extract_properties_names(properties[0], properties_labels)
-                    properties_names = ['dir','md5','date_time'] + properties_names
-                    csv_writer.writerow(properties_names)
-                    log.debug('initialised csv file with header')
-                    first_row = False
+                    # write labels for csv file
+                    if first_row:
+                        properties_names = segment.extract_properties_names(properties[0], properties_labels)
+                        properties_names = ['dir','md5','date_time'] + properties_names
+                        csv_writer.writerow(properties_names)
+                        log.debug('initialised csv file with header')
+                        first_row = False
                 
-                # compute date and time of each particle
-                complete_props = []
-                for i in range(len(particles)):
+                    # compute date and time of each particle
+                    complete_props = []
+                    for i in range(len(particles)):
 
-                    # write image
-                    c_md5 = segment.write_particle_image(particles[i], current_output_dir_particles, log)
+                        # write image
+                        c_md5 = segment.write_particle_image(particles[i], current_output_dir_particles, log)
 
-                    # extract properties of current particle
-                    c_props = properties[i]
+                        # extract properties of current particle
+                        c_props = properties[i]
                     
-                    # compute date time of capture of this particle
-                    c_date_time = time_start + int(round(c_props.centroid[1])) * line_step
+                        # compute date time of capture of this particle
+                        c_date_time = time_start + int(round(c_props.centroid[1])) * line_step
                     
-                    c_props = segment.extract_properties(c_props, properties_labels)
+                        c_props = segment.extract_properties(c_props, properties_labels)
 
-                    csv_line = [current_output_dir, c_md5, c_date_time] + c_props
+                        csv_line = [current_output_dir, c_md5, c_date_time] + c_props
 
-                    complete_props = complete_props + [csv_line]
-                log.debug('extracted relevant properties and saved particles images to disk')
+                        complete_props = complete_props + [csv_line]
+                    log.debug('extracted relevant properties and saved particles images to disk')
 
-                csv_writer.writerows(complete_props)
-                log.debug('written information in particles.csv file')
-                #--------------------------------------------------------------------------
+                    csv_writer.writerows(complete_props)
+                    log.debug('written information in particles.csv file')
+                    #--------------------------------------------------------------------------
 
         # increment frame counter
         i_f += 1
