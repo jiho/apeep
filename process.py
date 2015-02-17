@@ -372,7 +372,8 @@ for i_avi in range(0,len(all_avi)) :
                 log.debug('output directory for mask image created')
 
                 # create directory for particles
-                current_output_dir_particles = os.path.join(current_output_dir, 'particles')
+                # current_output_dir_particles = os.path.join(current_output_dir, 'particles')
+                current_output_dir_particles = os.path.join(current_output_dir)
                 try:
                     os.makedirs(current_output_dir_particles)
                 except OSError as e:
