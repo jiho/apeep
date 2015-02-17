@@ -63,9 +63,7 @@ import cv2 as cv2
 import glob
 from datetime import datetime, timedelta
 import sys
-import tempfile
 import os
-import errno
 import time
 from skimage import exposure
 from skimage.transform import rescale
@@ -73,6 +71,7 @@ import segment
 import csv
 from img import view
 import timers as t
+import os_utils as osu
 
 # setup logging
 log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
@@ -93,30 +92,19 @@ def debug():
     """detect if log level is DEBUG"""
     return logging.getLogger().isEnabledFor(logging.DEBUG)
     # TODO find a better way to do this, like have a debug switch as command line arg
+# the log will also be saved to a log file in the output directory
 
 # check options
 
-# check that output directory exists and is writable
-if os.path.isdir(output_dir):
-    log.debug('output_dir exists')
-    # try writing in it
-    try:
-        ret, tmpname = tempfile.mkstemp(dir=output_dir)
-    except:
-        log.error('cannot write to output directory')
-        raise
-    log.debug('output_dir is writable')
-    os.remove(tmpname)
-else:
-    log.info('output directory : \'' + output_dir + '\' does not exist, creating it')
-    try:
-        os.makedirs(output_dir)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            log.error('cannot create output directory')
-            raise
-    log.debug('output_dir created')
-# TODO make this into a function, used for each directory creation
+# check that output directories exists and are writable
+# create them if needed
+osu.checkmakedirs(output_dir)
+if write_full_image :
+    output_dir_full = os.path.join(output_dir, 'full')
+    osu.checkmakedirs(output_dir_full)
+if write_mask_image :
+    output_dir_mask = os.path.join(output_dir, 'mask')
+    osu.checkmakedirs(output_dir_mask)
 
 # once this is OK, create a log file
 log_file = os.path.join(output_dir, 'process_log.txt')
@@ -346,46 +334,11 @@ for i_avi in range(0,len(all_avi)) :
                 # compute output name from time
                 output_name = datetime.strftime(time_start, '%Y%m%d%H%M%S_%f')
                 log.info('output for ' + output_name)
-                current_output_dir = os.path.join(output_dir, output_name)
-                try:
-                    os.makedirs(current_output_dir)
-                except OSError as e:
-                    if e.errno != errno.EEXIST:
-                        log.error('cannot create output directory')
-                        raise
-                log.debug('output directory created')
                 
-                # create directory for flat-fielded frame
-                current_output_dir_image = os.path.join(output_dir, 'full')
-                try:
-                    os.makedirs(current_output_dir_image)
-                except OSError as e:
-                    if e.errno != errno.EEXIST:
-                        log.error('cannot create output directory for full image')
-                        raise
-                log.debug('output directory for full image created')
-
-                current_output_dir_mask = os.path.join(output_dir, 'mask')
-                try:
-                    os.makedirs(current_output_dir_mask)
-                except OSError as e:
-                    if e.errno != errno.EEXIST:
-                        log.error('cannot create output directory for mask image')
-                        raise
-                log.debug('output directory for mask image created')
-
-                # create directory for particles
-                # current_output_dir_particles = os.path.join(current_output_dir, 'particles')
-                current_output_dir_particles = os.path.join(current_output_dir)
-                try:
-                    os.makedirs(current_output_dir_particles)
-                except OSError as e:
-                    if e.errno != errno.EEXIST:
-                        log.error('cannot create output directory for particles')
-                        raise
+                
+                output_dir_particles = os.path.join(output_dir, output_name)
+                osu.checkmakedirs(output_dir_particles)
                 log.debug('output directory for particles created')
-                
-
                 #--------------------------------------------------------------------------
                 # OUTPUT IMAGE
                 
@@ -420,7 +373,7 @@ for i_avi in range(0,len(all_avi)) :
                     # output the file
                     output_file_name = output_name + '.png'
                     # TODO add end time or sampling freq?
-                    output_file_name = os.path.join(current_output_dir_image, output_file_name)
+                    output_file_name = os.path.join(output_dir_full, output_file_name)
                     # cv2.imshow('output', output_rotated.astype('uint8'))
                     # cv2.imwrite(output_file_name, output_rotated.astype('uint8'))
                     cv2.imwrite(output_file_name, output_rotated)
@@ -442,10 +395,7 @@ for i_avi in range(0,len(all_avi)) :
                 
                     if write_mask_image :
                         # write full image with detected particles highlighted in red
-                        s = t.b()
-                        output_masked_name = output_name + '.png'
-                        # output_masked_name = output_name + '_mask.png'
-                        output_masked_name = os.path.join(current_output_dir_mask, output_masked_name)
+                        output_masked_name = os.path.join(output_dir_mask, output_name + '.png')
                         # resize the image
                         s = t.b()
                         output_rotated_small = rescale(output_rotated / 255., scale=0.5)*255
@@ -478,7 +428,7 @@ for i_avi in range(0,len(all_avi)) :
                     for i in range(len(particles)):
 
                         # write image
-                        c_md5 = segment.write_particle_image(particles[i], current_output_dir_particles, log)
+                        c_md5 = segment.write_particle_image(particles[i], output_dir_particles, log)
 
                         # extract properties of current particle
                         c_props = properties[i]
@@ -488,7 +438,7 @@ for i_avi in range(0,len(all_avi)) :
                     
                         c_props = segment.extract_properties(c_props, properties_labels)
 
-                        csv_line = [current_output_dir, c_md5, c_date_time] + c_props
+                        csv_line = [output_dir_particles, c_md5, c_date_time] + c_props
 
                         complete_props = complete_props + [csv_line]
                     log.debug('extracted relevant properties and saved particles images to disk')
