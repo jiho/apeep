@@ -168,44 +168,43 @@ log.info('pad: ' + str(pad))
 log.info('INITIALISATION:')
 
 # list available avi files
-log.info('looking for avi files in : ' + input_dir)
 all_avi = glob.glob(input_dir + '/*.avi')
-
 n_avi = len(all_avi)
-log.info('detected ' + str(n_avi) + ' avi files')
 if n_avi == 0:
     log.error('no avi files to process in ' + input_dir)
     sys.exit()
+log.info('found ' + str(n_avi) + ' avi files in ' + input_dir)
 
 
-# initialise moving window with first file
-cap = cv2.VideoCapture(all_avi[0])
+# get frame dimensions from first file
+first_avi = all_avi[0]
+cap = cv2.VideoCapture(first_avi)
 # read first frame
-return_code, init_img = cap.read()
-if not return_code:
-    log.error('error reading frame from file ' + all_avi[0] + ' to initialise moving window')
+first_frame = iu.read_grey_frame(cap, log)
+if first_frame is None:
+    log.error('error reading first frame from ' + first_avi)
     sys.exit()
-# convert it to grey scale (=keep only first channel)
-init_img = init_img[:,:,1]
-# TODO make that into a read frame function
+
 # extract dimensions
-dims = init_img.shape
+dims = first_frame.shape
 img_height = dims[0]
 img_width  = dims[1]
 log.info('frame dimensions height x width : ' + str(img_height) + ' x ' + str(img_width) )
 
-while window_size > init_img.shape[0] :
-    return_code, img = cap.read()
-    if not return_code:
-        log.error('error reading frame from file ' + all_avi[0] + ' to initialise moving window')
+# initialise moving window
+window = first_frame
+while window_size > window.shape[0] :
+    next_frame = iu.read_grey_frame(cap, log)
+    if next_frame is None:
+        log.error('error reading frame from file ' + first_avi + ' to initialise moving window')
         sys.exit()
-    img = img[:,:,1]
-    init_img = np.vstack((init_img, img))
+    window = np.vstack((window, next_frame))
     
 # cut the appropriate part of the image to initialise the moving window
-window = init_img[range(0,window_size),]
+window = window[range(0,window_size),]
 window = window.astype(np.int16)
 
+# close the video
 cap.release()
 
 
@@ -277,18 +276,10 @@ for i_avi in range(0,len(all_avi)) :
 
         # read a frame
         log.debug('read frame ' + str(i_f))
-        return_code, img = cap.read()
-        # log.debug('frame read')
-
-        # check the frame was read correctly
-        # if not exit the loop on this file to jump to the next
-        if not return_code :
-            log.info('termination of file ' + avi_file)
+        img = iu.read_grey_frame(cap, log)
+        if img is None :
             break
-
-        # convert to gray scale
-        img = img[:,:,1]
-        # log.debug('frame converted to grayscale')
+        # log.debug('frame read')
 
         # convert to floating point (for mean, division, etc.)
         img = img.astype(np.int16)
