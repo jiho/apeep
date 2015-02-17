@@ -13,7 +13,7 @@ from skimage import morphology
 from img import view    # interactive image plot
 import timers as t      # simple timers for profiling
 
-def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
+def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, min_area=300, pad=4):
     """
     Segment an image into particles
     
@@ -21,9 +21,13 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     ----------
     img : a 2D numpy.ndarray of dtype uint8
         an 8-bit grey scale image from which to extract particles
-    threshold : int (default 150)
-       a grey level (0-255); all pixels darker than threshold will be considered
-       as part of particles
+    threshold_method : string
+       either 'percentile' or 'fixed'
+    threshold : float (default 1.5)
+       if 'threshold_method' is 'percentile', the percentile of dark pixels
+       to select; 2 would select the 2% darkest pixels on the image
+       if 'threshold_method' is 'fixed' a grey level (0-255); all pixels darker
+       than threshold will be considered as part of particles
     dilate : int (default 4)
         after thresholding, particles are "grown" by 'dilate' pixels to include
         surrounding pixels which may be part of the organism but are not dark enough
@@ -65,6 +69,13 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
 
     # threshold image, make particles black
     s = t.b()
+    if threshold_method == 'percentile' :
+        threshold = np.percentile(img, threshold)
+    elif threshold_method == 'fixed' :
+        treshold = treshold
+    else :
+        log.error('Unknown threshold_method : ' + threshold_method)
+    print 'threshold : ' + str(threshold)
     #           where(condition            , true value, false value)
     imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 
     # view(imgthr)
