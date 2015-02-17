@@ -397,20 +397,18 @@ for i_avi in range(0,len(all_avi)) :
                     if write_mask_image :
                         # write full image with detected particles highlighted in red
                         output_masked_name = os.path.join(output_dir_mask, output_name + '.png')
-                        # resize the image
+
+                        # resize the source images to make the masked image a bit smaller
                         s = t.b()
-                        output_rotated_small = rescale(output_rotated / 255., scale=0.5)*255
+                        output_rotated_small = rescale(output_rotated / 255., scale=0.5) * 255
                         particles_mask_small = rescale(particles_mask * 1.0, scale=0.5)
-                        log.debug('output mask image rescaled' + t.e(s))
-                        # prepare a colour image (channels order = B G R (A))
-                        dims = output_rotated_small.shape
-                        output_masked = np.zeros((dims[0], dims[1], 3))
-                        # make the mask a bit less "opaque"
-                        particles_mask_small = np.where(particles_mask_small == 0, 0.4, 1)
-                        output_masked[:,:,0] = output_rotated_small * particles_mask_small
-                        output_masked[:,:,1] = output_rotated_small * particles_mask_small
-                        output_masked[:,:,2] = output_rotated_small
-                        log.debug('output mask image created' + t.e(s))
+                        log.debug('output mask images rescaled' + t.e(s))
+
+                        # create the masked image
+                        s = t.b()
+                        output_masked_small = iu.mask_image(output_rotated_small, particles_mask_small)
+                        log.debug('output masked image created' + t.e(s))
+
                         # write the file
                         s = t.b()
                         cv2.imwrite(output_masked_name, output_masked)
