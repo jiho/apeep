@@ -59,7 +59,7 @@ properties_labels = ['label',
 
 import numpy as np
 import logging
-import cv2 as cv2
+import cv2
 import glob
 from datetime import datetime, timedelta
 import sys
@@ -87,11 +87,6 @@ log.setLevel(log_level)
 console_log = logging.StreamHandler()
 console_log.setFormatter(log_formatter)
 log.addHandler(console_log)
-
-def debug():
-    """detect if log level is DEBUG"""
-    return logging.getLogger().isEnabledFor(logging.DEBUG)
-    # TODO find a better way to do this, like have a debug switch as command line arg
 # the log will also be saved to a log file in the output directory
 
 # check options
@@ -221,7 +216,7 @@ output_size = output_size * img_height
 output = np.zeros((output_size, img_width))
 
 # information messages
-if debug() :
+if debug :
     cv2.imwrite('window.png', window)
     cv2.imwrite('output.png', output)
 
@@ -236,7 +231,7 @@ log.info('  output image: ' + str(output.shape))
 # index of lines of pixels in the
 i_w = 0     # moving window
 i_o = 0     # output buffer
-if debug() :
+if debug :
     line_counter = 1
 first_row = True    # switch to detect when we are writing the first row of the csv files for particles
 
