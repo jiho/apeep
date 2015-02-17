@@ -120,9 +120,6 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
         # blank out the pixels outside the particle
         particle = np.where(particle_mask == x.label, particle, 255)
-        # put the mask in the total image mask
-        particles_mask[x_start:x_stop, y_start:y_stop] = np.where(particle_mask == x.label, 0, 1)
-        # TODO make sure we are not editing the actual image here
         # view(particle, False)
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
         
@@ -133,6 +130,10 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         # TODO check if that is necessary
         # view(particle, False)
         
+
+        # put the mask in the full image mask
+        particles_mask[x_start:x_stop, y_start:y_stop] = np.where(particle_mask == x.label, 0, particles_mask[x_start:x_stop, y_start:y_stop])
+
         particles = particles + [particle]
         # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
     
