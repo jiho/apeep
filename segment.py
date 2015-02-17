@@ -75,7 +75,6 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         treshold = treshold
     else :
         log.error('Unknown threshold_method : ' + threshold_method)
-    print 'threshold : ' + str(threshold)
     #           where(condition            , true value, false value)
     imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 
     # view(imgthr)
