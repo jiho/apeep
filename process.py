@@ -65,6 +65,7 @@ import os
 import errno
 import time
 from skimage import exposure
+from skimage.transform import rescale
 import segment
 import csv
 from img import view
@@ -438,14 +439,19 @@ for i_avi in range(0,len(all_avi)) :
                 output_masked_name = output_name + '.png'
                 # output_masked_name = output_name + '_mask.png'
                 output_masked_name = os.path.join(current_output_dir_mask, output_masked_name)
+                # resize the image
+                s = t.b()
+                output_rotated_small = rescale(output_rotated / 255., scale=0.5)*255
+                particles_mask_small = rescale(particles_mask * 1.0, scale=0.5)
+                log.debug('output mask image rescaled' + t.e(s))
                 # prepare a colour image (channels order = B G R (A))
-                dims = output_rotated.shape
+                dims = output_rotated_small.shape
                 output_masked = np.zeros((dims[0], dims[1], 3))
                 # make the mask a bit less "opaque"
-                mask = np.where(particles_mask == 0, 0.4, 1)
-                output_masked[:,:,0] = output_rotated * mask
-                output_masked[:,:,1] = output_rotated * mask
-                output_masked[:,:,2] = output_rotated
+                particles_mask_small = np.where(particles_mask_small == 0, 0.4, 1)
+                output_masked[:,:,0] = output_rotated_small * particles_mask_small
+                output_masked[:,:,1] = output_rotated_small * particles_mask_small
+                output_masked[:,:,2] = output_rotated_small
                 log.debug('output mask image created' + t.e(s))
                 # write the file
                 s = t.b()

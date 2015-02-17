@@ -107,7 +107,7 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     # prepare a mask over the whole image on which retained particles will be shown
     
     s = t.b()
-    particles_mask = np.ones_like(imglabelled)
+    particles_mask = np.ones_like(imglabelled, dtype=int)
     for x in particles_properties :
         
         # extract the particle (with padding)
