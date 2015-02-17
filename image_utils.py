@@ -20,29 +20,34 @@ def view(x, interactive=True):
     pass
 #
 
-def make_mask_image(x, intensity=150):
+def make_transparent_mask(mask, opacity=0.6):
     """
     Make a transparent red PNG image from a binary mask
     
-    x : ndarray
-        'binary' ndarray; pixels = 1 show, pixels = 0 do not
-    intensity : int
-        intensity of the mask. 255 makes it fully opaque
+    image : ndarray
+        'binary' ndarray; 1 = background, 0 = regions of interest
+    opacity : int in [0,1]
+        opacity of the mask. 1 makes it fully opaque
+        
+    Returns
+    alpha_mask : 4 dimensional ndarray
+        the mask with channels BGRA.
     """
     import numpy as np
 
-    dims = x.shape
-    
-    # prepare an image + alpha channel of the same size
-    img = np.ones((dims[0], dims[1], 4), dtype='uint8')
+    # prepare an image + alpha channel of the same size (0=B, 1=G, 2=R, 3=alpha)
+    dims = mask.shape    
+    alpha_mask = np.ones((dims[0], dims[1], 4), dtype='uint8')
     
     # crank up the red channel
-    img[:,:,2] = img[:,:,2] * 255
+    alpha_mask[:,:,2] = alpha_mask[:,:,2] * 255
     
+    # inverse the mask
+    mask = np.where(mask == 1, 0, 1)
     # transform the provided mask into the alpha channel of the image
-    img[:,:,3] = x - 255
+    alpha_mask[:,:,3] = mask * 255 * opacity
     
-    return img
+    return alpha_mask
 #
 
 def mask_image(image, mask):
@@ -52,7 +57,7 @@ def mask_image(image, mask):
     image : ndarray
         ndarray
     mask : ndarray
-        'binary' ndarray; pixels = 1 show, pixels = 0 do not
+        'binary' ndarray; 1 = background, 0 = regions of interest
         
     NB: 'image' and 'mask' must have the same dimensions. This is not
         explicitly checked
