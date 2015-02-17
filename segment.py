@@ -72,7 +72,10 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
     
     # dilate particles, to consider what may be around the thresholded regions
     s = t.b()
-    imgdilated = morphology.binary_erosion(imgthr, np.ones((dilate, dilate)))
+    if dilate >= 1 :
+        imgdilated = morphology.binary_erosion(imgthr, np.ones((dilate, dilate)))
+    else :
+        imgdilated = imgthr
     # view(imgdilated)
     log.debug('segment: image dilated' + t.e(s))
     
