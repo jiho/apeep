@@ -122,14 +122,6 @@ def segment(img, log, threshold=150, dilate=4, min_area=300, pad=4):
         particle = np.where(particle_mask == x.label, particle, 255)
         # view(particle, False)
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
-        
-        # s = t.b()
-        # make of a copy of the array in memory to be able to compute its md5 digest
-        # particle = np.copy(particle, order='C')
-        # print particle.shape
-        # TODO check if that is necessary
-        # view(particle, False)
-        
 
         # put the mask in the full image mask
         particles_mask[x_start:x_stop, y_start:y_stop] = np.where(particle_mask == x.label, 0, particles_mask[x_start:x_stop, y_start:y_stop])
@@ -270,54 +262,24 @@ def write_particle_image(particle, output_dir, log) :
 #     read images in a folder
 #     compute start time for each image
 #     segment_image on each image
+#
 
-# file_name = 'out/20130723215019_683964.png'
+# import logging
+# import cv2
+# import sys
+# from img import view    # interactive image plot
+#
+# log = logging.getLogger('my_log')
+# logging.basicConfig(
+#     level=logging.DEBUG,
+#     stream=sys.stdout,
+#     format='%(asctime)s : %(levelname)s : %(message)s',
+# )
+#
+# file_name = 'tests/concave_particle.png'
 # img = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
-# # im = imread('out/20130723215019_683964.png')
-# # view(img)
-#
-# particles, properties = segment(img)
-# print len(particles)
-# print len(properties)
-# # print len(properties[0])
-# # print(dir(properties))
-#
-# properties_labels = ['area',
-#                      'convex_area',
-#                      'filled_area',
-#                      'eccentricity',
-#                      'equivalent_diameter',
-#                      'euler_number',
-#                      'inertia_tensor_eigvals',
-#                      'major_axis_length',
-#                      'minor_axis_length',
-#                      'max_intensity',
-#                      'mean_intensity',
-#                      'min_intensity',
-#                      'moments_hu',
-#                      'weighted_moments_hu',
-#                      'perimeter',
-#                      'orientation',
-#                      'centroid']
-#
-# properties_names = extract_properties_names(properties[0], properties_labels)
-# print properties_names
-#
-# properties = [extract_properties(x, properties_labels) for x in properties]
-# print len(properties)
-# print len(properties[0])
-#
-#
-# md5 = [write_particle_image(x, 'particles') for x in particles]
-#
-# import csv
-# csv_file = 'particles/particles.csv'
-# csv_handle = open(csv_file, 'wb')
-# csv_writer = csv.writer(csv_handle)
-# csv_writer.writerow(properties_names)
-# csv_writer.writerows(properties)
-# csv_handle.close()
-#
-#
-#
-#
+# view(img)
+# particles, properties, mask = segment(img, log, min_area=10, dilate=0)
+# cv2.imwrite('mask.png', mask*255)
+# for particle in particles:
+#     write_particle_image(particle, 'out', log)
