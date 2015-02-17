@@ -406,7 +406,7 @@ for i_avi in range(0,len(all_avi)) :
 
                         # create the masked image
                         s = t.b()
-                        output_masked_small = iu.mask_image(output_rotated_small, particles_mask_small)
+                        output_masked = iu.mask_image(output_rotated_small, particles_mask_small)
                         log.debug('output masked image created' + t.e(s))
 
                         # write the file
