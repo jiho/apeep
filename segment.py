@@ -9,6 +9,7 @@ import cv2
 # from skimage.transform import resize
 from skimage import measure
 from skimage import morphology
+from skimage.transform import rescale
 
 import image_utils as iu   # image plot, mask creation, ...
 import timers as t         # timers for simple profiling
