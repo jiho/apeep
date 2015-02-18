@@ -76,6 +76,7 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         # TODO add bounds to the threshold to avoid being thrown off by large black stuff
     elif threshold_method == 'fixed' :
         treshold = treshold
+        # TODO check threshold is in [0,1]
     else :
         log.error('Unknown threshold_method : ' + threshold_method)
     log.debug('segment: threshold level computed at ' + str(threshold) + t.e(s))
