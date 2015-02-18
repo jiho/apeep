@@ -45,8 +45,7 @@ However, in Ubuntu 14.04 at least, Open CV crashes when reading videos. It needs
     
     # install additional functionality (for python bindings in particular)
     sudo apt-get install python-dev python-numpy libjpeg-dev libpng-dev libtiff-dev libtbb2 libtbb-dev \
-                         libjasper-dev libdc1394-22-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-                         nvidia-cuda-dev
+                         libjasper-dev libdc1394-22-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
     
     # get source code
     wget http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.10/opencv-2.4.10.zip
@@ -56,8 +55,6 @@ However, in Ubuntu 14.04 at least, Open CV crashes when reading videos. It needs
     # configure
     mkdir build
     cd build
-    sudo ln -sf /usr/lib/nvidia-331-updates/libnvcuvid.so /usr/lib/libnvcuvid.so
-    sudo ln -sf /usr/lib/nvidia-331-updates/libnvcuvid.so.1 /usr/lib/libnvcuvid.so.1
     cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_V4L=OFF \
           -D WITH_FFMPEG=OFF -D WITH_GSTREAMER=ON ..
 
