@@ -131,6 +131,7 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         x_stop  = x.bbox[2] + pad
         y_start = x.bbox[1] - pad
         y_stop  = x.bbox[3] + pad
+        # TODO use x._slice?
         particle = imgpadded[x_start:x_stop, y_start:y_stop]
         # and its mask
         particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
