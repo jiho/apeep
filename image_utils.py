@@ -111,9 +111,8 @@ def get_particle_area(x) :
     
     x : object of type RegionProperties
     """
-    from skimage import measure
     import numpy as np
 
-    return(measure._moments.moments((x._label_image[x._slice] == x.label).astype(np.double),1)[0,0])
+    return(np.sum(x._label_image[x._slice] == x.label))
 #
         
