@@ -414,7 +414,7 @@ for i_avi in range(0,len(all_avi)) :
                         # store it in the total list
                         complete_props = complete_props + [c_line]
 
-                    log.debug('particles properties and images processed' + t.e(s))
+                    log.debug('particles properties extracted and images saved' + t.e(s))
 
                     # write properties in the csv file
                     s = t.b()
