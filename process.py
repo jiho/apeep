@@ -21,20 +21,19 @@
 
 input_dir = 'in'
 output_dir = 'out'
-window_size = 1000   # in px
+window_size = 8000   # in px
 output_size = 10     # in nb of frames
 top = 'right'
 scan_per_s = 28000
-lighten = 0.3
-debug = False
-threshold=150
-dilate=4
-min_area=300
-pad=4
-write_full_image=False
-write_mask_image=True
-detect_particles=True
-# csv_file = 'particles/particles.csv'
+lighten = 0.2
+debug = True
+threshold = 1.4
+dilate = 5
+min_area = 300
+pad = 4
+write_full_image = False
+write_mask_image = True
+detect_particles = True
 properties_labels = ['label',
                      'area',
                      'convex_area',
