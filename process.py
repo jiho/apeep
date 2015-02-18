@@ -344,11 +344,6 @@ for i_avi in range(0,len(all_avi)) :
                             in_range=(output.min(), output.max() * (1 - lighten))
                          )
                 log.debug('output image equalised and contrasted' + t.e(s))
-                    
-                # reconvert to 8-bit grey level
-                s = t.b()
-                output = (output * 255.0)
-                log.debug('output image converted to 8-bit' + t.e(s))
 
                 # rotate to account for the orientation
                 s = t.b()
@@ -366,9 +361,9 @@ for i_avi in range(0,len(all_avi)) :
                     output_file_name = os.path.join(output_dir_full, output_name + '.png')
                     # TODO add end time or sampling freq?
 
-                    cv2.imwrite(output_file_name, output_rotated)
-                    # NB: apparently, the conversion to int is not necessary for imwrite
                     # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
+                    cv2.imwrite(output_file_name, output_rotated * 255.)
+                    # NB: apparently, the explicit conversion to uint8 is not necessary for imwrite
                     log.debug('output image written to disk' + t.e(s))
 
                 # Extract particles

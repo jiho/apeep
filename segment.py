@@ -19,14 +19,14 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     
     Parameters
     ----------
-    img : a 2D numpy.ndarray of dtype uint8
-        an 8-bit grey scale image from which to extract particles
+    img : a 2D numpy.ndarray of float
+        a grey scale image from which to extract particles; 0 = black, 1 = white
     threshold_method : string
        either 'percentile' or 'fixed'
     threshold : float (default 1.5)
        if 'threshold_method' is 'percentile', the percentile of dark pixels
        to select; 2 would select the 2% darkest pixels on the image
-       if 'threshold_method' is 'fixed' a grey level (0-255); all pixels darker
+       if 'threshold_method' is 'fixed' a grey level (0-1); all pixels darker
        than threshold will be considered as part of particles
     dilate : int (default 4)
         after thresholding, particles are "grown" by 'dilate' pixels to include
@@ -54,11 +54,9 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     dims = img.shape
     if (pad + dilate) > 0 :
         # horizontal array to pad top and bottom
-        hpad = np.ones((img_padding, dims[1])) * 255
-        hpad = hpad.astype('uint8')
+        hpad = np.ones((img_padding, dims[1]))
         # vertical array to pad left and right
-        vpad = np.ones((dims[0]+2*img_padding, img_padding)) * 255
-        vpad = vpad.astype('uint8')
+        vpad = np.ones((dims[0]+2*img_padding, img_padding))
         # pad original image
         imgpadded = np.concatenate((hpad, img, hpad))
         imgpadded = np.concatenate((vpad, imgpadded, vpad), 1)
@@ -89,7 +87,6 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     # iu.view(imgdilated)
     log.debug('segment: image dilated' + t.e(s))
     
-
     # label (i.e. give a sequential number to) particles
     s = t.b()
     imglabelled = measure.label(imgdilated, background=1.)
@@ -129,12 +126,12 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         # and its mask
         particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
         # blank out the pixels outside the particle
-        particle = np.where(particle_mask == x.label, particle, 255)
+        particle = np.where(particle_mask == x.label, particle, 1.)
         # iu.view(particle, False)
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
 
         # put the mask in the full image mask
-        particles_mask[x_start:x_stop, y_start:y_stop] = np.where(particle_mask == x.label, 0, particles_mask[x_start:x_stop, y_start:y_stop])
+        particles_mask[x_start:x_stop, y_start:y_stop] = np.where(particle_mask == x.label, 0., particles_mask[x_start:x_stop, y_start:y_stop])
 
         particles = particles + [particle]
         # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
@@ -233,8 +230,8 @@ def write_particle_image(particle, output_dir, log) :
     
     Parameters
     ----------
-    particles: numpy.ndarray of dtype uint8
-        particle images data
+    particles: numpy.ndarray of float
+        particle images data; 0 = black, 1 = white
     output_dir: string
         directory to write the file in. should exist. is not checked
     
@@ -250,7 +247,8 @@ def write_particle_image(particle, output_dir, log) :
     file_name = os.path.join(output_dir, md5 + '.png')
     
     # write image
-    ret = cv2.imwrite(file_name, particle)
+    # NB: convert to 8-bit integer for writing
+    ret = cv2.imwrite(file_name, particle * 255.)
     if not ret:
         log.warning('could not write particle image')
 
