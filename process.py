@@ -336,20 +336,14 @@ for i_avi in range(0,len(all_avi)) :
 
                 # Create image
                 #----------------------------------------------------------
-                # prepare the output image
-                # rescale to [0,1]
-                s = t.b()
-                output = output - output.min()
-                output = output / output.max()
-                log.debug('output image rescaled' + t.e(s))
 
-                # stretch contrast
-                if lighten > 0.001 :
-                    s = t.b()
-                    # NB: only lighten when necessary
-                    output = exposure.rescale_intensity(output, in_range=(0., 1.-lighten))
-                    # NB: stretches to [0,1]
-                    log.debug('output image contrasted' + t.e(s))
+                # prepare the output image
+                s = t.b()
+                output = exposure.rescale_intensity(
+                            output,
+                            in_range=(output.min(), output.max() * (1 - lighten))
+                         )
+                log.debug('output image equalised and contrasted' + t.e(s))
                     
                 # reconvert to 8-bit grey level
                 s = t.b()
