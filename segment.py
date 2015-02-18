@@ -108,12 +108,11 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     n_part = len(particles_properties)
     log.debug('segment: ' + str(n_part) + ' particles measured' + t.e(s))
 
-    # keep only large ones
-    s = t.b()
-    particles_properties = [x for x in particles_properties if x['area'] > min_area]
-    # TODO this is long, look into how to make it faster
-    n_part = len(particles_properties)
-    log.debug('segment: ' + str(n_part) + ' large particles selected' + t.e(s))
+    # keep only large particles
+    # use a generator because it is slightly faster
+    def filter_by_area(x):
+        for el in x:
+            if el.area > min_area: yield el
     
     # for each particle:
     # - construct an image of the particle over blank space
@@ -121,10 +120,10 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     particles = []
     
     # prepare a mask over the whole image on which retained particles will be shown
+    particles_mask = np.ones_like(imglabelled, dtype=int)
     
     s = t.b()
-    particles_mask = np.ones_like(imglabelled, dtype=int)
-    for x in particles_properties :
+    for x in filter_by_area(particles_properties) :
         
         # extract the particle (with padding)
         x_start = x.bbox[0] - pad
@@ -148,7 +147,7 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
     # remove padding from the mask
     particles_mask = particles_mask[img_padding:(img_padding+dims[0]),img_padding:(img_padding+dims[1])]
-    log.debug('segment: ' + str(n_part) + ' particles extracted' + t.e(s))
+    log.debug('segment: ' + str(len(particles)) + ' particles extracted' + t.e(s))
     
     return (particles, particles_properties, particles_mask)
 #
