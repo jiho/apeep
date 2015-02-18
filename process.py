@@ -375,8 +375,9 @@ for i_avi in range(0,len(all_avi)) :
                     log.debug('output directory for particles created')
                     
                     # measure particles
+                    s = t.b()
                     particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
-                    log.info('found ' + str(len(particles)) + ' particles')
+                    log.info(str(len(particles)) + ' particles segmented' + t.e(s))
 
                     # write column headers on the first line of the csv file
                     if first_row:
