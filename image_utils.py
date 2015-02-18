@@ -101,4 +101,19 @@ def read_grey_frame(video, log):
     
     return(img)
 #
+
+def get_particle_area(x) :
+    """
+    Fast way to get the area from an object of type RegionProperties
+    
+    Does not compute all the other properties.
+    "Reverse engineered" from the code in scikit-image/skimage/measure/_regionprops.py
+    
+    x : object of type RegionProperties
+    """
+    from skimage import measure
+    import numpy as np
+
+    return(measure._moments.moments((x._label_image[x._slice] == x.label).astype(np.double),1)[0,0])
+#
         
