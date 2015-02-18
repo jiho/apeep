@@ -429,7 +429,7 @@ for i_avi in range(0,len(all_avi)) :
 
                         # resize the source images to make the masked image a bit smaller
                         s = t.b()
-                        output_rotated_small = rescale(output_rotated / 255., scale=0.5) * 255
+                        output_rotated_small = rescale(output_rotated, scale=0.5) * 255.
                         particles_mask_small = rescale(particles_mask * 1.0, scale=0.5)
                         log.debug('output masked image rescaled' + t.e(s))
 
