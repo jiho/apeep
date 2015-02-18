@@ -113,7 +113,7 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     # use a generator because it is slightly faster
     def filter_by_area(x):
         for el in x:
-            if el.area > min_area: yield el
+            if iu.get_particle_area(el) > min_area: yield el
     
     # for each particle:
     # - construct an image of the particle over blank space
