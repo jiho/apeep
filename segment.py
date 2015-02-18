@@ -66,13 +66,21 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     log.debug('segment: image padded' + t.e(s))
 
     # threshold image, make particles black
+    # find threshold level
     s = t.b()
     if threshold_method == 'percentile' :
-        threshold = np.percentile(img, threshold)
+        # rescale image to a smaller size to compute percentiles faster
+        img_small = rescale(img, 0.2)
+        threshold = np.percentile(img_small, threshold)
+        # NB: a scale factor of 0.2 seems to be a good compromise between enhanced speed and representativity of the original image
+        # TODO add bounds to the threshold to avoid being thrown off by large black stuff
     elif threshold_method == 'fixed' :
         treshold = treshold
     else :
         log.error('Unknown threshold_method : ' + threshold_method)
+    log.debug('segment: threshold level computed at ' + str(threshold) + t.e(s))
+    # actually threshold the image
+    s = t.b()
     #           where(condition            , true value, false value)
     imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 
     # iu.view(imgthr)
