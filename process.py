@@ -361,7 +361,6 @@ for i_avi in range(0,len(all_avi)) :
                     output_file_name = os.path.join(output_dir_full, output_name + '.png')
                     # TODO add end time or sampling freq?
 
-                    # TODO try to optimise writing of the image which takes ~1.3s for a 10 frames image
                     cv2.imwrite(output_file_name, output_rotated * 255.)
                     # NB: apparently, the explicit conversion to uint8 is not necessary for imwrite
                     log.debug('output image written to disk' + t.e(s))
