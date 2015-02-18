@@ -463,8 +463,9 @@ for i_avi in range(0,len(all_avi)) :
 
 # end loop over avi files
 
-csv_handle.close()
-log.debug('particles csv file closed')
-# TODO close and reopen the file for each frame to be safer?
+if detect_particles :
+    csv_handle.close()
+    log.debug('particles csv file closed')
+    # TODO close and reopen the file for each frame to be safer?
 
 log.info('---END---')
