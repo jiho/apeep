@@ -88,3 +88,8 @@ all this should work, with no warning.
 At this point, the only documentation is reading the code itself. The variable names in `process.py` should be self-explanatory though.
 
 
+## Credits
+
+ISIIS is developed by [Robert K Cowen](http://ceoas.oregonstate.edu/profile/cowen/) ([Rosenstiel School of Marine and Atmospheric Sciences](http://www.rsmas.miami.edu/) RSMAS, University of Miami and [Hatfield Marine Science Center](http://hmsc.oregonstate.edu), Oregon State University) and [Cédric Guigand](http://yyy.rsmas.miami.edu/groups/larval-fish/cedric.html) ([RSMAS](http://www.rsmas.miami.edu)) in partnership with [BellaMare](http://www.bellamare-us.com).
+
+`apeep` is coded by [Jean-Olivier Irisson](http://www.obs-vlfr.fr/~irisson/) ([Laboratoire d'Océanographie de Villefranche](http://lov.obs-vlfr.fr) LOV) and released under the [GNU General Public License v3](http://www.gnu.org/copyleft/gpl.html).
