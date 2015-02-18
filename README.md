@@ -3,7 +3,7 @@
 
 `apeep` is a set of tools to process images produced by the In Situ Ichthyoplankton Imaging System ([ISIIS](http://yyy.rsmas.miami.edu/groups/larval-fish/isiis.html)).
 
-It is mostly written in Python (a snake), is meant to deal is data form ISIIS (almost Isis, the Egyptian deity) so it is called `apeep`, almost [Apep](http://en.wikipedia.org/wiki/Apep), an Egyptian deity which takes the form of a giant snake! (Yes, finding the name took longer than coding the thing...)
+It is mostly written in Python (a snake), is meant to deal is data form ISIIS (almost [Isis](http://en.wikipedia.org/wiki/Isis), the Egyptian deity) so it is called `apeep`, almost [Apep](http://en.wikipedia.org/wiki/Apep), an Egyptian deity which takes the form of a giant snake! (Yes, finding the name took longer than coding the thing...)
 
 
 # Installation
