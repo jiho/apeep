@@ -23,22 +23,8 @@ def envir(img, imglabelled):
     return(prop)
 #
 
-# create a function that does some stuff with the particles
-def get_particle(x, img, imglabelled) :
-    x_start = x.bbox[0]
-    x_stop  = x.bbox[2]
-    y_start = x.bbox[1]
-    y_stop  = x.bbox[3]
-    particle = img[x_start:x_stop, y_start:y_stop]
-    # and its mask
-    particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
-    # blank out the pixels outside the particle
-    particle = np.where(particle_mask == x.label, particle, 1.)
-    return(particle)
-#
-
 # select a criterion to filter particles by
-min_area = 300    
+min_area = 300
 
 
 ## List comprehension -----------------------------------------------------
@@ -46,35 +32,26 @@ min_area = 300
 prop = envir(img, imglabelled)
 s = t.b()
 prop_s = [x for x in prop if x['area'] > min_area]
-parts = []
 for c_prop in prop_s:
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'list comp + [] :', t.e(s)
-len(parts)
 
 prop = envir(img, imglabelled)
 s = t.b()
 prop_s = [x for x in prop if x.area > min_area]
-parts = []
 for c_prop in prop_s:
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'list comp + .:', t.e(s)
-len(parts)
 
 prop = envir(img, imglabelled)
 s = t.b()
 prop_s = [x for x in prop if iu.get_particle_area(x) > min_area]
-parts = []
 for c_prop in prop_s:
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'list comp + direct access:', t.e(s)
-len(parts)
 
 
 ## Filter -----------------------------------------------------------------
@@ -82,13 +59,10 @@ prop = envir(img, imglabelled)
 
 s = t.b()
 prop_s = filter(lambda x: x.area > min_area, prop)
-parts = []
 for c_prop in prop_s:
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'filter + lambda:', t.e(s)
-len(parts)
 
 
 prop = envir(img, imglabelled)
@@ -98,13 +72,10 @@ def my_filter(x, crit=min_area):
 
 s = t.b()
 prop_s = filter(my_filter, prop)
-parts = []
 for c_prop in prop_s:
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'filter + predefined function:', t.e(s)
-len(parts)
 
 prop = envir(img, imglabelled)
 
@@ -113,13 +84,10 @@ def my_filter(x, crit=min_area):
 
 s = t.b()
 prop_s = filter(my_filter, prop)
-parts = []
 for c_prop in prop_s:
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'filter + direct access:', t.e(s)
-len(parts)
 
 
 ## Generator --------------------------------------------------------------
@@ -131,13 +99,10 @@ def filter_by_area(x, crit):
         if el['area'] > crit: yield el
 
 s = t.b()
-parts = []
 for c_prop in filter_by_area(prop, crit=min_area):
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'generator + []:', t.e(s)
-len(parts)
 
 
 prop = envir(img, imglabelled)
@@ -147,13 +112,10 @@ def filter_by_area(x, crit):
         if el.area > crit: yield el
 
 s = t.b()
-parts = []
 for c_prop in filter_by_area(prop, crit=min_area):
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'generator + . :', t.e(s)
-len(parts)
 
 
 prop = envir(img, imglabelled)
@@ -163,12 +125,9 @@ def filter_by_area(x, crit):
         if iu.get_particle_area(el) > crit: yield el
 
 s = t.b()
-parts = []
 for c_prop in filter_by_area(prop, crit=min_area):
-    part = get_particle(c_prop, img, imglabelled)
-    parts = parts + [part]
+    a = 1 + 1
 
 print 'generator + direct access :', t.e(s)
-len(parts)
 
 
