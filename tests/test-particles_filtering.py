@@ -12,8 +12,8 @@ import timers as t
 import image_utils as iu
 
 # set and extract particles from a sample image
-img = cv2.imread('../20130726233552_560756.png')[:,:,1]
-imgthr = np.where(img < 100, 0. , 1. ) 
+img = cv2.imread('../out/full/20130726232035_235964.png')[:,:,1]
+imgthr = np.where(img < 240, 0. , 1. )
 imglabelled = measure.label(imgthr, background=1.)
 
 # measure properties (in a function to be able to repeat it and get a fresh properties variable for each test)
