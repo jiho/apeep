@@ -19,39 +19,89 @@
 
 ## Options ----------------------------------------------------------------
 
-input_dir = 'in'
-output_dir = 'out'
-window_size = 8000   # in px
-output_size = 10     # in nb of frames
+# I/O settings
+input_dir = '/media/visufront/6B/cross-current-4' # NB: should not have trailing slash
+output_dir = '../apeep_unstacked/cross-current-4/'
+
+# Wether to print debug messages
+debug = False
+
+# Characteristics of the original images
+# orientation of the top of the picture
+# valid values are 'right' and 'left'
 top = 'right'
+# number of lines scanned per second
 scan_per_s = 28000
-lighten = 0.2
-debug = True
-threshold = 1.4
-dilate = 5
-min_area = 300
-pad = 4
+
+# Moving average window size (in px) for flat-fielding
+# larger values avoid white streaks after dark objects but are longer to compute and less reactive
+# probably needs to be > 2000
+window_size = 8000   # in px
+
+# Output settings
+# size of the output frame (in nb of original frames)
+# this is the size of the image which gets processed and possibly written on disk
+# larger values avoid clipping objects between frames and are probably more CPU efficient (but more memory consuming)
+output_size = 10
+# write the output image on disk
 write_full_image = False
+# write the output image with red particle mask on disk
 write_mask_image = True
+
+# Output image processing
+# amount of light pixels to clip to white
+# in [0,1]; 0 changes nothing, 1 makes everything white
+lighten = 0.2
+# how to determine the threshold level for dark pixels to be considered as particles
+# valid values are 'dynamic', 'fixed'
+threshold_method = 'dynamic'
+# Threshold
+# when threshold_method is dynamic:
+# percentage of dark pixels to consider as particles
+# in [0, 100]; 0 considers nothing, 100 considers all pixels
+# when threshold_method is fixed:
+# actual maximum grey level of pixels to consider as particles
+# in [0, 1]; 0 is black, 1 is white
+threshold = 0.7
+
+# Particles processing
+# wether to detect particles
 detect_particles = True
+# number of pixel to grow thresholded particles by (in px)
+# sane values are 0 to 15
+dilate = 5
+# minimum area of particles to me measured and written out (in px)
+# sane values are ~50 to a few hundred
+min_area = 500
+# padding around the particle in the output image (in px)
+# sane values are 0 to ~10
+pad = 4
+# properties of particles to store in the particles.csv file
+# see http://scikit-image.org/docs/dev/api/skimage.measure.html#regionprops
 properties_labels = ['label',
                      'area',
-                     'convex_area',
-                     'filled_area',
-                     'eccentricity',
-                     'equivalent_diameter',
-                     'euler_number',
-                     'inertia_tensor_eigvals',
-                     'major_axis_length',
-                     'minor_axis_length',
-                     'max_intensity',
-                     'mean_intensity',
-                     'min_intensity',
-                     'moments_hu',
-                     'weighted_moments_hu',
-                     'perimeter',
                      'orientation',
                      'centroid']
+# properties_labels = ['label',
+#                      'area',
+#                      'convex_area',
+#                      'filled_area',
+#                      'eccentricity',
+#                      'equivalent_diameter',
+#                      'euler_number',
+#                      'inertia_tensor_eigvals',
+#                      'major_axis_length',
+#                      'minor_axis_length',
+#                      'max_intensity',
+#                      'mean_intensity',
+#                      'min_intensity',
+#                      'moments_hu',
+#                      'weighted_moments_hu',
+#                      'perimeter',
+#                      'orientation',
+#                      'centroid']
+# TODO move that into an options file which gets imported
+
 
 
 ## Setup ------------------------------------------------------------------
@@ -333,8 +383,31 @@ for i_avi in range(0,len(all_avi)) :
                 output_name = datetime.strftime(time_start_frame, '%Y%m%d%H%M%S_%f')
                 log.info('output for ' + output_name)
 
-                # Create image
+                # Process image
                 #----------------------------------------------------------
+
+                # describe distribution of grey levels though percentiles to:
+                # - stretch the histogram and lighten the image a bit
+                # - compute a dynamic threshold to detect particles
+
+                # rescale image to a smaller size to compute percentiles faster
+                output_small = rescale(output, 0.2)
+                
+                threshold = np.percentile(output_small, [threshold, 100 - lighten)
+                # NB: a scale factor of 0.2 seems to be a good compromise between enhanced speed and representativity of the original image
+
+
+
+                s = t.b()
+                if threshold_is_dynamic :
+                    # TODO add bounds to the threshold to avoid being thrown off by large black stuff
+                elif threshold_method == 'fixed' :
+                    treshold = treshold
+                    # TODO check threshold is in [0,1]
+                else :
+                    log.error('Unknown threshold_method : ' + threshold_method)
+                log.debug('segment: threshold level computed at ' + str(threshold) + t.e(s))
+                # actually threshold the image
 
                 # prepare the output image
                 s = t.b()
