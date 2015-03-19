@@ -106,13 +106,13 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     # - regionprops ignores values <= 0, so it ignores the first particle
     # iu.view(imglabelled)
     log.debug('segment: image labelled' + t.e(s))
-
+    
     # measure particles
     s = t.b()
     particles_properties = measure.regionprops(label_image=imglabelled, intensity_image=imgpadded)
     n_part = len(particles_properties)
     log.debug('segment: ' + str(n_part) + ' particles measured' + t.e(s))
-
+    
     # keep only large particles
     s = t.b()
     particles_properties = [x for x in particles_properties if iu.get_particle_area(x) > min_area]
@@ -143,13 +143,13 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
         particle = np.where(particle_mask == x.label, particle, 1.)
         # iu.view(particle, False)
         # log.debug('segment: particle ' + str(x.label) + ': background masked')
-
+        
         # put the mask in the full image mask
         particles_mask[x_start:x_stop, y_start:y_stop] = np.where(particle_mask == x.label, 0., particles_mask[x_start:x_stop, y_start:y_stop])
-
+        
         particles = particles + [particle]
         # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
-    
+        
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
     # remove padding from the mask
     particles_mask = particles_mask[img_padding:(img_padding+dims[0]),img_padding:(img_padding+dims[1])]
