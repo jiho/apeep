@@ -7,7 +7,7 @@ def checkmakedirs(path) :
         intermediate directories will be created if needed
     """
     import os
-    import tempfile
+    from tempfile import mkstemp
     import errno
 
     # try to create the directory(ies)
@@ -20,7 +20,7 @@ def checkmakedirs(path) :
     
     # try writing to the directory
     try:
-        f_descriptor, f_name = tempfile.mkstemp(dir=path)
+        f_descriptor, f_name = mkstemp(dir=path)
     except:
         raise
     os.close(f_descriptor)
