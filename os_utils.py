@@ -20,9 +20,10 @@ def checkmakedirs(path) :
     
     # try writing to the directory
     try:
-        ret, tmpname = tempfile.mkstemp(dir=path)
+        f_descriptor, f_name = tempfile.mkstemp(dir=path)
     except:
         raise
-    os.remove(tmpname)
+    os.close(f_descriptor)
+    os.remove(f_name)
 
     pass
