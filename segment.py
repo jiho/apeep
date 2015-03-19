@@ -110,10 +110,10 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     log.debug('segment: ' + str(n_part) + ' particles measured' + t.e(s))
 
     # keep only large particles
-    # use a generator because it is slightly faster
-    def filter_by_area(x):
-        for el in x:
-            if iu.get_particle_area(el) > min_area: yield el
+    s = t.b()
+    particles_properties = [x for x in particles_properties if iu.get_particle_area(x) > min_area]
+    n_part = len(particles_properties)
+    log.debug('segment: ' + str(n_part) + ' large particles selected' + t.e(s))
     
     # for each particle:
     # - construct an image of the particle over blank space
@@ -124,7 +124,7 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     particles_mask = np.ones_like(imglabelled, dtype=int)
     
     s = t.b()
-    for x in filter_by_area(particles_properties) :
+    for x in particles_properties :
         
         # extract the particle (with padding)
         x_start = x.bbox[0] - pad
