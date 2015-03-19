@@ -99,7 +99,11 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     
     # label (i.e. give a sequential number to) particles
     s = t.b()
-    imglabelled = measure.label(imgdilated, background=1.)
+    imglabelled = measure.label(imgdilated, background=1.) + 1
+    # TODO remove the +1 here with skimage 0.12
+    # added 1 here because
+    # - background is labelled -1 and particles are labelled starting at 0
+    # - regionprops ignores values <= 0, so it ignores the first particle
     # iu.view(imglabelled)
     log.debug('segment: image labelled' + t.e(s))
 
