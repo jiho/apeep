@@ -14,7 +14,7 @@ from skimage.transform import rescale
 import image_utils as iu   # image plot, mask creation, ...
 import timers as t         # timers for simple profiling
 
-def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, min_area=300, pad=4):
+def segment(img, log, threshold=0.1, dilate=3, min_area=300, pad=4):
     """
     Segment an image into particles
     
@@ -22,13 +22,9 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     ----------
     img : a 2D numpy.ndarray of float
         a grey scale image from which to extract particles; 0 = black, 1 = white
-    threshold_method : string
-       either 'percentile' or 'fixed'
-    threshold : float (default 1.5)
-       if 'threshold_method' is 'percentile', the percentile of dark pixels
-       to select; 2 would select the 2% darkest pixels on the image
-       if 'threshold_method' is 'fixed' a grey level (0-1); all pixels darker
-       than threshold will be considered as part of particles
+    threshold : float (default 0.1)
+        a grey level (0-1); all pixels darker than threshold will be considered
+        as part of particles
     dilate : int (default 4)
         after thresholding, particles are "grown" by 'dilate' pixels to include
         surrounding pixels which may be part of the organism but are not dark enough
@@ -67,21 +63,6 @@ def segment(img, log, threshold_method='percentile', threshold=1.5, dilate=3, mi
     log.debug('segment: image padded' + t.e(s))
 
     # threshold image, make particles black
-    # find threshold level
-    s = t.b()
-    if threshold_method == 'percentile' :
-        # rescale image to a smaller size to compute percentiles faster
-        img_small = rescale(img, 0.2)
-        threshold = np.percentile(img_small, threshold)
-        # NB: a scale factor of 0.2 seems to be a good compromise between enhanced speed and representativity of the original image
-        # TODO add bounds to the threshold to avoid being thrown off by large black stuff
-    elif threshold_method == 'fixed' :
-        treshold = treshold
-        # TODO check threshold is in [0,1]
-    else :
-        log.error('Unknown threshold_method : ' + threshold_method)
-    log.debug('segment: threshold level computed at ' + str(threshold) + t.e(s))
-    # actually threshold the image
     s = t.b()
     #           where(condition            , true value, false value)
     imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 

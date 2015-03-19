@@ -43,30 +43,30 @@ window_size = 8000   # in px
 # this is the size of the image which gets processed and possibly written on disk
 # larger values avoid clipping objects between frames and are probably more CPU efficient (but more memory consuming)
 output_size = 10
-# write the output image on disk
-write_full_image = False
-# write the output image with red particle mask on disk
-write_mask_image = True
+# whether to write the flat-fielded output image on disk
+write_ff_image = False
+# whether to write the processed output image on disk (lightened after flat fielding)
+write_processed_image = False
 
 # Output image processing
-# amount of light pixels to clip to white
-# in [0,1]; 0 changes nothing, 1 makes everything white
-lighten = 0.2
-# how to determine the threshold level for dark pixels to be considered as particles
-# valid values are 'dynamic', 'fixed'
-threshold_method = 'dynamic'
+# percentage of light grey pixels to clip to white
+# in [0,100]; 0 changes nothing, 100 makes everything white
+# most of the image is almost white so values around 75 are common
+light_threshold = 85
 # Threshold
-# when threshold_method is dynamic:
-# percentage of dark pixels to consider as particles
+# for dynamic threshold : percentage of dark grey pixels to clip to black and consider as particles
+# for static threshold  : grey value below which dark grey pixels are clipped to black and considered as particles
 # in [0, 100]; 0 considers nothing, 100 considers all pixels
-# when threshold_method is fixed:
-# actual maximum grey level of pixels to consider as particles
-# in [0, 1]; 0 is black, 1 is white
-threshold = 0.7
+dark_threshold = 1.3
+# method to determine the threshold level for dark pixels to be considered as particles
+# valid values are 'dynamic', 'static'
+dark_threshold_method = 'dynamic'
 
 # Particles processing
-# wether to detect particles
+# whether to detect particles
 detect_particles = True
+# whether to write the output image with a read mask over detected particles
+write_mask_image = True
 # number of pixel to grow thresholded particles by (in px)
 # sane values are 0 to 15
 dilate = 5
@@ -144,12 +144,9 @@ log.addHandler(console_log)
 # check that output directories exist and are writable
 # create them if needed
 osu.checkmakedirs(output_dir)
-if write_full_image :
+if write_ff_image | write_processed_image | write_mask_image :
     output_dir_full = os.path.join(output_dir, 'full')
     osu.checkmakedirs(output_dir_full)
-if write_mask_image :
-    output_dir_mask = os.path.join(output_dir, 'mask')
-    osu.checkmakedirs(output_dir_mask)
 
 # once this is OK, create a log file
 log_file = os.path.join(output_dir, 'process_log.txt')
@@ -181,9 +178,9 @@ if not top in ('right', 'left') :
     log.error('incorrect \'top\' argument, should be right or left')
     sys.exit()
 
-# check lighten argument
-if ( lighten < 0. ) or ( lighten > 1. ) :
-    log.error('lighten should be in [0,1] (0, no change; 1 clip to white)')
+# check light_threshold argument
+if ( light_threshold < 0. ) or ( light_threshold > 100. ) :
+    log.error('light_threshold should be in [0,100] (0, no change; 100, clip to white)')
     sys.exit()
 
 # check image sizes
@@ -209,8 +206,8 @@ log.info('moving window size (in px) : ' + str(window_size))
 log.info('output image size (in number of frames): ' + str(output_size))
 log.info('top of image: ' + top)
 log.info('scanning rate: ' + str(scan_per_s))
-log.info('lighten: ' + str(lighten))
-log.info('threshold: ' + str(threshold))
+log.info('light_threshold: ' + str(light_threshold))
+log.info('dark_threshold: ' + str(dark_threshold))
 log.info('dilate: ' + str(dilate))
 log.info('min_area: ' + str(min_area))
 log.info('pad: ' + str(pad))
@@ -383,60 +380,73 @@ for i_avi in range(0,len(all_avi)) :
                 output_name = datetime.strftime(time_start_frame, '%Y%m%d%H%M%S_%f')
                 log.info('output for ' + output_name)
 
+                # Prepare (and store) flat-fielded image
+                #----------------------------------------------------------
+
+                # rotate to account for the orientation
+                s = t.b()
+                if top == 'right' :
+                    output_img = np.flipud(output.T)
+                elif top == 'left' :
+                    output_img = np.fliplr(output.T)
+                    # TODO check that this keeps the direction of motion from left to right in the final image
+                log.debug('output image rotated' + t.e(s))
+
+                if write_ff_image :
+                    s = t.b()
+                    output_file_name = os.path.join(output_dir_full, output_name + '_ff.png')
+                    # TODO add end time or sampling freq?
+
+                    cv2.imwrite(output_file_name, output_img * 255.)
+                    # NB: apparently, the explicit conversion to uint8 is not necessary for imwrite
+                    log.debug('output image written to disk' + t.e(s))
+
+
                 # Process image
                 #----------------------------------------------------------
 
                 # describe distribution of grey levels though percentiles to:
                 # - stretch the histogram and lighten the image a bit
-                # - compute a dynamic threshold to detect particles
-
-                # rescale image to a smaller size to compute percentiles faster
-                output_small = rescale(output, 0.2)
+                # - adapt the threshold to detect particles dynamically
+                s = t.b()
                 
-                threshold = np.percentile(output_small, [threshold, 100 - lighten)
+                # rescale image to a smaller size to compute percentiles faster
+                output_img_small = rescale(output_img, 0.2)
                 # NB: a scale factor of 0.2 seems to be a good compromise between enhanced speed and representativity of the original image
-
-
-
-                s = t.b()
-                if threshold_is_dynamic :
+                
+                # compute the percentiles
+                #                                        darkest, particle limit,         lighten limit, lightest
+                grey_limits = np.percentile(output_img_small, (0, dark_threshold, 100 - light_threshold, 100))
+                log.debug('output image grey levels measured' + t.e(s))
+                
+                if dark_threshold_method == 'dynamic' :
+                    # use the percentiles
+                    particles_threshold = grey_limits[1]
                     # TODO add bounds to the threshold to avoid being thrown off by large black stuff
-                elif threshold_method == 'fixed' :
-                    treshold = treshold
-                    # TODO check threshold is in [0,1]
+                    log.debug('dynamic dark threshold level : ' + str(particles_threshold))
+                elif threshold_method == 'static' :
+                    # disregard the percentile and use the number directly, rescaled to [0,1]
+                    particles_threshold = dark_threshold / 100
+                    # TODO check particles_threshold is in [0,1]
                 else :
-                    log.error('Unknown threshold_method : ' + threshold_method)
-                log.debug('segment: threshold level computed at ' + str(threshold) + t.e(s))
-                # actually threshold the image
-
-                # prepare the output image
-                s = t.b()
-                output = exposure.rescale_intensity(
-                            output,
-                            in_range=(output.min(), output.max() * (1 - lighten))
-                         )
-                log.debug('output image equalised and contrasted' + t.e(s))
-
-                # rotate to account for the orientation
-                s = t.b()
-                if top == 'right' :
-                    output_rotated = np.flipud(output.T)
-                elif top == 'left' :
-                    output_rotated = np.fliplr(output.T)
-                    # TODO check that this keeps the direction of motion from left to right in the final image
-                log.debug('output image rotated' + t.e(s))
-
-                # Save full image
-                #----------------------------------------------------------
-                if write_full_image :
+                    log.error('Unknown threshold method : ' + dark_threshold_method)
+                
+                # lighten the output image
+                if grey_limits[2] < 1. :
                     s = t.b()
-                    output_file_name = os.path.join(output_dir_full, output_name + '.png')
+                    output_img = exposure.rescale_intensity(output_img, in_range=(0, grey_limits[2]))
+                    log.debug('output image equalised and contrasted' + t.e(s))
+                
+                # write the processed image
+                if write_processed_image :
+                    s = t.b()
+                    output_file_name = os.path.join(output_dir_full, output_name + '_processed.png')
                     # TODO add end time or sampling freq?
-
-                    cv2.imwrite(output_file_name, output_rotated * 255.)
+                    
+                    cv2.imwrite(output_file_name, output_img * 255.)
                     # NB: apparently, the explicit conversion to uint8 is not necessary for imwrite
                     log.debug('output image written to disk' + t.e(s))
-
+                
                 # Extract particles
                 #----------------------------------------------------------
                 if detect_particles :
@@ -447,9 +457,9 @@ for i_avi in range(0,len(all_avi)) :
                     
                     # measure particles
                     s = t.b()
-                    particles, properties, particles_mask = segment.segment(img=output_rotated, log=log, threshold=threshold, dilate=dilate, min_area=min_area, pad=pad)
+                    particles, properties, particles_mask = segment.segment(img=output_img, log=log, threshold=particles_threshold, dilate=dilate, min_area=min_area, pad=pad)
                     log.info(str(len(particles)) + ' particles segmented' + t.e(s))
-
+                    
                     # write column headers on the first line of the csv file
                     if first_row:
                         # compute column names with repetition for multi-element properties
@@ -461,7 +471,7 @@ for i_avi in range(0,len(all_avi)) :
                         log.debug('initialised csv file with header')
                         # turn the switch off!
                         first_row = False
-                
+                    
                     # process each particle
                     s = t.b()
                     complete_props = []
@@ -497,22 +507,22 @@ for i_avi in range(0,len(all_avi)) :
                     #------------------------------------------------------
                     if write_mask_image :
 
-                        output_masked_name = os.path.join(output_dir_mask, output_name + '.png')
+                        output_file_name = os.path.join(output_dir_full, output_name + '_mask.png')
 
                         # resize the source images to make the masked image a bit smaller
                         s = t.b()
-                        output_rotated_small = rescale(output_rotated, scale=0.5) * 255.
+                        output_img_small = rescale(output_img, scale=0.5) * 255.
                         particles_mask_small = rescale(particles_mask * 1.0, scale=0.5)
                         log.debug('output masked image rescaled' + t.e(s))
 
                         # create the masked image
                         s = t.b()
-                        output_masked = iu.mask_image(output_rotated_small, particles_mask_small)
+                        output_masked = iu.mask_image(output_img_small, particles_mask_small)
                         log.debug('output masked image created' + t.e(s))
 
                         # write the file
                         s = t.b()
-                        cv2.imwrite(output_masked_name, output_masked)
+                        cv2.imwrite(output_file_name, output_masked)
                         log.debug('output masked image written to disk' + t.e(s))
 
                     # end if write_mask_image
