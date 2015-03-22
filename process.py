@@ -377,7 +377,7 @@ for i_avi in range(0,len(all_avi)) :
                 time_end = time_start_avi + (i_f * img_height + i_l) * line_step
                 time_start_frame = time_end - line_step * output_size
                 # compute output name from time
-                output_name = datetime.strftime(time_start_frame, '%Y%m%d%H%M%S_%f')
+                output_name = datetime.strftime(time_start_frame, '%Y-%m-%d_%H-%M-%S_%f')
                 log.info('output for ' + output_name)
 
                 # Prepare (and store) flat-fielded image
