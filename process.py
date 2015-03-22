@@ -219,6 +219,8 @@ log.info('INITIALISATION:')
 
 # list available avi files
 all_avi = glob.glob(input_dir + '/*.avi')
+# sort them in alphanumeric order (glob.glob() does not)
+all_avi.sort()
 n_avi = len(all_avi)
 if n_avi == 0:
     log.error('no avi files to process in ' + input_dir)
