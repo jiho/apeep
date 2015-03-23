@@ -266,11 +266,13 @@ def write_particle_image(particle, output_dir, log) :
 #     compute start time for each image
 #     segment_image on each image
 #
-
 # import logging
 # import cv2
 # import sys
-# from img import view    # interactive image plot
+# import image_utils as iu
+# from skimage.transform import rescale
+# import numpy as np
+# import timers as t
 #
 # log = logging.getLogger('my_log')
 # logging.basicConfig(
@@ -279,10 +281,28 @@ def write_particle_image(particle, output_dir, log) :
 #     format='%(asctime)s : %(levelname)s : %(message)s',
 # )
 #
-# file_name = 'tests/concave_particle.png'
-# img = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
-# view(img)
-# particles, properties, mask = segment(img, log, min_area=10, dilate=0)
-# cv2.imwrite('mask.png', mask*255)
-# for particle in particles:
-#     write_particle_image(particle, 'out', log)
+# images = ['20130726232035_235964', '20130726233552_560756', '20130726235329_709996']
+#
+# for scale in [0.05, 0.1, 0.15, 0.2, 0.3] :
+#     for percentile in [1, 2] :
+#         print ''
+#         print 'scale: ', scale, ' percentile: ', percentile
+#         for i in images :
+#             file_name = i + '.png'
+#             img = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+#             # img.shape
+#             # img.dtype
+#             img = img / 255.
+#             # img.dtype
+#
+#             s = t.b()
+#             thresholdf = np.percentile(img, percentile)
+#             # print 'full  :', threshold, t.e(s)
+#
+#             s = t.b()
+#             img_small = rescale(img, scale, mode='constant')
+#             thresholds = np.percentile(img_small, percentile)
+#             # print 'small :', threshold, t.e(s)
+#             print 'diff full - rescaled : ', thresholdf - thresholds
+#
+# print 'finished'
