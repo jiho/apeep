@@ -311,6 +311,8 @@ for i_avi in range(0,len(all_avi)) :
 
     # open avi file
     log.info('open file ' + avi_file)
+    # progress report
+    log.info(str(round(float(i_avi) / n_avi * 100, 1)) + '% complete')
     cap = cv2.VideoCapture(avi_file)
 
     # parse the start time of the current avi file from its name
