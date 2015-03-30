@@ -426,7 +426,11 @@ for i_avi in range(0,len(all_avi)) :
                 if dark_threshold_method == 'dynamic' :
                     # use the percentiles
                     particles_threshold = grey_limits[1]
-                    # TODO add bounds to the threshold to avoid being thrown off by large black stuff
+                    # add min bound to avoid being thrown off by large black stuff
+                    # NB: typical thresholds on non noisy frames for ~1.5% percentile are ~ 0.85
+                    #     on noisy frames they come down to ~0.7
+                    #     so 0.6 is really is fallback, a safe bet
+                    particles_threshold = max(particles_threshold, 0.6)
                     log.debug('dynamic dark threshold level : ' + str(particles_threshold))
                 elif threshold_method == 'static' :
                     # disregard the percentile and use the number directly, rescaled to [0,1]
