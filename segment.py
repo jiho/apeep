@@ -42,17 +42,19 @@ def segment(img, log, threshold=0.1, dilate=3, min_area=300):
         the original image with only particles of interest displayed
     """
 
-    # threshold image, make particles black
+    # threshold image
     s = t.b()
-    #           where(condition      , true value, false value)
-    imgthr = np.where(img < threshold, 0.        , 1.         )
+    imgthr = img < threshold
+    # pixels darker than threshold are True, others are False
+    # True is plotted white
     # iu.view(imgthr)
     log.debug('segment: image thresholded' + t.e(s))
-    
+
     # dilate particles, to consider what may be around the thresholded regions
     s = t.b()
     if dilate >= 1 :
-        imgdilated = morphology.binary_erosion(imgthr, np.ones((dilate, dilate)))
+        imgdilated = morphology.binary_dilation(imgthr, np.ones((dilate, dilate)))
+        # makes "True" regions larger = dilate particles
     else :
         imgdilated = imgthr
     # iu.view(imgdilated)
@@ -60,7 +62,8 @@ def segment(img, log, threshold=0.1, dilate=3, min_area=300):
     
     # label (i.e. give a sequential number to) particles
     s = t.b()
-    imglabelled = measure.label(imgdilated, background=1.) + 1
+    imglabelled = measure.label(imgdilated, background=False, connectivity=2) + 1
+    # particles are True, background is False
     # TODO remove the +1 here with skimage 0.12
     # added 1 here because
     # - background is labelled -1 and particles are labelled starting at 0
