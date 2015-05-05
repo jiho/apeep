@@ -416,7 +416,7 @@ for i_avi in range(0,len(all_avi)) :
 
                         # create a new line in the array of properties of interest
                         # NB: should match the headers written above
-                        c_line = [output_dir_particles, c_md5, c_date_time] + c_props
+                        c_line = [output_name, c_md5, c_date_time] + c_props
                         # store it in the total list
                         complete_props = complete_props + [c_line]
 
