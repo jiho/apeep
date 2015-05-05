@@ -127,7 +127,6 @@ log.info('light_threshold: ' + str(light_threshold))
 log.info('dark_threshold: ' + str(dark_threshold))
 log.info('dilate: ' + str(dilate))
 log.info('min_area: ' + str(min_area))
-log.info('pad: ' + str(pad))
 
 
 ## Initialisation ---------------------------------------------------------
@@ -382,7 +381,7 @@ for i_avi in range(0,len(all_avi)) :
                     
                     # measure particles
                     s = t.b()
-                    particles, properties, particles_mask = segment.segment(img=output_img, log=log, threshold=particles_threshold, dilate=dilate, min_area=min_area, pad=pad)
+                    particles, properties, particles_mask = segment.segment(img=output_img, log=log, threshold=particles_threshold, dilate=dilate, min_area=min_area)
                     log.info(str(len(particles)) + ' particles segmented' + t.e(s))
                     
                     # write column headers on the first line of the csv file

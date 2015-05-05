@@ -14,7 +14,7 @@ from skimage.transform import rescale
 import image_utils as iu   # image plot, mask creation, ...
 import timers as t         # timers for simple profiling
 
-def segment(img, log, threshold=0.1, dilate=3, min_area=300, pad=4):
+def segment(img, log, threshold=0.1, dilate=3, min_area=300):
     """
     Segment an image into particles
     
@@ -31,8 +31,6 @@ def segment(img, log, threshold=0.1, dilate=3, min_area=300, pad=4):
     min_area : int (default 300)
         particles of area less than 'min_area' (after dilation), in pixels, are
         discarded
-    pad : int (default 4)
-        padding to add around the particle image, in pixels
     
     Returns
     -------
@@ -44,28 +42,10 @@ def segment(img, log, threshold=0.1, dilate=3, min_area=300, pad=4):
         the original image with only particles of interest displayed
     """
 
-    # add padding outside the original image with white to make sure we can extract particles on the border
-    # NB: padding should take in account, the amount of padding in the particles images AND the amount of dilation of particles (because a black dot on the border would be dilated)
-    s = t.b()
-    img_padding = pad + dilate
-    dims = img.shape
-    if (pad + dilate) > 0 :
-        # horizontal array to pad top and bottom
-        hpad = np.ones((img_padding, dims[1]))
-        # vertical array to pad left and right
-        vpad = np.ones((dims[0]+2*img_padding, img_padding))
-        # pad original image
-        imgpadded = np.concatenate((hpad, img, hpad))
-        imgpadded = np.concatenate((vpad, imgpadded, vpad), 1)
-    else :
-        imgpadded = img
-    # iu.view(imgpadded)
-    log.debug('segment: image padded' + t.e(s))
-
     # threshold image, make particles black
     s = t.b()
-    #           where(condition            , true value, false value)
-    imgthr = np.where(imgpadded < threshold, 0.        , 1.         ) 
+    #           where(condition      , true value, false value)
+    imgthr = np.where(img < threshold, 0.        , 1.         )
     # iu.view(imgthr)
     log.debug('segment: image thresholded' + t.e(s))
     
@@ -90,7 +70,7 @@ def segment(img, log, threshold=0.1, dilate=3, min_area=300, pad=4):
     
     # measure particles
     s = t.b()
-    particles_properties = measure.regionprops(label_image=imglabelled, intensity_image=imgpadded)
+    particles_properties = measure.regionprops(label_image=imglabelled, intensity_image=img)
     n_part = len(particles_properties)
     log.debug('segment: ' + str(n_part) + ' particles measured' + t.e(s))
     
@@ -110,30 +90,20 @@ def segment(img, log, threshold=0.1, dilate=3, min_area=300, pad=4):
     
     s = t.b()
     for x in particles_properties :
-        
-        # extract the particle (with padding)
-        x_start = x.bbox[0] - pad
-        x_stop  = x.bbox[2] + pad
-        y_start = x.bbox[1] - pad
-        y_stop  = x.bbox[3] + pad
-        # TODO use x._slice?
-        particle = imgpadded[x_start:x_stop, y_start:y_stop]
+        # extract the particle
+        particle = img[x._slice]
+        # iu.view(particle, False)
         # and its mask
-        particle_mask = imglabelled[x_start:x_stop, y_start:y_stop]
+        particle_mask = imglabelled[x._slice]
         # blank out the pixels outside the particle
         particle = np.where(particle_mask == x.label, particle, 1.)
         # iu.view(particle, False)
-        # log.debug('segment: particle ' + str(x.label) + ': background masked')
-        
-        # put the mask in the full image mask
-        particles_mask[x_start:x_stop, y_start:y_stop] = np.where(particle_mask == x.label, 0., particles_mask[x_start:x_stop, y_start:y_stop])
-        
         particles = particles + [particle]
-        # log.debug('segment: particle ' + str(x.label) + ': particle extracted')
+        
+        # put the mask in the full image mask (to be able to display it and check segmentation)
+        particles_mask[x._slice] = np.where(particle_mask == x.label, 0., particles_mask[x._slice])
         
         # TODO cf x.orientation for rotation and aligning images with skimage.rotate
-    # remove padding from the mask
-    particles_mask = particles_mask[img_padding:(img_padding+dims[0]),img_padding:(img_padding+dims[1])]
     log.debug('segment: ' + str(len(particles)) + ' particles extracted' + t.e(s))
     
     return (particles, particles_properties, particles_mask)

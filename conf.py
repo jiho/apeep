@@ -52,9 +52,6 @@ dilate = 5
 # minimum area of particles to me measured and written out (in px)
 # sane values are ~50 to a few hundred
 min_area = 500
-# padding around the particle in the output image (in px)
-# sane values are 0 to ~10
-pad = 4
 # properties of particles to store in the particles.csv file
 # see http://scikit-image.org/docs/dev/api/skimage.measure.html#regionprops
 properties_labels = ['label',
