@@ -461,6 +461,7 @@ for i_avi in range(0,len(all_avi)) :
         i_f += 1
 
     # end loop over avi file frames
+    cap.release()
 
 # end loop over avi files
 

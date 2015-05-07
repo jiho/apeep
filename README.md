@@ -19,7 +19,7 @@ Tested with Python 2.7, not with Python >= 3 because opencv bindings are hard to
     pip install matplotlib
 
 
-### Open CV
+### OpenCV
 
 #### OS X
 
