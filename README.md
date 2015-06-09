@@ -37,26 +37,49 @@ Package managers have prebuilt python bindings. In Debian/Ubuntu:
 
     sudo apt-get install python-opencv
 
-However, in Ubuntu 14.04 at least, Open CV crashes when reading videos. It needs to be compiled from source with ffmpeg switched off and replaced by gstreamer
+However, in Ubuntu 14.04 at least, opencv crashes when reading ISIIS videos (because they have no codec the ffmpeg backend of opencv does not handle that; http://code.opencv.org/issues/1915). Using backends other than ffmpeg has other unsuitable consequences (http://code.opencv.org/issues/4253). The best solution is to patch opencv and recompile it.
 
-    # install building tools
+    # install build tools and libraries
     sudo apt-get install build-essential
     sudo apt-get install cmake libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
     
     # install additional functionality (for python bindings in particular)
     sudo apt-get install python-dev python-numpy libjpeg-dev libpng-dev libtiff-dev libtbb2 libtbb-dev \
-                         libjasper-dev libdc1394-22-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+                         libjasper-dev libdc1394-22-dev
     
     # get source code
-    wget http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.10/opencv-2.4.10.zip
-    unzip opencv-2.4.10.zip
-    cd opencv-2.4.10
+    wget http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.11/opencv-2.4.11.zip
+    unzip opencv-2.4.11.zip
+    cd opencv-2.4.11
+    
+    # patch file modules/highgui/src/cap_ffmpeg_impl.hpp
+    # the changes are:
+    # @@ -640,6 +662,4 @@
+    #          return false;
+    # 
+    # -    av_free_packet (&packet);
+    # -
+    #      picture_pts = AV_NOPTS_VALUE_;
+    # 
+    # @@ -647,4 +667,6 @@
+    #      while (!valid)
+    #      {
+    # +        av_free_packet (&packet);
+    # +
+    #          int ret = av_read_frame(ic, &packet);
+    #          if (ret == AVERROR(EAGAIN)) continue;
+    # @@ -689,6 +711,4 @@
+    #                  break;
+    #          }
+    # -
+    # -        av_free_packet (&packet);
+    #      }
 
     # configure
     mkdir build
     cd build
-    cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_V4L=OFF \
-          -D WITH_FFMPEG=OFF -D WITH_GSTREAMER=ON ..
+    cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local \
+          -D WITH_FFMPEG=ON -D WITH_GSTREAMER=OFF ..
 
     # build (on 6 cores) and install
     make -j 6
