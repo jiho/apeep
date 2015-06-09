@@ -104,7 +104,7 @@ all this should work, with no warning.
 
 ## Usage
 
-[Download](https://github.com/jiho/apeep/archive/master.zip) the code, unzip it, edit `process.py` to fit your configuration. At least the `input_dir` and `output_dir` variables need to be changed. Then run with
+[Download](https://github.com/jiho/apeep/archive/master.zip) the code, unzip it, edit `conf.py` to fit your configuration. At least the `input_dir` and `output_dir` variables need to be changed. Then run with
 
     ./process.py
 
