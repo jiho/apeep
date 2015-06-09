@@ -14,9 +14,9 @@ Tested with Python 2.7, not with Python >= 3 because opencv bindings are hard to
 
 [pip](https://pypi.python.org/pypi/pip) makes it easy. [Install it](https://pip.pypa.io/en/latest/installing.html) if you do not have it already. Then
 
-    pip install numpy
-    pip install scikit-image
-    pip install matplotlib
+    sudo pip install numpy
+    sudo pip install scikit-image
+    sudo pip install matplotlib
 
 
 ### OpenCV
