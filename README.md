@@ -12,7 +12,7 @@ Tested with Python 2.7, not with Python >= 3 because opencv bindings are hard to
 
 ### Python packages
 
-[pip](https://pypi.python.org/pypi/pip) makes it easy. [Install it](https://pip.pypa.io/en/latest/installing.html) if you do not have it already. Then
+[pip](https://pypi.python.org/pypi/pip) makes it easy. [Install it](https://pip.pypa.io/en/latest/installing.html) if you do not have it already (usually that just means `sudo easy_install pip`). Then
 
     sudo pip install numpy
     sudo pip install scikit-image
