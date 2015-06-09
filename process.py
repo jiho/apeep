@@ -42,7 +42,7 @@ import image_utils as iu
 
 
 # setup logging
-log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
+log_formatter = logging.Formatter('%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s', datefmt="%m-%d %H:%M:%S")
 
 log = logging.getLogger('my_log')
 if debug :
@@ -228,7 +228,7 @@ for i_avi in range(0,len(all_avi)) :
     # open avi file
     log.info('open file ' + avi_file)
     # progress report
-    log.info(str(round(float(i_avi) / n_avi * 100, 1)) + '% complete')
+    log.info('%.2f' % (float(i_avi) / n_avi * 100) + '% complete (' + str(i_avi) + ' / ' + str(n_avi) + ' files)')
     cap = cv2.VideoCapture(avi_file)
 
     # parse the start time of the current avi file from its name
@@ -291,6 +291,7 @@ for i_avi in range(0,len(all_avi)) :
             
             # act on the image when it is complete
             if i_o == output_size :
+                ss = t.b()
                 i_o = 0
 
                 # compute time of the first scan of this image
@@ -298,7 +299,7 @@ for i_avi in range(0,len(all_avi)) :
                 time_start_frame = time_end - line_step * output_size
                 # compute output name from time
                 output_name = datetime.strftime(time_start_frame, '%Y-%m-%d_%H-%M-%S_%f')
-                log.info('output for ' + output_name)
+                log.debug('output for ' + output_name)
 
                 # Prepare (and store) flat-fielded image
                 #----------------------------------------------------------
@@ -382,7 +383,7 @@ for i_avi in range(0,len(all_avi)) :
                     # measure particles
                     s = t.b()
                     particles, properties, particles_mask = segment.segment(img=output_img, log=log, threshold=particles_threshold, dilate=dilate, min_area=min_area)
-                    log.info(str(len(particles)) + ' particles segmented' + t.e(s))
+                    log.debug(str(len(particles)) + ' particles segmented' + t.e(s))
                     
                     # write column headers on the first line of the csv file
                     if first_row:
@@ -453,6 +454,7 @@ for i_avi in range(0,len(all_avi)) :
 
                 # end if detect_particles
             
+                log.info('%3d' % (len(particles)) + ' objects in ' + output_name + t.e(ss))
             # end process output image
 
         # end loop on frame lines

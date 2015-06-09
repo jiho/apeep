@@ -16,7 +16,7 @@ b = begin
 
 def end(start, message=''):
     elapsed = time.time() - start
-    message = message + ' (%f s)' % elapsed
+    message = message + ' (%.3f s)' % elapsed
     return message
 
 e = end
@@ -27,5 +27,5 @@ def timer(func):
         beg_ts = time.time()
         func(*args, **kwargs)
         end_ts = time.time()
-        print("elapsed time: %f" % (end_ts - beg_ts))
+        print("elapsed time: %.2f" % (end_ts - beg_ts))
     return wrapper
