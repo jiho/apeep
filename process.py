@@ -374,6 +374,7 @@ for i_avi in range(0,len(all_avi)) :
                 
                 # Extract particles
                 #----------------------------------------------------------
+                particles = ()
                 if detect_particles :
                     # create output directory for particles
                     output_dir_particles = os.path.join(output_dir, output_name)
