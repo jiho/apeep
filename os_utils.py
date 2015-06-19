@@ -25,5 +25,3 @@ def checkmakedirs(path) :
         raise
     os.close(f_descriptor)
     os.remove(f_name)
-
-    pass

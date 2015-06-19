@@ -1,4 +1,3 @@
-
 def view(x, interactive=True):
     """
     Show a grey level image
@@ -16,9 +15,6 @@ def view(x, interactive=True):
         p.ioff()
     p.imshow(x, cmap=cm.gray, interpolation='nearest')
     p.show()
-    
-    pass
-#
 
 def make_transparent_mask(mask, opacity=0.6):
     """
@@ -48,7 +44,6 @@ def make_transparent_mask(mask, opacity=0.6):
     alpha_mask[:,:,3] = mask * 255 * opacity
     
     return alpha_mask
-#
 
 def mask_image(image, mask):
     """
@@ -81,7 +76,6 @@ def mask_image(image, mask):
     masked[:,:,2] = image           # Red
     
     return masked
-#
 
 def read_grey_frame(video, log):
     # read next frame from a video capture object
@@ -100,7 +94,6 @@ def read_grey_frame(video, log):
     img = img[:,:,1]
     
     return(img)
-#
 
 def get_particle_area(x) :
     """
@@ -114,5 +107,3 @@ def get_particle_area(x) :
     import numpy as np
 
     return(np.sum(x._label_image[x._slice] == x.label))
-#
-        
