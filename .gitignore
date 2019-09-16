@@ -7,5 +7,5 @@
 #
 *.pyc
 # Specific configuration files
-conf_*.py
+conf*.py
 doc/*
