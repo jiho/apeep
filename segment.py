@@ -94,7 +94,10 @@ def segment(img, log, threshold=0.1, dilate=3, min_area=300):
     s = t.b()
     for x in particles_properties :
         # extract the particle
-        particle = img[x._slice]
+        # slightly darken it to make it different from the white background
+        particle = img[x._slice] - (1. / 255.)
+        
+        # particle = img[x._slice]
         # iu.view(particle, False)
         # and its mask
         particle_mask = imglabelled[x._slice]
