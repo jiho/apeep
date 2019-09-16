@@ -95,9 +95,12 @@ if not top in ('right', 'left') :
     log.error('incorrect \'top\' argument, should be right or left')
     sys.exit()
 
-# check light_threshold argument
+# check grey level thresholds
 if ( light_threshold < 0. ) or ( light_threshold > 100. ) :
     log.error('light_threshold should be in [0,100] (0, no change; 100, clip to white)')
+    sys.exit()
+if ( dark_threshold < 0. ) or ( dark_threshold > 100. ) :
+    log.error('dark_threshold should be in [0,100] (0, no particles; 100, select everything)')
     sys.exit()
 
 # check image sizes
@@ -260,7 +263,7 @@ for i_avi in range(0,len(all_avi)) :
         s = t.b()
         img = img.astype(np.int16)
         log.debug('frame converted' + t.e(s))
-        # iu.show('frame', img)
+        # iu.show('frame', img)        
 
         # loop over scanned lines in that frame
         for i_l in range(0, img_height):
@@ -303,6 +306,15 @@ for i_avi in range(0,len(all_avi)) :
 
                 # Prepare (and store) flat-fielded image
                 #----------------------------------------------------------
+                
+                # rescale image between 0 and 1
+                # because we divided by the mean, the maximum value may be higher than 1
+                # we also make the darkest pixel exactly 0 to stretch the dynamic range
+                s = t.b()
+                minv = output.min()
+                maxv = output.max()
+                output = ( output - minv ) / ( maxv - minv)
+                log.debug('output image normalised' + t.e(s))
 
                 # rotate to account for the orientation
                 s = t.b()
@@ -325,42 +337,54 @@ for i_avi in range(0,len(all_avi)) :
 
                 # Process image
                 #----------------------------------------------------------
+                    
+                if (light_threshold != 0) or (dark_threshold_method == 'dynamic') :
+                    # we want to lighten the image or use a dynamic threshold to detect particles
+                    # => we need to describe distribution of grey levels though percentiles
+                    s = t.b()
 
-                # describe distribution of grey levels though percentiles to:
-                # - stretch the histogram and lighten the image a bit
-                # - adapt the threshold to detect particles dynamically
-                s = t.b()
-                
-                # rescale image to a smaller size to compute percentiles faster
-                output_img_small = rescale(output_img, 0.2)
-                # NB: a scale factor of 0.2 seems to be a good compromise between enhanced speed and representativity of the original image
-                
-                # compute the percentiles
-                #                                        darkest, particle limit,         lighten limit, lightest
-                grey_limits = np.percentile(output_img_small, (0, dark_threshold, 100 - light_threshold, 100))
-                log.debug('output image grey levels measured' + t.e(s))
-                
-                if dark_threshold_method == 'dynamic' :
-                    # use the percentiles
-                    particles_threshold = grey_limits[1]
+                    # rescale image to a smaller size to compute percentiles faster
+                    output_img_small = rescale(output_img, 0.2)
+                    # NB: a scale factor of 0.2 seems to be a good compromise between enhanced speed and representativity of the original image
+                    
+                    # compute the percentiles
+                    # dark_threshold, when dynamic, is the percentage of dark pixels to consider as particles
+                    # light_threshold is the percentage of light pixels to clip to white (and stretch the rest)
+                    #
+                    # the dark_threshold percentile should be considered *after* stretching grey levels
+                    # i.e. with lt=70% and dt=10%, the percentile we want in the original image is the one corresponding to 10% of the 30% not clipped to white = 30 * 10 / 100 = 3%
+                    light_perc = 100. - light_threshold
+                    dark_perc  = dark_threshold / 100. * light_perc
+                    # measure grey values corresponding to these percentiles
+                    dark_limit, light_limit = np.percentile(output_img_small, (dark_perc, light_perc))
+                    log.debug('output image grey levels measured' + t.e(s))
+
+
+                    # lighten the output image (because light_threshold != 0)
+                    # = divide by light_limit to stretch grey values and clip all values above light limit to 1 (white)
+                    s = t.b()
+                    output_img = exposure.rescale_intensity(output_img, in_range=(0, light_limit))
+                    log.debug('output image contrasted' + t.e(s))
+
+            
+                if dark_threshold_method == 'static' :
+                    # disregard the percentiles and use the value directly, rescaled to [0,1]
+                    particles_threshold = dark_threshold / 100
+                elif dark_threshold_method == 'dynamic' :
+                    # use grey percentile
+                    # except the grey levels of the image have been stretched so the value measured above needs to be stretched too
+                    particles_threshold = dark_limit / light_limit
+
                     # add min bound to avoid being thrown off by large black stuff
                     # NB: typical thresholds on non noisy frames for ~1.5% percentile are ~ 0.85
                     #     on noisy frames they come down to ~0.7
                     #     so 0.6 is really is fallback, a safe bet
-                    particles_threshold = max(particles_threshold, 0.6)
+                    # particles_threshold = max(particles_threshold_from_img, 0.6)
+                    # log.debug('dynamic dark threshold level : ' + str(particles_threshold) + ' (was ' + str(particles_threshold_from_img) + ')')
                     log.debug('dynamic dark threshold level : ' + str(particles_threshold))
-                elif threshold_method == 'static' :
-                    # disregard the percentile and use the number directly, rescaled to [0,1]
-                    particles_threshold = dark_threshold / 100
-                    # TODO check particles_threshold is in [0,1]
                 else :
                     log.error('Unknown threshold method : ' + dark_threshold_method)
-                
-                # lighten the output image
-                if grey_limits[2] < 1. :
-                    s = t.b()
-                    output_img = exposure.rescale_intensity(output_img, in_range=(0, grey_limits[2]))
-                    log.debug('output image equalised and contrasted' + t.e(s))
+            
                 
                 # write the processed image
                 if write_processed_image :
