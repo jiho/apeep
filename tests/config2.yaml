@@ -1,0 +1,84 @@
+# Syntax should follow YAML 1.1
+
+# Whether to print debug messages
+debug: True
+
+# Input/Output
+io:
+  # directory where the .avi stacks are
+  input_dir: '/media/visufront/6B/cross-current-4'
+  # directory where the output should be saved
+  output_dir: '../apeep_unstacked/cross-current-4'
+  # NB: should not have trailing slash
+  write_ff_image: True
+  write_processed_image: False
+  write_mask_image: False
+  write_masked_stack: True
+
+# Characteristics of the acquired images
+acq:
+  # orientation of the top of the picture
+  # valid values are 'right' and 'left'
+  top: 'right'
+  # number of lines scanned per second
+  scan_per_s: 28000
+
+# Flat-fielding
+flat_field:
+  go: True
+  # Moving average window size (in px) for flat-fielding
+  # larger values avoid white streaks after dark objects but are longer to compute and less reactive
+  # probably needs to be > 2000
+  window_size: 8000
+  step_size: 10
+
+# Output image processing
+process:
+  go: True
+  # size of the output frame (in nb of original frames)
+  # this is the size of the image which gets processed and possibly written on disk
+  # larger values avoid clipping objects between frames and are probably more CPU efficient (but more memory consuming)
+  image_size: 10
+  # percentage of light grey pixels to clip to white
+  # in [0,100]; 0 changes nothing, 100 makes everything white
+  # most of the image is almost white so values around 75 are common
+  light_threshold: 85
+  # Threshold
+  # for dynamic threshold : percentage of dark grey pixels to clip to black and consider as particles
+  # for static threshold  : grey value below which dark grey pixels are clipped to black and considered as particles
+  # in [0, 100]; 0 considers nothing, 100 considers all pixels
+  dark_threshold: 1.3
+  # method to determine the threshold level for dark pixels to be considered as particles
+  # valid values are 'dynamic', 'static'
+  dark_threshold_method: 'dynamic'
+
+# Segmentation
+segment:
+  go: True
+  # number of pixel to grow thresholded particles by (in px)
+  # sane values are 0 to 15
+  dilate: 5
+  # minimum area of particles to me measured and written out (in px)
+  # sane values are ~50 to a few hundred
+  min_area: 500
+  # properties of particles to store in the particles.csv file
+  # see http://scikit-image.org/docs/dev/api/skimage.measure.html#regionprops
+  properties:
+    - label
+    - area
+    - convex_area
+    # - filled_area
+    # - eccentricity
+    # - equivalent_diameter
+    # - euler_number
+    # - inertia_tensor_eigvals
+    # - major_axis_length
+    # - minor_axis_length
+    # - max_intensity
+    # - mean_intensity
+    # - min_intensity
+    # - moments_hu
+    # - weighted_moments_hu
+    # - perimeter
+    # - orientation
+    # - centroid
