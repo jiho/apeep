@@ -1,19 +1,18 @@
-# Syntax should follow YAML 1.1
-
-# Whether to print debug messages
-debug: True
+# 
+# Default apeep settings
+#
+# syntax should follow YAML 1.1
 
 # Input/Output
 io:
   # directory where the .avi stacks are
-  input_dir: '/media/visufront/6B/cross-current-4'
-  # directory where the output should be saved
-  output_dir: '../apeep_unstacked/cross-current-4'
+  input_dir: '/path/to/data'
   # NB: should not have trailing slash
-  write_ff_image: True
-  write_processed_image: True
-  write_mask_image: True
-  write_masked_stack: True
+  # TODO release this requirement
+  write_ff_image: Yes
+  write_processed_image: Yes
+  write_mask_image: Yes
+  write_masked_stack: Yes
 
 # Characteristics of the acquired images
 acq:
@@ -25,7 +24,7 @@ acq:
 
 # Flat-fielding
 flat_field:
-  go: True
+  go: Yes
   # Moving average window size (in px) for flat-fielding
   # larger values avoid white streaks after dark objects but are longer to compute and less reactive
   # probably needs to be > 2000
@@ -34,7 +33,7 @@ flat_field:
 
 # Output image processing
 process:
-  go: True
+  go: Yes
   # size of the output frame (in nb of original frames)
   # this is the size of the image which gets processed and possibly written on disk
   # larger values avoid clipping objects between frames and are probably more CPU efficient (but more memory consuming)
@@ -54,10 +53,14 @@ process:
 
 # Segmentation
 segment:
-  go: True
+  go: Yes
   # number of pixel to grow thresholded particles by (in px)
   # sane values are 0 to 15
   dilate: 5
+
+# Particle measurement
+measure:
+  go: Yes
   # minimum area of particles to me measured and written out (in px)
   # sane values are ~50 to a few hundred
   min_area: 500

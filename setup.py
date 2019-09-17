@@ -22,8 +22,9 @@ setuptools.setup(
     ],
     # Content
     packages=setuptools.find_packages(exclude=['docs', 'tests']),
-    scripts=['bin/apeep'],
-    # TODO: replace by entry_point? https://github.com/pypa/sampleproject/blob/master/setup.py
+    entry_points={
+        'console_scripts': ['apeep = apeep.__main__:main']
+    },
     package_data={
         'apeep': ['config.yaml'],
     },

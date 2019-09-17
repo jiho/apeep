@@ -6,6 +6,4 @@
 *.tiff
 #
 *.pyc
-# Specific configuration files
-conf*.py
 doc/*
