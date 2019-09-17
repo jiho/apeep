@@ -42,18 +42,17 @@ process:
   # in [0,100]; 0 changes nothing, 100 makes everything white
   # most of the image is almost white so values around 75 are common
   light_threshold: 85
-  # Threshold
-  # for dynamic threshold : percentage of dark grey pixels to clip to black and consider as particles
-  # for static threshold  : grey value below which dark grey pixels are clipped to black and considered as particles
-  # in [0, 100]; 0 considers nothing, 100 considers all pixels
-  dark_threshold: 1.3
-  # method to determine the threshold level for dark pixels to be considered as particles
-  # valid values are 'dynamic', 'static'
-  dark_threshold_method: 'dynamic'
 
 # Segmentation
 segment:
   go: Yes
+  # method to determine the threshold level for dark pixels to be considered as particles
+  # valid values are 'dynamic', 'static'
+  dark_threshold_method: 'dynamic'
+  # for dynamic threshold : percentage of dark grey pixels to clip to black and consider as particles
+  # for static threshold  : grey value below which dark grey pixels are clipped to black and considered as particles
+  # in [0, 100]; 0 considers nothing, 100 considers all pixels
+  dark_threshold: 1.3
   # number of pixel to grow thresholded particles by (in px)
   # sane values are 0 to 15
   dilate: 5

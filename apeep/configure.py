@@ -1,10 +1,11 @@
 import os
 import logging
 import pkg_resources
+import sys
 
 import yaml
 
-def config(project_dir):
+def configure(project_dir):
     """
     Configure apeep options
 
@@ -40,6 +41,43 @@ def config(project_dir):
     cfg.update(project_cfg)
     # TODO perform a left join rather than this, to remove obsolete keys in project_cfg
 
+    # check correctedness of configuration values
+    if not cfg['acq']['top'] in ("right", "left") :
+        log.error("`acq > top` should be 'right' or 'left'")
+        sys.exit(1)
+    if not isinstance(cfg['acq']['scan_per_s'], (int, float)) :
+        log.error("`acq > scan_per_s` should be a number")
+        sys.exit(1)
+
+    if not isinstance(cfg['flat_field']['window_size'], (int, float)) :
+        log.error("`flat_field > window_size` should be a number")
+        sys.exit(1)
+    if not isinstance(cfg['flat_field']['step_size'], (int, float)) :
+        log.error("`flat_field > step_size` should be a number")
+        sys.exit(1)
+
+    if not isinstance(cfg['process']['image_size'], (int, float)) :
+        log.error("`process > image_size` should be a number")
+        sys.exit(1)
+
+    if ( cfg['process']['light_threshold'] < 0. ) or \
+       ( cfg['process']['light_threshold'] > 100. ) :
+        log.error("`process > light_threshold` should be in [0,100] (0, no change; 100, clip to white)")
+        sys.exit(1)
+  
+    if not cfg['segment']['dark_threshold_method'] in ("dynamic", "static") :
+        log.error("`process > dark_threshold_method` should be 'dynamic' or 'static'")
+        sys.exit(1)
+    if ( cfg['segment']['dark_threshold'] < 0. ) or \
+       ( cfg['segment']['dark_threshold'] > 100. ) :
+        log.error("`segment > dark_threshold` should be in [0,100] (0, no particles; 100, select everything)")
+        sys.exit(1)
+
+    if not isinstance(cfg['segment']['dilate'], (int, float)) :
+        log.error("`segment > dilate` should be a number")
+        sys.exit(1)
+    
+    # TODO: check all settings
 
     log.debug("Write updated configuration file")
     # change yaml dictionnary writer to preserve the order of the input dictionnary instead of sorting it alphabetically

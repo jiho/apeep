@@ -1,2 +1,2 @@
-from .config import *
+from .configure import *
 from .log import *
