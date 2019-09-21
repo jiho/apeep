@@ -33,6 +33,6 @@ setuptools.setup(
         'PyYaml',
         'numpy',
         'scikit-image',
-        'opencv-python'
+        'av'
     ]
 )

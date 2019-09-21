@@ -83,23 +83,6 @@ def mask_image(image, mask):
     return masked
 #
 
-def read_grey_frame(video, log):
-    # read next frame from a video capture object
-    status, img = video.read()
-
-    # check the return status
-    if not status:
-        # if not True, inform the user
-        log.debug('video file termination')
-        # close the video
-        video.release()
-        # and return None
-        return
-        
-    # convert it to grey scale (=keep only first channel)
-    img = img[:,:,1]
-    
-    return(img)
 #
 
 def get_particle_area(x) :
