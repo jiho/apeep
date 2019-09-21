@@ -78,6 +78,9 @@ def configure(project_dir):
         sys.exit(1)
     
     # TODO: check all settings
+    
+    # add the configuration to the log
+    log.info(cfg)
 
     log.debug("Write updated configuration file")
     # change yaml dictionnary writer to preserve the order of the input dictionnary instead of sorting it alphabetically
