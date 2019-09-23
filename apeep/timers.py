@@ -1,10 +1,9 @@
 #
 # Timers for simple profiling
 #
-# (c) Copyright 2015 Jean-Olivier Irisson, GNU General Public License v3
-#
-#--------------------------------------------------------------------------
+# (c) 2015 Jean-Olivier Irisson, GNU General Public License v3
 
+import logging
 import time
 
 # begin and end timers
@@ -16,16 +15,19 @@ b = begin
 
 def end(start, message=''):
     elapsed = time.time() - start
-    message = message + ' (%.3f s)' % elapsed
-    return message
+    log = logging.getLogger()
+    log.info(message + " (%.3f s)" % elapsed)
+    pass
 
 e = end
 
 # decorator for functions
 def timer(func):
     def wrapper(*args, **kwargs):
-        beg_ts = time.time()
-        func(*args, **kwargs)
-        end_ts = time.time()
-        print("elapsed time: %.2f" % (end_ts - beg_ts))
-    return wrapper
+        log = logging.getLogger()
+        start = time.time()
+        out = func(*args, **kwargs)
+        elapsed = time.time() - start
+        log.info(func.__name__ + " (%.3f s)" % elapsed)
+        return(out)
+    return(wrapper)
