@@ -101,6 +101,22 @@ and then at the prompt
 
 all this should work, with no warning.
 
+## Develop
+
+```
+git clone https://github.com/jiho/apeep.git
+cd apeep
+python3 -m apeep --debug /path/to/project/directory
+```
+
+debug
+
+```
+import ipdb
+
+ipdb.set_trace()
+```
+
 
 ## Usage
 
