@@ -4,6 +4,7 @@ import pkg_resources
 import sys
 
 import yaml
+import numpy as np
 
 def configure(project_dir):
     """
@@ -11,7 +12,7 @@ def configure(project_dir):
 
     Args:
         project_dir (str): path to the project directory
-    
+
     Returns:
         dict: settings in key-value pairs
     """
@@ -42,43 +43,62 @@ def configure(project_dir):
     # TODO perform a left join rather than this, to remove obsolete keys in project_cfg
 
     # check correctedness of configuration values
-    if not cfg['acq']['top'] in ("right", "left") :
-        log.error("`acq > top` should be 'right' or 'left'")
-        sys.exit(1)
-    if not isinstance(cfg['acq']['scan_per_s'], (int, float)) :
-        log.error("`acq > scan_per_s` should be a number")
-        sys.exit(1)
 
-    if not isinstance(cfg['flat_field']['window_size'], (int, float)) :
-        log.error("`flat_field > window_size` should be a number")
-        sys.exit(1)
-    if not isinstance(cfg['flat_field']['step_size'], (int, float)) :
-        log.error("`flat_field > step_size` should be a number")
-        sys.exit(1)
+    # NB: do not check io > input_dir existence here because it would fail by default
 
-    if not isinstance(cfg['process']['image_size'], (int, float)) :
-        log.error("`process > image_size` should be a number")
-        sys.exit(1)
+    assert cfg['acq']['top'] in ("right", "left"), \
+            "`acq > top` should be either 'right' or 'left'"
+    assert isinstance(cfg['acq']['scan_per_s'], (int, float)), \
+            "`acq > scan_per_s` should be a number"
 
-    if ( cfg['process']['light_threshold'] < 0. ) or \
-       ( cfg['process']['light_threshold'] > 100. ) :
-        log.error("`process > light_threshold` should be in [0,100] (0, no change; 100, clip to white)")
-        sys.exit(1)
-  
-    if not cfg['segment']['dark_threshold_method'] in ("dynamic", "static") :
-        log.error("`process > dark_threshold_method` should be 'dynamic' or 'static'")
-        sys.exit(1)
-    if ( cfg['segment']['dark_threshold'] < 0. ) or \
-       ( cfg['segment']['dark_threshold'] > 100. ) :
-        log.error("`segment > dark_threshold` should be in [0,100] (0, no particles; 100, select everything)")
-        sys.exit(1)
+    assert isinstance(cfg['flat_field']['window_size'], (int, float)), \
+            "`flat_field > window_size` should be a number"
+    assert isinstance(cfg['flat_field']['step_size'], (int, float)), \
+            "`flat_field > step_size` should be a number"
+    step = closest_power_of_two(cfg['flat_field']['step_size'])
+    if step != cfg['flat_field']['step_size']:
+        log.info("`flat_field > step_size` updated to " + str(step))
+    cfg['flat_field']['step_size'] = step
+    window_size = make_divisible(cfg['flat_field']['window_size'], by=step)
+    if window_size != cfg['flat_field']['window_size']:
+        log.info("`flat_field > window_size` updated to " + str(window_size))
+    cfg['flat_field']['window_size'] = window_size
 
-    if not isinstance(cfg['segment']['dilate'], (int, float)) :
-        log.error("`segment > dilate` should be a number")
-        sys.exit(1)
-    
-    # TODO: check all settings
-    
+    assert isinstance(cfg['enhance']['image_size'], (int, float)), \
+            "`enhance > image_size` should be a number"
+    image_size = make_divisible(cfg['enhance']['image_size'], by=step)
+    if image_size != cfg['enhance']['image_size']:
+        log.info("`enhance > image_size` updated to " + str(image_size))
+    cfg['enhance']['image_size'] = image_size
+    assert isinstance(cfg['enhance']['dark_threshold'], (int, float)), \
+            "`enhance > dark_threshold` should be a number"
+    assert (cfg['enhance']['dark_threshold'] >= 0 and \
+            cfg['enhance']['dark_threshold'] <= 100), \
+            "`enhance > dark_threshold` should be in [0,100]"
+    assert isinstance(cfg['enhance']['light_threshold'], (int, float)), \
+            "`enhance > light_threshold` should be a number"
+    assert (cfg['enhance']['light_threshold'] >= 0 and \
+            cfg['enhance']['light_threshold'] <= 100), \
+            "`enhance > light_threshold` should be in [0,100]"
+    assert (cfg['enhance']['dark_threshold'] <= \
+            cfg['enhance']['light_threshold']), \
+            "`enhance > dark_threshold` should be smaller than `enhance > light_threshold`"
+
+    assert cfg['segment']['method'] in ("static", "percentile"), \
+            "`process > method` should be 'static' or 'percentile'"
+    assert isinstance(cfg['segment']['threshold'], (int, float)), \
+            "`segment > threshold` should be a number"
+    assert (cfg['segment']['threshold'] >= 0 and \
+            cfg['segment']['threshold'] <= 100), \
+            "`segment > threshold` should be in [0,100] (0, no particles; 100, select everything)"
+    assert isinstance(cfg['segment']['dilate'], (int)), \
+            "`segment > dilate` should be an number"
+
+    assert isinstance(cfg['measure']['min_area'], (int, float)), \
+            "`measure > min_area` should be an number"
+
+    # TODO check boolean values
+
     # add the configuration to the log
     log.info(cfg)
 
@@ -90,4 +110,21 @@ def configure(project_dir):
     with open(project_cfg_file, 'w') as ymlfile:
         yaml.dump(cfg, ymlfile, default_flow_style=False)
 
-    return(cfg)
+    return cfg
+
+def closest_power_of_two(x):
+    x = int(x)
+    if x == 1:
+        o = x
+    else:
+        # see https://codereview.stackexchange.com/questions/105911/largest-power-of-two-less-than-n-in-python
+        # for the clever bit switching part
+        under = 1 << (x.bit_length() - 1)
+        over  = 2 << (x.bit_length() - 1)
+        # find which is closest
+        i = np.argmin((x - under, over - x))
+        o = (under, over)[i]
+    return o
+
+def make_divisible(x, by=1):
+    return round(x / by) * by

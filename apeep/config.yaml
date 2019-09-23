@@ -6,64 +6,86 @@
 # Input/Output
 io:
   # directory where the .avi stacks are
-  input_dir: '/path/to/data'
+  input_dir: /path/to/data
   # NB: should not have trailing slash
   # TODO release this requirement
-  write_ff_image: Yes
-  write_processed_image: Yes
-  write_mask_image: Yes
-  write_masked_stack: Yes
 
 # Characteristics of the acquired images
 acq:
   # orientation of the top of the picture
   # valid values are 'right' and 'left'
-  top: 'right'
+  top: right
   # number of lines scanned per second
   scan_per_s: 28000
 
+
 # Flat-fielding
 flat_field:
-  go: Yes
-  # Moving average window size (in px) for flat-fielding
+  go: true
+  write_image: false
+  
+  # Size of moving window to compute flat-fielding (in px)
   # larger values avoid white streaks after dark objects but are longer to compute and less reactive
-  # probably needs to be > 2000
+  # usually > 2000
   window_size: 8000
-  step_size: 10
+  
+  # Size of the step by which the moving window advances
+  # larger values speed computation up but may result in un-smooth changes
+  # will be converted to 1 or a power of 2 (2, 4, 8, etc.)
+  step_size: 1
+  # NB: window_size will be converted into a multiple of step_size
 
-# Output image processing
-process:
-  go: Yes
-  # size of the output frame (in nb of original frames)
-  # this is the size of the image which gets processed and possibly written on disk
-  # larger values avoid clipping objects between frames and are probably more CPU efficient (but more memory consuming)
-  image_size: 10
-  # percentage of light grey pixels to clip to white
+
+# Output image enhancing
+enhance:
+  go: true
+  write_image: false
+  
+  # Size of the output image (in px)
+  # larger values avoid clipping objects between frames, provide a better description of the grey levels, and are probably more CPU efficient (but more memory consuming)
+  image_size: 10000
+  # NB: image_size will be converted into a multiple of step_size
+
+  # Percentage of dark pixels to clip to black
+  # in [0,100]; 0 changes nothing, 100 makes everything black
+  # to keep all the subtelities in the dark tones, set to 0
+  dark_threshold: 0
+  # Percentage of light grey pixels to clip to white
   # in [0,100]; 0 changes nothing, 100 makes everything white
-  # most of the image is almost white so values around 75 are common
+  # most of the image is light so values around 80 are common
   light_threshold: 85
+
 
 # Segmentation
 segment:
-  go: Yes
-  # method to determine the threshold level for dark pixels to be considered as particles
-  # valid values are 'dynamic', 'static'
-  dark_threshold_method: 'dynamic'
-  # for dynamic threshold : percentage of dark grey pixels to clip to black and consider as particles
-  # for static threshold  : grey value below which dark grey pixels are clipped to black and considered as particles
-  # in [0, 100]; 0 considers nothing, 100 considers all pixels
-  dark_threshold: 1.3
-  # number of pixel to grow thresholded particles by (in px)
+  go: true
+  write_mask: false
+  write_masked_image: false
+  
+  # Method to identify particles of interest
+  # valid values are 'static', 'percentile'
+  method: percentile
+
+  # Treshold
+  # for method=static : grey value below which dark grey pixels are considered as particles
+  # for method=percentile : percentage of dark grey pixels to clip to black and consider as particles
+  # in [0, 100]; 0 considers nothing, 100 considers all pixels (i.e. 255 for static)
+  threshold: 1.3
+
+  # Number of pixel to grow particles by
   # sane values are 0 to 15
   dilate: 5
 
-# Particle measurement
+
+# Particle measurements
 measure:
-  go: Yes
-  # minimum area of particles to me measured and written out (in px)
+  go: true
+  
+  # Minimum area of particles to me measured and written out (in px)
   # sane values are ~50 to a few hundred
   min_area: 500
-  # properties of particles to store in the particles.csv file
+  
+  # Properties of particles to store in the particles.tsv file
   # see http://scikit-image.org/docs/dev/api/skimage.measure.html#regionprops
   properties:
     - label
