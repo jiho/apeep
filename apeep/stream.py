@@ -68,5 +68,5 @@ def stream(dir, n=1):
                 i_b += 1
                 # when the block is full, return it and reinitialise it
                 if i_b == n:
-                    yield(block)
+                    yield(block/255.)
                     i_b = 0
