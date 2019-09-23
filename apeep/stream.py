@@ -19,7 +19,7 @@ def stream(dir, n=1):
         dir (str): path to input directory containing .avi files
         n (int): number of lines of the stream to return at each iteration
     
-    Returns:
+    Yields:
          ndarray: block of `n` lines as a numpy array of uint8 (i.e. in [0,255])
     """
     # get general logger
