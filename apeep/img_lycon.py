@@ -6,6 +6,11 @@
 import numpy as np
 import lycon
 
+import apeep.timers as t
+
+# from ipdb import set_trace as db
+
+@t.timer
 def save(x, path):
     lycon.save(path, x)
     pass
