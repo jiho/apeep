@@ -61,6 +61,7 @@ def stream(dir, n=1):
         # TODO check for jumps in the video file time stamps
 
         v = av.open(avi)
+        # TODO reconsider cv2 here because av actually has a lot of dependencies!
         
         # iterate over video frames of this file
         i_f = 0

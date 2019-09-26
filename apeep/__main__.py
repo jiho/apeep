@@ -39,7 +39,8 @@ def main():
     # make sure project directory exists
     project_dir = args.path[0]
     os.makedirs(project_dir, exist_ok=True)
- 
+    # TODO check whether it exists already and stop early if it does not, instructing to edit config.yaml
+
  
     ## Setup logging ----
     log = apeep.log(project_dir, debug=args.debug)

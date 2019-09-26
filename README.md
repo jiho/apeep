@@ -8,9 +8,9 @@ It is mostly written in Python (a snake), is meant to deal is data form ISIIS (a
 
 ## Installation
 
-Install external libraries needed by `apeep` or the packages it depends on
+Install external libraries needed by `apeep` and/or the packages it depends on
 
-    sudo apt install cmake libpng-dev libjpeg-dev
+    sudo apt install cmake pkg-config libavcodec-dev libavformat-dev libavdevice-dev libavutil-dev libpng-dev libjpeg-dev 
     
 Install `pip` for python 3 (usually called `pip3`)
 
@@ -20,8 +20,13 @@ Install `apeep` from this repository
 
     pip3 install git+https://github.com/jiho/apeep
 
-This should install other python packages `apeep` depends on.
+This should install other python packages `apeep` depends on. 
 
+If you install as a regular user, `apeep` installs in `~/.local/` and you need to make sure that `~/.local/bin` is in your `PATH` to be able to run it. Typically, this is done by editing `~/.bashrc` and writing
+
+    export PATH="~/.local/bin:${PATH}"
+
+If you install with `sudo pip3 ...` then `apeep` should be installed in `/usr/local` and should already be in your `PATH`.
 
 # Usage
 
