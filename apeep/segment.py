@@ -6,8 +6,11 @@ from skimage import transform
 from skimage import morphology
 from skimage import measure
 
+import apeep.timers as t
+
 # from ipdb import set_trace as db
 
+@t.timer
 def segment(img, method="percentile", threshold=0.1, dilate=3, min_area=500):
     """
     Segment an image into particles
