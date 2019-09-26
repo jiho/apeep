@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+from datetime import datetime
 
 import av
 import numpy as np
@@ -20,7 +21,12 @@ def stream(dir, n=1):
         n (int): number of lines of the stream to return at each iteration
     
     Yields:
-         ndarray: block of `n` lines as a numpy array of uint8 (i.e. in [0,255])
+         dict: containing
+            filename (str): name of the current avi file.
+            timecode (datetime): timecode for the start of the current avi file (deduced from its name).
+            frame_nb (int): number of the frame in the current avi file, starting from 0.
+            line_nb (int): number of the last lined included into this block of data.
+            data (ndarray): `n` lines of data as a numpy array of floats in [0,1].
     """
     # get general logger
     log = logging.getLogger()
@@ -48,14 +54,16 @@ def stream(dir, n=1):
     # iterate over files
     for avi in all_avi:
         log.debug("open '" + avi + "'")
-        v = av.open(avi)
+
+        timecode = datetime.strptime(os.path.basename(avi), "%Y%m%d%H%M%S.%f.avi")
         # TODO check for jumps in the video file time stamps
+
+        v = av.open(avi)
         
         # iterate over video frames of this file
         i_f = 0
         for frame in v.decode(video=0):
             log.debug("get frame " + str(i_f))
-            i_f += 1
             
             # convert this frame into a "greyscale" numpy array
             arr = np.asarray(frame.to_image())[:,:,0]
@@ -68,5 +76,17 @@ def stream(dir, n=1):
                 i_b += 1
                 # when the block is full, return it and reinitialise it
                 if i_b == n:
-                    yield(block/255.)
+                    # TODO check if there is a better/faster way to do this; this performs the if test for every line
+                    yield({
+                        'filename': avi,
+                        'start': timecode,
+                        'frame_nb': i_f,
+                        'line_nb': i_l,
+                        'data': block/255.
+                    })
+                    # reinitialise block index
                     i_b = 0
+            
+            # increase frame index
+            i_f += 1
+            
