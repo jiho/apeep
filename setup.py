@@ -30,9 +30,9 @@ setuptools.setup(
     },
     python_requires='>=3.6',
     install_requires=[
-        'PyYaml',
         'numpy',
         'scikit-image',
-        'av'
+        'PyYaml',
+        'av',
     ]
 )
