@@ -34,5 +34,7 @@ setuptools.setup(
         'scikit-image',
         'PyYaml',
         'av',
+        'lycon',
+        'Pillow'
     ]
 )
