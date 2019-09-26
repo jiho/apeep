@@ -93,9 +93,8 @@ def configure(project_dir):
             "`segment > threshold` should be in [0,100] (0, no particles; 100, select everything)"
     assert isinstance(cfg['segment']['dilate'], (int)), \
             "`segment > dilate` should be an number"
-
-    assert isinstance(cfg['measure']['min_area'], (int, float)), \
-            "`measure > min_area` should be an number"
+    assert isinstance(cfg['segment']['min_area'], (int, float)), \
+            "`segment > min_area` should be an number"
 
     # TODO check boolean values
 

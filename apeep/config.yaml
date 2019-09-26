@@ -59,7 +59,7 @@ enhance:
 # Segmentation
 segment:
   go: true
-  write_mask: false
+  write_image: false
   write_masked_image: false
   
   # Method to identify particles of interest
@@ -76,14 +76,14 @@ segment:
   # sane values are 0 to 15
   dilate: 5
 
+  # Minimum area of particles to me measured and written out (in px)
+  # sane values are ~50 to a few hundred
+  min_area: 500
+
 
 # Particle measurements
 measure:
   go: true
-  
-  # Minimum area of particles to me measured and written out (in px)
-  # sane values are ~50 to a few hundred
-  min_area: 500
   
   # Properties of particles to store in the particles.tsv file
   # see http://scikit-image.org/docs/dev/api/skimage.measure.html#regionprops
