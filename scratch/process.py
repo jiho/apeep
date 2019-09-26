@@ -41,40 +41,6 @@ import os_utils as osu
 import image_utils as iu
 
 
-# setup logging
-log_formatter = logging.Formatter('%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s', datefmt="%m-%d %H:%M:%S")
-
-log = logging.getLogger('my_log')
-if debug :
-    log_level = logging.DEBUG
-else :
-    log_level = logging.INFO
-log.setLevel(log_level)
-
-# setup console log
-console_log = logging.StreamHandler()
-console_log.setFormatter(log_formatter)
-log.addHandler(console_log)
-# the log will also be saved to a log file in the output directory
-
-
-# check that output directories exist and are writable
-# create them if needed
-osu.checkmakedirs(output_dir)
-if write_ff_image | write_processed_image | write_mask_image :
-    output_dir_full = os.path.join(output_dir, 'full')
-    osu.checkmakedirs(output_dir_full)
-
-# once this is OK, create a log file
-log_file = os.path.join(output_dir, 'process_log.txt')
-# TODO add current time to the name and switch to mode='w'
-file_log = logging.FileHandler(log_file)
-file_log.setFormatter(log_formatter)
-log.addHandler(file_log)
-
-
-# check options
-log.info('---START---')
 
 if detect_particles :
     # initiate csv file to store particles data
@@ -90,61 +56,10 @@ if not os.path.isdir(input_dir):
     log.error('input directory does not exist')
     sys.exit()
 
-# check top orientation
-if not top in ('right', 'left') :
-    log.error('incorrect \'top\' argument, should be right or left')
-    sys.exit()
-
-# check grey level thresholds
-if ( light_threshold < 0. ) or ( light_threshold > 100. ) :
-    log.error('light_threshold should be in [0,100] (0, no change; 100, clip to white)')
-    sys.exit()
-if ( dark_threshold < 0. ) or ( dark_threshold > 100. ) :
-    log.error('dark_threshold should be in [0,100] (0, no particles; 100, select everything)')
-    sys.exit()
-
-# check image sizes
-if not isinstance(window_size, (int, long, float)) :
-    log.error('window_size must be a number')
-    sys.exit()
-
-if not isinstance(output_size, (int, long, float)) :
-    log.error('output_size must be a number')
-    sys.exit()
-# it is a number of frames = integer
-output_size = int(round(output_size))
-
 # TODO check other inputs
-
-
-## Configuration log ------------------------------------------------------
-
-log.info('CONFIGURATION:')
-log.info('input data : ' + input_dir)
-log.info('output data : ' + output_dir)
-log.info('moving window size (in px) : ' + str(window_size))
-log.info('output image size (in number of frames): ' + str(output_size))
-log.info('top of image: ' + top)
-log.info('scanning rate: ' + str(scan_per_s))
-log.info('light_threshold: ' + str(light_threshold))
-log.info('dark_threshold: ' + str(dark_threshold))
-log.info('dilate: ' + str(dilate))
-log.info('min_area: ' + str(min_area))
-
-
-## Initialisation ---------------------------------------------------------
 
 log.info('INITIALISATION:')
 
-# list available avi files
-all_avi = glob.glob(input_dir + '/*.avi')
-# sort them in alphanumeric order (glob.glob() does not)
-all_avi.sort()
-n_avi = len(all_avi)
-if n_avi == 0:
-    log.error('no avi files to process in ' + input_dir)
-    sys.exit()
-log.info('found ' + str(n_avi) + ' avi files in \'' + input_dir + '\'')
 
 
 # get frame dimensions from first file
