@@ -17,7 +17,7 @@ import numpy as np
 import apeep
 import apeep.timers as t
 import apeep.img_pillow as img
-import apeep.img_lycon as img
+# import apeep.img_lycon as img
 
 # from ipdb import set_trace as db
 
@@ -153,21 +153,21 @@ def main():
                     segmented_image_dir = os.path.join(project_dir, "segmented")
                     os.makedirs(segmented_image_dir, exist_ok=True)
                     img.save(output_labelled > 0, os.path.join(segmented_image_dir, output_name + ".png"))
-                if cfg['segment']['write_masked_image']:
-                    # masked_image_dir = os.path.join(project_dir, "masked")
-                    # os.makedirs(masked_image_dir, exist_ok=True)
-                    # db()
-                    # masked = np.empty((output_size, img_width, 3))
-                    # masked[:,:,0] = output
-                    # masked[:,:,1] = output * (output_labelled == 0)
-                    # masked[:,:,2] = output * (output_labelled == 0)
-                    # masked.shape
-                    # m = masked[0:1000,:,:] * 255
-                    # m = m.astype(np.uint8)
-                    # from skimage import io
-                    # io.imsave("foo.png", m)
-                    # # slow as molasses....
-                    # # img.save(output_labelled > 0, os.path.join(segmented_image_dir, output_name + ".png"))
+                # if cfg['segment']['write_masked_image']:
+                #     masked_image_dir = os.path.join(project_dir, "masked")
+                #     os.makedirs(masked_image_dir, exist_ok=True)
+                #     db()
+                #     masked = np.empty((output_size, img_width, 3))
+                #     masked[:,:,0] = output
+                #     masked[:,:,1] = output * (output_labelled == 0)
+                #     masked[:,:,2] = output * (output_labelled == 0)
+                #     masked.shape
+                #     m = masked[0:1000,:,:] * 255
+                #     m = m.astype(np.uint8)
+                #     from skimage import io
+                #     io.imsave("foo.png", m)
+                #     # slow as molasses....
+                #     # img.save(output_labelled > 0, os.path.join(segmented_image_dir, output_name + ".png"))
             
             # measure
             # TODO implement
