@@ -6,6 +6,8 @@ import numpy as np
 
 import apeep.timers as t
 
+# from ipdb import set_trace as db
+
 @t.timer
 def enhance(img, cfg):
     """

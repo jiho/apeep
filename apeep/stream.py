@@ -6,6 +6,8 @@ from datetime import datetime
 import av
 import numpy as np
 
+# from ipdb import set_trace as db
+
 def stream(dir, n=1):
     """
     Get a stream of lines of pixels from a directory

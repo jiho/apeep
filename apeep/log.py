@@ -2,6 +2,8 @@ import logging
 import os
 import datetime
 
+# from ipdb import set_trace as db
+
 def log(project_dir, debug=False):
     log = logging.getLogger()
 

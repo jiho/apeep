@@ -6,6 +6,8 @@ import sys
 import yaml
 import numpy as np
 
+# from ipdb import set_trace as db
+
 def configure(project_dir):
     """
     Configure apeep options

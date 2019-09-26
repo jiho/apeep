@@ -6,6 +6,8 @@
 import logging
 import time
 
+# from ipdb import set_trace as db
+
 # begin and end timers
 def begin():
     x = time.time()
