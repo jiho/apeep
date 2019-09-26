@@ -18,7 +18,7 @@ b = begin
 def end(start, message=''):
     elapsed = time.time() - start
     log = logging.getLogger()
-    log.info(message + " (%.3f s)" % elapsed)
+    log.debug(message + " (%.3f s)" % elapsed)
     pass
 
 e = end
@@ -30,6 +30,6 @@ def timer(func):
         start = time.time()
         out = func(*args, **kwargs)
         elapsed = time.time() - start
-        log.info(func.__name__ + " (%.3f s)" % elapsed)
+        log.debug(func.__name__ + " (%.3f s)" % elapsed)
         return(out)
     return(wrapper)
