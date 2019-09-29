@@ -36,5 +36,6 @@ setuptools.setup(
         'av',
         'lycon',
         'Pillow'
+        'pytoshop==1.1.0'   # photoshop image saving
     ]
 )

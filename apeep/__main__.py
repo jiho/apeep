@@ -185,6 +185,38 @@ def main():
                     mask_img = Image.fromarray(mask)                    
                     # save as multipage TIFF
                     back_img.save(os.path.join(masked_image_dir, output_name + ".tif"), format="tiff", append_images=[mask_img], save_all=True, compression='tiff_lzw')
+                    
+                    # photoshop file
+                    # import pytoshop as ps
+                    from pytoshop.user import nested_layers
+                    import pytoshop.enums as pse                    
+                    # create background as RGB
+                    blank = np.zeros_like(output, dtype="uint8")
+                    back = (output*255).astype(np.uint8)
+                    back_dict = {
+                        0: back, # R
+                        1: back, # G
+                        2: back  # B
+                    }
+                    # create mask as RGBA
+                    mask = ((output_labelled != 0) * 255).astype(np.uint8)
+                    mask_dict = {
+                        0 : mask,  # R
+                        1 : blank, # G
+                        2 : blank, # B
+                        -1: mask   # A
+                    }
+                    # combine background and semi transparent mask
+                    back_layer = nested_layers.Image(name="back", channels=back_dict, \
+                        opacity=255, color_mode=pse.ColorMode['rgb'])
+                    mask_layer = nested_layers.Image(name="mask", channels=mask_dict, \
+                        opacity=150, color_mode=pse.ColorMode['rgb'])
+                    psd = nested_layers.nested_layers_to_psd([mask_layer, back_layer],   \
+                        color_mode=pse.ColorMode['rgb'], depth=pse.ColorDepth['depth8'], \
+                        compression=pse.Compression['rle'])
+                    # write inside a subdirectory to make post-processing in external sofware easier
+                    os.makedirs(os.path.join(masked_image_dir, output_name), exist_ok=True)
+                    psd.write(open(os.path.join(masked_image_dir, output_name, output_name + ".psd"), "wb"))
             
             # measure
             # TODO implement
