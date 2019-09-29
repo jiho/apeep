@@ -163,7 +163,7 @@ def main():
                 if cfg['segment']['write_masked_image']:
                     masked_image_dir = os.path.join(project_dir, "masked")
                     os.makedirs(masked_image_dir, exist_ok=True)
-                    img_masked.save_masked(img=output, mask=output_labelled, \
+                    img_masked.save_masked(img=output, labels=output_labelled, \
                         dest=os.path.join(masked_image_dir, output_name), format=['rgb', 'psd'])
             
             # measure
