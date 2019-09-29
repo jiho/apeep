@@ -153,22 +153,18 @@ def main():
                 if cfg['segment']['write_image']:
                     segmented_image_dir = os.path.join(project_dir, "segmented")
                     os.makedirs(segmented_image_dir, exist_ok=True)
-                    img.save(output_labelled > 0, os.path.join(segmented_image_dir, output_name + ".png"))
-                # if cfg['segment']['write_masked_image']:
-                #     masked_image_dir = os.path.join(project_dir, "masked")
-                #     os.makedirs(masked_image_dir, exist_ok=True)
-                #     db()
-                #     masked = np.empty((output_size, img_width, 3))
-                #     masked[:,:,0] = output
-                #     masked[:,:,1] = output * (output_labelled == 0)
-                #     masked[:,:,2] = output * (output_labelled == 0)
-                #     masked.shape
-                #     m = masked[0:1000,:,:] * 255
-                #     m = m.astype(np.uint8)
-                #     from skimage import io
-                #     io.imsave("foo.png", m)
-                #     # slow as molasses....
-                #     # img.save(output_labelled > 0, os.path.join(segmented_image_dir, output_name + ".png"))
+                    img.save(output_labelled == 0, os.path.join(segmented_image_dir, output_name + ".png"))
+                
+                if cfg['segment']['write_masked_image']:
+                    masked_image_dir = os.path.join(project_dir, "masked")
+                    os.makedirs(masked_image_dir, exist_ok=True)
+
+                    # colour image
+                    masked = np.zeros((output_size, img_width, 3))
+                    masked[:,:,0] = (output + 1/255) * (output_labelled == 0)  # B
+                    masked[:,:,1] = (output + 1/255) * (output_labelled == 0)  # G
+                    masked[:,:,2] = (output + 1/255) * (output_labelled != 0)  # R
+                    img.save(masked, os.path.join(masked_image_dir, output_name + "_clr.png"))
             
             # measure
             # TODO implement
