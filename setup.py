@@ -30,12 +30,13 @@ setuptools.setup(
     },
     python_requires='>=3.6',
     install_requires=[
-        'numpy',
-        'scikit-image',
-        'PyYaml',
-        'av',
-        'lycon',
-        'Pillow'
+        'numpy',            # array operations
+        'scikit-image',     # image manipulation
+        'PyYaml',           # configuration file
+        'av',               # "video" file reading
+        'lycon',            # image saving
+        'Pillow',           # image saving
+        'opencv-python',    # image saving
         'pytoshop==1.1.0'   # photoshop image saving
     ]
 )
