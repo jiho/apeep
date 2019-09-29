@@ -128,9 +128,11 @@ def main():
             if cfg['flat_field']['write_image']:
                 flat_fielded_image_dir = os.path.join(project_dir, "flat_fielded")
                 os.makedirs(flat_fielded_image_dir, exist_ok=True)
+                # rescale in [0,1] to save the image
                 minv = output.min()
                 maxv = output.max()
                 output_0_1 = (output - minv) / (maxv - minv)
+                # TODO check it more thouroughly but this normalisation creates very inhomogeneous grey levels in the result
                 img.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + ".png"))
 
             # enhance output image
@@ -150,6 +152,7 @@ def main():
                     dilate=cfg['segment']['dilate'],
                     min_area=cfg['segment']['min_area']
                 )
+                
                 if cfg['segment']['write_image']:
                     segmented_image_dir = os.path.join(project_dir, "segmented")
                     os.makedirs(segmented_image_dir, exist_ok=True)
