@@ -165,6 +165,22 @@ def main():
                     masked[:,:,1] = (output + 1/255) * (output_labelled == 0)  # G
                     masked[:,:,2] = (output + 1/255) * (output_labelled != 0)  # R
                     img.save(masked, os.path.join(masked_image_dir, output_name + "_clr.png"))
+                    
+                    # multilayer, coloured TIFF file
+                    from PIL import Image
+                    # create background as RGB
+                    back = np.zeros((output_size, img_width, 3), dtype="uint8")
+                    back[:,:,0] = output * 255
+                    back[:,:,1] = back[:,:,0]
+                    back[:,:,2] = back[:,:,0]
+                    back_img = Image.fromarray(back)
+                    # create mask as RGBA
+                    mask = np.zeros((output_size, img_width, 4), dtype="uint8")
+                    mask[:,:,0] = (output_labelled != 0) * 255
+                    mask[:,:,3] = mask[:,:,0]
+                    mask_img = Image.fromarray(mask)                    
+                    # save as multipage TIFF
+                    back_img.save(os.path.join(masked_image_dir, output_name + ".tif"), format="tiff", append_images=[mask_img], save_all=True, compression='tiff_lzw')
             
             # measure
             # TODO implement
