@@ -19,6 +19,7 @@ import apeep.timers as t
 import apeep.img_pillow as img
 # import apeep.img_opencv as img
 # import apeep.img_lycon as img
+from apeep import img_masked
 
 # from ipdb import set_trace as db
 
@@ -162,62 +163,8 @@ def main():
                 if cfg['segment']['write_masked_image']:
                     masked_image_dir = os.path.join(project_dir, "masked")
                     os.makedirs(masked_image_dir, exist_ok=True)
-
-                    # colour image
-                    masked = np.zeros((output_size, img_width, 3))
-                    masked[:,:,0] = (output + 1/255) * (output_labelled != 0)  # R
-                    masked[:,:,1] = (output + 1/255) * (output_labelled == 0)  # G
-                    masked[:,:,2] = (output + 1/255) * (output_labelled == 0)  # B
-                    # NB: shift of 1 from the background to be able to easily re-extract the mask
-                    img.save(masked, os.path.join(masked_image_dir, output_name + ".png"))
-                    
-                    # multilayer, coloured TIFF file
-                    from PIL import Image
-                    # create background as RGB
-                    back = np.zeros((output_size, img_width, 3), dtype="uint8")
-                    back[:,:,0] = output * 255
-                    back[:,:,1] = back[:,:,0]
-                    back[:,:,2] = back[:,:,0]
-                    back_img = Image.fromarray(back)
-                    # create mask as RGBA
-                    mask = np.zeros((output_size, img_width, 4), dtype="uint8")
-                    mask[:,:,0] = (output_labelled != 0) * 255
-                    mask[:,:,3] = mask[:,:,0]
-                    mask_img = Image.fromarray(mask)                    
-                    # save as multipage TIFF
-                    back_img.save(os.path.join(masked_image_dir, output_name + ".tif"), format="tiff", append_images=[mask_img], save_all=True, compression='tiff_lzw')
-                    
-                    # photoshop file
-                    # import pytoshop as ps
-                    from pytoshop.user import nested_layers
-                    import pytoshop.enums as pse                    
-                    # create background as RGB
-                    blank = np.zeros_like(output, dtype="uint8")
-                    back = (output*255).astype(np.uint8)
-                    back_dict = {
-                        0: back, # R
-                        1: back, # G
-                        2: back  # B
-                    }
-                    # create mask as RGBA
-                    mask = ((output_labelled != 0) * 255).astype(np.uint8)
-                    mask_dict = {
-                        0 : mask,  # R
-                        1 : blank, # G
-                        2 : blank, # B
-                        -1: mask   # A
-                    }
-                    # combine background and semi transparent mask
-                    back_layer = nested_layers.Image(name="back", channels=back_dict, \
-                        opacity=255, color_mode=pse.ColorMode['rgb'])
-                    mask_layer = nested_layers.Image(name="mask", channels=mask_dict, \
-                        opacity=150, color_mode=pse.ColorMode['rgb'])
-                    psd = nested_layers.nested_layers_to_psd([mask_layer, back_layer],   \
-                        color_mode=pse.ColorMode['rgb'], depth=pse.ColorDepth['depth8'], \
-                        compression=pse.Compression['rle'])
-                    # write inside a subdirectory to make post-processing in external sofware easier
-                    os.makedirs(os.path.join(masked_image_dir, output_name), exist_ok=True)
-                    psd.write(open(os.path.join(masked_image_dir, output_name, output_name + ".psd"), "wb"))
+                    img_masked.save_masked(img=output, mask=output_labelled, \
+                        dest=os.path.join(masked_image_dir, output_name), format=['rgb', 'psd'])
             
             # measure
             # TODO implement
