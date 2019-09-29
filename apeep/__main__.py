@@ -161,10 +161,11 @@ def main():
 
                     # colour image
                     masked = np.zeros((output_size, img_width, 3))
-                    masked[:,:,0] = (output + 1/255) * (output_labelled == 0)  # B
+                    masked[:,:,0] = (output + 1/255) * (output_labelled != 0)  # R
                     masked[:,:,1] = (output + 1/255) * (output_labelled == 0)  # G
-                    masked[:,:,2] = (output + 1/255) * (output_labelled != 0)  # R
-                    img.save(masked, os.path.join(masked_image_dir, output_name + "_clr.png"))
+                    masked[:,:,2] = (output + 1/255) * (output_labelled == 0)  # B
+                    # NB: shift of 1 from the background to be able to easily re-extract the mask
+                    img.save(masked, os.path.join(masked_image_dir, output_name + ".png"))
                     
                     # multilayer, coloured TIFF file
                     from PIL import Image
