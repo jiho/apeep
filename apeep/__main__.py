@@ -41,8 +41,11 @@ def main():
  
     # make sure project directory exists
     project_dir = args.path[0]
-    os.makedirs(project_dir, exist_ok=True)
-    # TODO check whether it exists already and stop early if it does not, instructing to edit config.yaml
+    new_project = False
+    if not os.path.exists(project_dir):
+        print("This is a new project. Creating it")
+        new_project = True
+        os.makedirs(project_dir, exist_ok=True)
 
  
     ## Setup logging ----
@@ -52,7 +55,19 @@ def main():
 
     ## Read configuration file ----
     cfg = apeep.configure(project_dir)
-    # add project directory, for ease of access by other functions
+    
+    # in the case of a new project, stop here
+    if new_project:
+        editor = os.getenv("VISUAL", os.getenv("EDITOR", "your_editor"))
+        print("""
+Now edit the configuration file. For example with
+  {editor} {project}/config.yaml
+You should at least set `io: input_dir` to something meaningful.
+Other options are documented there
+  https://github.com/jiho/apeep/blob/master/apeep/config.yaml""".format(editor=editor, project=project_dir))
+        sys.exit()
+    
+    # add project directory to config, for ease of access by other functions
     cfg['io']['project_dir'] = project_dir
 
     # if the path to the input dir is relative,
