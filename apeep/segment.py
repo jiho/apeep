@@ -54,14 +54,24 @@ def segment(img, method="percentile", threshold=0.1, dilate=3, min_area=500):
     # label (i.e. find connected components of) particles and number them
     img_labelled = skimage.measure.label(img_binary, background=False, connectivity=2)
     
-    # detect large objects
-    pixels_per_label = np.bincount(img_labelled.flat, weights=img_binary.flat)
-    labels_of_large_pixel_count = np.where(pixels_per_label > min_area)
-    # keep only those in the mask
-    img_binary_large = np.isin(img_labelled, labels_of_large_pixel_count)
-    # TODO this isin call is sloooooww; make it faster; examine the possibility of filtering particle per particle like it was done before
-    # and as labels
-    img_labelled_large = img_labelled * img_binary_large
+    # keep only large particles
+    
+    # # erase small regions from the labelled image
+    # regions = skimage.measure.regionprops(img_labelled)
+    # small_regions = [x for x in regions if fast_particle_area(x) < min_area]
+    # img_labelled_large = img_labelled
+    # for r in small_regions:
+    #     img_labelled_large[r._slice] = img_labelled_large[r._slice] * (img_labelled_large[r._slice] != r.label)
+
+    # recreate a labelled images wiht only large regions
+    regions = skimage.measure.regionprops(img_labelled)
+    large_regions = [r for r in regions if fast_particle_area(r) > min_area]
+    img_labelled_large = np.zeros_like(img_labelled)
+    for r in large_regions:
+        img_labelled_large[r._slice] = (img_labelled[r._slice] == r.label) * r.label
     
     return(img_labelled_large)
+
  
+def fast_particle_area(x):
+    return(np.sum(x._label_image[x._slice] == x.label))
