@@ -6,9 +6,8 @@
 # Input/Output
 io:
   # directory where the .avi stacks are
+  # is either an absolute path or a path relative to the *project* directory
   input_dir: /path/to/data
-  # NB: should not have trailing slash
-  # TODO release this requirement
 
 # Characteristics of the acquired images
 acq:
