@@ -42,8 +42,10 @@ def configure(project_dir):
     # settings missing in the project's config will be kept at their default values (and added to the project's config after writing the file back)
     cfg = left_join_dict(defaults_cfg, project_cfg)
 
-    # check correctedness of configuration values
 
+    # check correctedness of configuration values
+    log.debug("check configuration values")
+    
     # NB: do not check io > input_dir existence here because it would fail by default
 
     assert cfg['acq']['top'] in ("right", "left"), \
