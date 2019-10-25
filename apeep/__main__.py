@@ -5,6 +5,9 @@
 # (c) 2019 Jean-Olivier Irisson, GNU General Public License v3
 #
 
+# TODO use google style for docstrings https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings
+# TODO use descriptive style rather than imperative style in descriptions
+
 import argparse
 import glob
 import logging
