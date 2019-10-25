@@ -40,9 +40,7 @@ def configure(project_dir):
     log.debug("combine defaults and project-level settings")
     # settings in the project's config will update those in the defaults
     # settings missing in the project's config will be kept at their default values (and added to the project's config after writing the file back)
-    cfg = defaults_cfg.copy()
-    cfg.update(project_cfg)
-    # TODO perform a left join rather than this, to remove obsolete keys in project_cfg
+    cfg = left_join_dict(defaults_cfg, project_cfg)
 
     # check correctedness of configuration values
 
@@ -129,3 +127,32 @@ def closest_power_of_two(x):
 
 def make_divisible(x, by=1):
     return round(x / by) * by
+
+def left_join_dict(x, y):
+    """
+    Recursive left join of dictionnaries.
+    
+    Any element of y whose key is in x will update the value from x.
+    Any element of y that does not exists in x is ommited.
+    Inspired from https://gist.github.com/angstwad/bf22d1822c38a92ec0a9
+
+    Args:
+        x (dict): reference dictionnary
+        y (dict): dictionnary to be merged in x
+    
+    Returns:
+        (dict) a new dictionnary.
+    """
+    # make a copy of the reference dict
+    x = x.copy()
+    # remove elements from y that are not in x
+    y = { k: y[k] for k in set(x).intersection(set(y)) }
+    # for each element of y
+    for k,v in y.items():
+        # if dict, iterate
+        if isinstance(x.get(k), dict) and isinstance(v, dict):
+            x[k] = left_join_dict(x[k], v)
+        # if not, update
+        else:
+            x[k] = v
+    return(x)
