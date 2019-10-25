@@ -16,9 +16,10 @@ import numpy as np
 
 import apeep
 import apeep.timers as t
-import apeep.img_pillow as img
-# import apeep.img_opencv as img
-# import apeep.img_lycon as img
+import apeep.im_pillow as im
+# import apeep.im_opencv as im
+# import apeep.im_lycon as im
+# TODO rename this into im to avoid the confusion with the objects called img
 from apeep import img_masked
 
 # from ipdb import set_trace as db
@@ -135,7 +136,7 @@ def main():
                 maxv = output.max()
                 output_0_1 = (output - minv) / (maxv - minv)
                 # TODO check it more thouroughly but this normalisation creates very inhomogeneous grey levels in the result
-                img.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + ".png"))
+                im.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + ".png"))
 
             # enhance output image
             if cfg['enhance']['go']:
@@ -144,7 +145,7 @@ def main():
                 if cfg['enhance']['write_image']:
                     enhanced_image_dir = os.path.join(project_dir, "enhanced")
                     os.makedirs(enhanced_image_dir, exist_ok=True)
-                    img.save(output, os.path.join(enhanced_image_dir, output_name + ".png"))
+                    im.save(output, os.path.join(enhanced_image_dir, output_name + ".png"))
             
             # segment
             if cfg['segment']['go']:
@@ -158,7 +159,7 @@ def main():
                 if cfg['segment']['write_image']:
                     segmented_image_dir = os.path.join(project_dir, "segmented")
                     os.makedirs(segmented_image_dir, exist_ok=True)
-                    img.save(output_labelled == 0, os.path.join(segmented_image_dir, output_name + ".png"))
+                    im.save(output_labelled == 0, os.path.join(segmented_image_dir, output_name + ".png"))
                 
                 if cfg['segment']['write_masked_image']:
                     masked_image_dir = os.path.join(project_dir, "masked")
