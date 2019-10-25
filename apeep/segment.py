@@ -1,7 +1,4 @@
 import numpy as np
-# from skimage.io import imread
-# from skimage.transform import resize
-
 import skimage.transform
 import skimage.morphology
 import skimage.measure
