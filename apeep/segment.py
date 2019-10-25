@@ -2,9 +2,9 @@ import numpy as np
 # from skimage.io import imread
 # from skimage.transform import resize
 
-from skimage import transform
-from skimage import morphology
-from skimage import measure
+import skimage.transform
+import skimage.morphology
+import skimage.measure
 
 import apeep.timers as t
 
@@ -34,7 +34,7 @@ def segment(img, method="percentile", threshold=0.1, dilate=3, min_area=500):
 
     if method == "percentile":
         # compute distribution of grey levels
-        img_small = transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
+        img_small = skimage.transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
         # TODO check the speed improvement if this is computed only once, during image enhancement
         # define the new threshold
         threshold = np.percentile(img_small, (threshold))
@@ -53,14 +53,14 @@ def segment(img, method="percentile", threshold=0.1, dilate=3, min_area=500):
     # dilate dark regions, to encompass the surrounding, potentially important pixels
     # s = t.b()
     if dilate >= 1 :
-        img_binary = morphology.binary_dilation(img_binary, np.ones((dilate, dilate)))
+        img_binary = skimage.morphology.binary_dilation(img_binary, np.ones((dilate, dilate)))
     # log.debug('segment: image dilated' + t.e(s))
 
     # TODO test assding contraction again
 
     # label (i.e. find connected components of) particles and number them
     # s = t.b()
-    img_labelled = measure.label(img_binary, background=False, connectivity=2)
+    img_labelled = skimage.measure.label(img_binary, background=False, connectivity=2)
     # detect large objects
     pixels_per_label = np.bincount(img_labelled.flat, weights=img_binary.flat)
     labels_of_large_pixel_count = np.where(pixels_per_label > min_area)

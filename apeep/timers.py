@@ -30,6 +30,6 @@ def timer(func):
         start = time.time()
         out = func(*args, **kwargs)
         elapsed = time.time() - start
-        log.debug(func.__name__ + " (%.3f s)" % elapsed)
+        log.debug(func.__name__ + f" ({elapsed:.3f}s)")
         return(out)
     return(wrapper)

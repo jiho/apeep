@@ -1,7 +1,7 @@
 import logging
 
-from skimage import transform
-from skimage import exposure
+import skimage.transform
+import skimage.exposure
 import numpy as np
 
 import apeep.timers as t
@@ -25,11 +25,11 @@ def enhance(img, cfg):
     
     ## Rescale max/min intensity ----
     # compute distribution of grey levels
-    img_small = transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
+    img_small = skimage.transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
     # NB: much faster without antialiasing and should be OK for percentile comparison
     # rescale intensity based on these percentiles
     dark_limit, light_limit = np.percentile(img_small, (cfg['enhance']['dark_threshold'],cfg['enhance']['light_threshold']))
-    img_eq = exposure.rescale_intensity(img, in_range=(dark_limit, light_limit))
+    img_eq = skimage.exposure.rescale_intensity(img, in_range=(dark_limit, light_limit))
     
     ## Reshape histogram ----
     # maxv = img.max()
