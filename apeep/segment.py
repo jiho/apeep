@@ -45,22 +45,18 @@ def segment(img, method="percentile", threshold=0.1, dilate=3, min_area=500):
         raise ValueError("unknown `method` argument")
 
     # threshold image
-    # s = t.b()
     img_binary = img < threshold
     # pixels darker than threshold are True, others are False
-    # log.debug('segment: image thresholded' + t.e(s))
 
     # dilate dark regions, to encompass the surrounding, potentially important pixels
-    # s = t.b()
     if dilate >= 1 :
         img_binary = skimage.morphology.binary_dilation(img_binary, np.ones((dilate, dilate)))
-    # log.debug('segment: image dilated' + t.e(s))
 
     # TODO test assding contraction again
 
     # label (i.e. find connected components of) particles and number them
-    # s = t.b()
     img_labelled = skimage.measure.label(img_binary, background=False, connectivity=2)
+    
     # detect large objects
     pixels_per_label = np.bincount(img_labelled.flat, weights=img_binary.flat)
     labels_of_large_pixel_count = np.where(pixels_per_label > min_area)
