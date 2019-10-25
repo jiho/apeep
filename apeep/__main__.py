@@ -108,6 +108,7 @@ Other options are documented there
     
     # initialise flat-fielding timer
     timer_ff = t.b()
+    timer_img = t.b()
         
     # loop over files
     input_stream = apeep.stream(dir=cfg['io']['input_dir'], n=step)
@@ -202,9 +203,14 @@ Other options are documented there
                     
                     apeep.write_particles(particles, particles_image_dir)       
             
-            # start flat-fielding timer for next iteration
+            # compute performance
+            elapsed = t.e(timer_img)
+            real_time = cfg['enhance']['image_size'] / cfg['acq']['scan_per_s']
+            log.info(f"finished image ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
+            
+            # reset flat-fielding and global timers for next iteration
             timer_ff = t.b()
-            # TODO add total timer per output frame
+            timer_img = t.b()
             
 
 if __name__ == "__main__":
