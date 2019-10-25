@@ -132,7 +132,7 @@ Other options are documented there
         # when output is full
         if i_o == output_size:
             # end timer for flat-fielding
-            t.e(timer_ff, "flat-field")
+            elapsed = t.el(timer_ff, "flat-field")
 
             # reinitialise output image
             i_o = 0

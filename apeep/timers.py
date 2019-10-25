@@ -15,13 +15,19 @@ def begin():
 
 b = begin
 
-def end(start, message=''):
+def end(start):
     elapsed = time.time() - start
-    log = logging.getLogger()
-    log.debug(message + " (%.3f s)" % elapsed)
-    pass
+    return(elapsed)
 
 e = end
+
+def end_log(start, message=""):
+    elapsed = time.time() - start
+    log = logging.getLogger()
+    log.debug(message + f" ({elapsed:.3f}s)")
+    return(elapsed)
+
+el = end_log
 
 # decorator for functions
 def timer(func):
