@@ -31,7 +31,7 @@ setuptools.setup(
     python_requires='>=3.6',
     install_requires=[
         'numpy',            # array operations
-        'scikit-image',     # image manipulation
+        'scikit-image>=0.16',     # image manipulation
         'PyYaml',           # configuration file
         'av',               # "video" file reading
         'lycon',            # image saving

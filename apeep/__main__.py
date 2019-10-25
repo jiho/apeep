@@ -187,7 +187,20 @@ Other options are documented there
                         dest=os.path.join(masked_image_dir, output_name), format=['rgb', 'psd'])
             
             # measure
-            # TODO implement
+            if cfg['measure']['go']:
+                particles, particles_props = apeep.measure(
+                    img=output,
+                    img_labelled=output_labelled,
+                    props=cfg['measure']['properties']
+                )
+                # write particles properties and images to disk
+                if cfg['measure']['write_particles']:
+                    particles_image_dir = os.path.join(project_dir, "particles")
+                    os.makedirs(particles_image_dir, exist_ok=True)
+
+                    apeep.write_particles_props(particles_props, particles_image_dir)
+                    
+                    apeep.write_particles(particles, particles_image_dir)       
             
             # start flat-fielding timer for next iteration
             timer_ff = t.b()

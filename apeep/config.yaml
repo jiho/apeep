@@ -84,6 +84,7 @@ segment:
 # Particle measurements
 measure:
   go: true
+  write_particles: true
   
   # Properties of particles to store in the particles.tsv file
   # see http://scikit-image.org/docs/dev/api/skimage.measure.html#regionprops
