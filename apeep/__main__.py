@@ -55,6 +55,10 @@ def main():
     # add project directory, for ease of access by other functions
     cfg['io']['project_dir'] = project_dir
 
+    # if the path to the input dir is relative,
+    # make it relative to the project dir
+    if not os.path.isabs(cfg['io']['input_dir']):
+        cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
 
     ## Setup processing loop ----
     # hardcode frame dimensions
