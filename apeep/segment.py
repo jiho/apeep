@@ -62,6 +62,7 @@ def segment(img, method="percentile", threshold=0.1, dilate=3, min_area=500):
     labels_of_large_pixel_count = np.where(pixels_per_label > min_area)
     # keep only those in the mask
     img_binary_large = np.isin(img_labelled, labels_of_large_pixel_count)
+    # TODO this isin call is sloooooww; make it faster; examine the possibility of filtering particle per particle like it was done before
     # and as labels
     img_labelled_large = img_labelled * img_binary_large
     
