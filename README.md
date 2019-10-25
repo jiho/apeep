@@ -48,26 +48,25 @@ Now you can edit the configuration file that is in `/path/to/project/config.yaml
 
 ## Development
 
-Clone the repository and run the local version of the package rather than the pip installed one
+To change `apeep`'s code, clone this repository, edit the code, and run the *local* version of the package rather than the pip-installed one
 
     git clone https://github.com/jiho/apeep.git
     cd apeep
+    # edit what you need to edit, then
     python3 -m apeep --debug /path/to/project
 
-To stop the code at any point and jump into a python interpreter, uncomment the line
+To test new code, it is useful to have a dedicated test project. A repository with test files is available. To use it
+
+    wget https://github.com/jiho/apeep_test/archive/master.zip
+    unzip master.zip
+    python3 -m apeep apeep_test-master/out
+
+When developing new functionality, it is often useful to place one self in a given context (inside a function, within the main loop, etc.). To stop execution at any point and jump into a python interpreter, uncomment the line
 
     # from ipdb import set_trace as db
 
-at the beginning of the file of interest and write `db()` at the point at which you want to stop in the file.
+at the beginning of the file of interest and write `db()` at the point at which you want to stop in the file. You will enter python interactive debugger (the prompt is `idbp>`). You can run code there, but it will not execute multiline statements. Do do so, within the debugger, type `interact` which opens a temporary interactive python session.
 
-A repository with test files is available. To use is
-
-    git clone https://github.com/jiho/apeep_test.git
-    python3 -m apeep /path/to/apeep_test/out
-    # now edit the configuration file in /path/to/apeep_test/out/config.yaml
-    # to point the input to /path/to/apeep_test/in
-    # and re-run
-    python3 -m apeep /path/to/apeep_test/out
 
 ## Credits
 
