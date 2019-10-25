@@ -45,6 +45,10 @@ def show(x):
 
 @t.timer
 def save(x, path):
+    _save(x, path)
+    pass
+    
+def _save(x, path):
     """
     Save an array as an image
     
