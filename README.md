@@ -60,6 +60,12 @@ To stop the code at any point and jump into a python interpreter, uncomment the 
 
 at the beginning of the file of interest and write `db()` at the point at which you want to stop in the file.
 
+A repository with test files is available. To use is
+
+    git clone https://github.com/jiho/apeep_test.git
+    python3 -m apeep /path/to/apeep_test/out
+    # now edit the configuration file in /path/to/apeep_test/out/config.yaml
+    # to point the input to /path/to/apeep_test/in
 ## Credits
 
 ISIIS is developed by [Robert K Cowen](http://ceoas.oregonstate.edu/profile/cowen/) ([Rosenstiel School of Marine and Atmospheric Sciences](http://www.rsmas.miami.edu/) RSMAS, University of Miami and [Hatfield Marine Science Center](http://hmsc.oregonstate.edu), Oregon State University) and [Cédric Guigand](http://yyy.rsmas.miami.edu/groups/larval-fish/cedric.html) ([RSMAS](http://www.rsmas.miami.edu)) in partnership with [BellaMare](http://www.bellamare-us.com).
