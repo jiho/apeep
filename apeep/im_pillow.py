@@ -10,6 +10,19 @@ import apeep.timers as t
 
 # from ipdb import set_trace as db
 
+def read(path):
+    """
+    Read a greyscale image into a numpy array
+    
+    Args:
+        path (str): path to the image
+    
+    Returns:
+        ndarray: of float in [0,1]
+    """
+    x = np.array(Image.open(path))
+    return(x / 255.)
+
 def asimg(x):
     """
     Convert numpy array into 8 bit Pillow image
