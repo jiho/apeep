@@ -210,7 +210,7 @@ Other options are documented there
                         dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
             
             # measure
-            if cfg['measure']['go']:
+            if cfg['measure']['go'] and np.sum(output_labelled) != 0 :
                 particles, particles_props = apeep.measure(
                     img=output,
                     img_labelled=output_labelled,
