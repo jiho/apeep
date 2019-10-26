@@ -117,7 +117,7 @@ Other options are documented there
     log.debug("initialise output image")
     # make output_size a multiple of step_size
     output_size = int(cfg['enhance']['image_size'] / step) * step
-    output = np.empty((output_size, img_width))
+    output_buffer = np.empty((output_size, img_width))
     i_o = 0
     
     # initialise flat-fielding timer
@@ -140,20 +140,27 @@ Other options are documented there
             # compute flat-fielding
             piece['data'] = piece['data'] / mavg
         
-        # log.debug("add block to output image")
-        output[i_o:i_o+step,:] = piece['data']
+        # log.debug("add block to output buffer")
+        output_buffer[i_o:i_o+step,:] = piece['data']
         i_o = i_o + step
         
-        # when output is full
+        # when output_buffer is full
         if i_o == output_size:
             # end timer for flat-fielding
             elapsed = t.el(timer_ff, "flat-field")
 
-            # reinitialise output image
+            # reinitialise output_buffer
             i_o = 0
-            
-            # TODO rotate towards horizontal
-        
+
+            # rotate the image so that motion is from the left to the right
+            timer_rot = t.b()
+            if cfg['acq']['top'] == "right":
+                output = np.rot90(output_buffer).copy(order="C")
+            elif cfg['acq']['top'] == "left":
+                output = np.transpose(output_buffer).copy(order="C")
+            # NB: the copy with C order takes time but the operations are faster afterwards and it is worth it
+            elapsed = t.el(timer_rot, "rotate")
+
             # compute the time stamp of the image
             # start of avi file + n frames + n lines in the last frame
             time_end =  piece['start'] + \

@@ -11,6 +11,12 @@ import apeep.timers as t
 
 @t.timer
 def save_stack(img, labels, dest, format=['rgb', 'tif', 'psd']):
+    # rotate images back to vertical (top will always be on the right)
+    # (easier to deal with on tablet)
+    img = np.rot90(img, 1, (1,0)).copy(order="C")
+    labels = np.rot90(labels, 1, (1,0)).copy(order="C")
+    # NB: pytoshop requires C-contiguous arrays
+    
     # get image size
     nrow, ncol = img.shape
     
