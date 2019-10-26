@@ -86,6 +86,8 @@ def configure(project_dir):
             cfg['enhance']['light_threshold']), \
             "`enhance > dark_threshold` should be smaller than `enhance > light_threshold`"
 
+    assert isin(cfg['segment']['stack_format'], ("psd", "tif", "rgb")), \
+            "`segment > stack_format` can only be 'psd', 'tif', 'rgb'"
     assert cfg['segment']['method'] in ("static", "percentile"), \
             "`process > method` should be 'static' or 'percentile'"
     assert isinstance(cfg['segment']['threshold'], (int, float)), \
@@ -158,3 +160,18 @@ def left_join_dict(x, y):
         else:
             x[k] = v
     return(x)
+
+def isin(x, choices):
+    """
+    Check that the elements of x are all among choices
+    
+    Args
+        x (list, tuple, etc.): the elements to check
+        choices (list, tuple, etc.): the possibilities
+        
+    Returns:
+        (bool) True if all elements of x are in choices, False otherwise
+    """
+    diff = set(x) - set(choices)
+    return(len(diff) == 0)
+ 
