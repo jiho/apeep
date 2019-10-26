@@ -6,7 +6,7 @@ with open('README.md', 'r') as fh:
 setuptools.setup(
     # Metadata
     name='apeep',
-    version='0.2',
+    version='0.3',
     description='Process ISIIS images without a peep',
     url='https://github.com/jiho/apeep',
     author='Jean-Olivier Irisson',
