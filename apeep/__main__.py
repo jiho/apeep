@@ -16,6 +16,7 @@ import sys
 from datetime import datetime, timedelta
 
 import numpy as np
+import pandas as pd
 
 import apeep
 import apeep.timers as t
@@ -77,6 +78,17 @@ Other options are documented there
     # make it relative to the project dir
     if not os.path.isabs(cfg['io']['input_dir']):
         cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
+
+    ## Read environmental data ----
+    all_txt = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
+    e = pd.DataFrame()
+    for txt in all_txt:
+        e = pd.concat([e,apeep.read_environ(txt)], ignore_index=True)
+    nrows = len(e.index)
+    if nrows == 0:
+        log.warning("no environmental data found")
+    else:
+        log.info(str(len(e.index)) + " rows of environmental data")
 
     ## Setup processing loop ----
     # hardcode frame dimensions
