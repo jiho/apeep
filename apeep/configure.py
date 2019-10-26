@@ -89,7 +89,7 @@ def configure(project_dir):
     assert isin(cfg['segment']['stack_format'], ("psd", "tif", "rgb")), \
             "`segment > stack_format` can only be 'psd', 'tif', 'rgb'"
     assert cfg['segment']['method'] in ("static", "percentile"), \
-            "`process > method` should be 'static' or 'percentile'"
+            "`segment > method` should be 'static' or 'percentile'"
     assert isinstance(cfg['segment']['threshold'], (int, float)), \
             "`segment > threshold` should be a number"
     assert (cfg['segment']['threshold'] >= 0 and \
