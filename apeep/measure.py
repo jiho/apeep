@@ -44,8 +44,8 @@ def measure(img, img_labelled, props=['area']):
     # uniquement identify particles with their md5 checksum
     particles = {hashlib.md5(p).hexdigest():p for p in particles}
     
-    log.debug("{} particles".format(len(particles)))
     # TODO add padding
+    log.debug(f"{len(particles)} particles")
     # TODO add scale bar
 
     # store this as their first property
