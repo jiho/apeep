@@ -10,7 +10,7 @@ import apeep.timers as t
 # from ipdb import set_trace as db
 
 @t.timer
-def save_masked(img, labels, dest, format=['rgb', 'tif', 'psd']):
+def save_stack(img, labels, dest, format=['rgb', 'tif', 'psd']):
     # get image size
     nrow, ncol = img.shape
     

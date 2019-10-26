@@ -59,7 +59,12 @@ enhance:
 segment:
   go: true
   write_image: false
-  write_masked_image: false
+  
+  write_stack: false
+  stack_format:
+    - psd
+    - tif
+    - rgb
   
   # Method to identify particles of interest
   # valid values are 'static', 'percentile'

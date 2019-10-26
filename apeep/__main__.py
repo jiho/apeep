@@ -23,7 +23,7 @@ import apeep.timers as t
 import apeep.im_pillow as im
 # import apeep.im_opencv as im
 # import apeep.im_lycon as im
-from apeep import img_masked
+from apeep import stack
 
 # from ipdb import set_trace as db
 
@@ -195,11 +195,11 @@ Other options are documented there
                     os.makedirs(segmented_image_dir, exist_ok=True)
                     im.save(output_labelled == 0, os.path.join(segmented_image_dir, output_name + ".png"))
                 
-                if cfg['segment']['write_masked_image']:
-                    masked_image_dir = os.path.join(project_dir, "masked")
-                    os.makedirs(masked_image_dir, exist_ok=True)
-                    img_masked.save_masked(img=output, labels=output_labelled, \
-                        dest=os.path.join(masked_image_dir, output_name), format=['rgb', 'psd'])
+                if cfg['segment']['write_stack']:
+                    stack_image_dir = os.path.join(project_dir, "masked")
+                    os.makedirs(stack_image_dir, exist_ok=True)
+                    stack.save_stack(img=output, labels=output_labelled, \
+                        dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
             
             # measure
             if cfg['measure']['go']:
