@@ -136,6 +136,7 @@ Other options are documented there
             # NB: computing the median is another order of magnitude slower
             mavg = mavg + (np.sum(piece['data'], axis=0) - mavg * step) / window_size
             # log.debug("moving average line updated, mean value = " + str(np.mean(mavg)))
+            # TODO we're doing np.sum with axis 0 (=per column) on a C contiguous array, although and F contiguous array would be faster. Look into changing this.
             
             # compute flat-fielding
             piece['data'] = piece['data'] / mavg
