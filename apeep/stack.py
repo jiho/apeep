@@ -34,7 +34,7 @@ def save_stack(img, labels, dest, format=['rgb', 'tif', 'psd']):
         back[:,:,2] = back[:,:,0]
         back_img = Image.fromarray(back)
         # create mask as RGBA
-        mask = np.zeros((img_size, img_width, 4), dtype="uint8")
+        mask = np.zeros((nrow, ncol, 4), dtype="uint8")
         mask[:,:,0] = (labels != 0) * 255
         mask[:,:,3] = mask[:,:,0]
         mask_img = Image.fromarray(mask)
