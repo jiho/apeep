@@ -23,7 +23,6 @@ import apeep.timers as t
 import apeep.im_pillow as im
 # import apeep.im_opencv as im
 # import apeep.im_lycon as im
-# TODO rename this into im to avoid the confusion with the objects called img
 from apeep import img_masked
 
 # from ipdb import set_trace as db
