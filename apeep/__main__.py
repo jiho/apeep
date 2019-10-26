@@ -197,14 +197,13 @@ Other options are documented there
                     img_labelled=output_labelled,
                     props=cfg['measure']['properties']
                 )
-                # write particles properties and images to disk
                 if cfg['measure']['write_particles']:
-                    particles_image_dir = os.path.join(project_dir, "particles")
-                    os.makedirs(particles_image_dir, exist_ok=True)
-
-                    apeep.write_particles_props(particles_props, particles_image_dir)
-                    
-                    apeep.write_particles(particles, particles_image_dir)       
+                    particles_images_dir = os.path.join(project_dir, "particles", output_name)
+                    os.makedirs(particles_images_dir, exist_ok=True)
+                    # write particles images
+                    apeep.write_particles(particles, particles_images_dir)      
+                    # and properties
+                    apeep.write_particles_props(particles_props, particles_images_dir)
             
             # compute performance
             elapsed = t.e(timer_img)
