@@ -220,7 +220,7 @@ Other options are documented there
                     particles_images_dir = os.path.join(project_dir, "particles", output_name)
                     os.makedirs(particles_images_dir, exist_ok=True)
                     # write particles images
-                    apeep.write_particles(particles, particles_images_dir)      
+                    apeep.write_particles(particles, particles_images_dir, px2mm=cfg['acq']['window_height_mm']/img_width)      
                     # and properties
                     apeep.write_particles_props(particles_props, particles_images_dir)
             

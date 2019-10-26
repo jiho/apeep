@@ -16,6 +16,9 @@ acq:
   top: right
   # number of lines scanned per second
   scan_per_s: 28000
+  # height of the viewing window in mm (typically 100 to 120)
+  # (this allows to compute the pixel size)
+  window_height_mm: 105
 
 
 # Flat-fielding

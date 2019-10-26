@@ -44,10 +44,8 @@ def measure(img, img_labelled, props=['area']):
     # uniquement identify particles with their md5 checksum
     particles = {hashlib.md5(p).hexdigest():p for p in particles}
     
-    # TODO add padding
     log.debug(f"{len(particles)} particles")
-    # TODO add scale bar
-
+    
     # store this as their first property
     particle_props = {'object_id': list(particles.keys())}    
     # append the other properties we need
@@ -119,7 +117,7 @@ def write_particles_props(particles_props, destination):
     pass
 
 @t.timer
-def write_particles(particles, destination):
+def write_particles(particles, destination, px2mm):
     """
     Write a set of particles to disk
     
@@ -131,5 +129,90 @@ def write_particles(particles, destination):
         Nothing
     """
     for name,part in particles.items():
+        # add scale
+        part = add_scale(part, px2mm)
         im._save(part, os.path.join(destination, name + ".png"))
     pass
+
+# define a custom minimal "font"
+f1 = np.asarray(\
+[[1,1,0,1],\
+ [1,0,0,1],\
+ [1,1,0,1],\
+ [1,1,0,1],\
+ [1,1,0,1],\
+ [1,1,0,1],\
+ [1,1,0,1]])
+f2 = np.asarray(\
+[[1,1,0,0,1,1],\
+ [1,0,1,1,0,1],\
+ [1,1,1,0,1,1],\
+ [1,1,0,1,1,1],\
+ [1,0,1,1,1,1],\
+ [1,0,1,1,1,1],\
+ [1,0,0,0,0,1]])
+f0 = np.asarray(\
+[[1,0,0,1,1],\
+ [0,1,1,0,1],\
+ [0,1,1,0,1],\
+ [0,1,1,0,1],\
+ [0,1,1,0,1],\
+ [0,1,1,0,1],\
+ [1,0,0,1,1]])
+fm = np.asarray(\
+[[1,1,1,1,1,1],\
+ [1,1,1,1,1,1],\
+ [1,1,1,1,1,1],\
+ [1,0,0,1,0,1],\
+ [1,0,1,0,1,0],\
+ [1,0,1,0,1,0],\
+ [1,0,1,0,1,0]])
+# define scale bar text
+t1mm  = np.concatenate((f1,fm,fm),    axis=1)
+t10mm = np.concatenate((f1,f0,fm,fm), axis=1)
+t20mm = np.concatenate((f2,f0,fm,fm), axis=1)
+# breaks_mm = np.array([1, 10, 20])
+# breaks_text = [t1mm, t10mm, t20mm]
+breaks_mm = np.array([1, 10])
+breaks_text = [t1mm, t10mm]
+
+def add_scale(img, px2mm):
+    img_width_px = img.shape[1]
+    
+    # define how large the scale bar is for each physical size,
+    # depending on the resolution
+    breaks_px = np.round(breaks_mm / px2mm)
+    
+    # find the most appropriate scale bar size given the width of the object
+    break_idx = int(np.interp(img_width_px, breaks_px, range(len(breaks_px))))
+    
+    # pick the elements we need
+    bar_width_px = int(breaks_px[break_idx])
+    break_text = breaks_text[break_idx]
+    text_width_px = break_text.shape[1]
+    
+    # define the width and height of the scale bar
+    w = max(img_width_px, bar_width_px, text_width_px)
+    h = 29
+    
+    # pad the input image on the right if it is now wide enough
+    if w > img_width_px:
+        padding = w - img_width_px
+        img = np.pad(img, ((0,0),(0,padding)), constant_values=1)
+    
+    # draw a blank scale
+    scale = np.ones((h, w))
+    # add the scale bar
+    scale[slice(h-2,h), slice(0,bar_width_px)] = 0
+    # add the text
+    scale[slice(h-4-7,h-4), slice(0,text_width_px)] = break_text
+    
+    # combine with the image
+    img = np.concatenate((img, scale), axis=0)
+    
+    # add a bit of padding to make it nice
+    # (and make the scale bar 31px high in total, like for zooscan, uvp, etc.)
+    img = np.pad(img, 2, constant_values=1)
+
+    return(img)
+
