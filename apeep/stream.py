@@ -1,7 +1,7 @@
 import glob
 import logging
 import os
-from datetime import datetime
+import datetime
 
 import av
 import numpy as np
@@ -57,7 +57,7 @@ def stream(dir, n=1):
     for avi in all_avi:
         log.debug("open '" + avi + "'")
 
-        timecode = datetime.strptime(os.path.basename(avi), "%Y%m%d%H%M%S.%f.avi")
+        timecode = datetime.datetime.strptime(os.path.basename(avi), "%Y%m%d%H%M%S.%f.avi")
         # TODO check for jumps in the video file time stamps
 
         v = av.open(avi)
