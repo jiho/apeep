@@ -31,6 +31,8 @@ def measure(img, img_labelled, props=['area']):
             properties, suitable to be turned into a pandas DataFrame
     """
 
+    # TODO add bounding box at minima
+
     # get general logger
     log = logging.getLogger()
 
