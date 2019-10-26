@@ -220,7 +220,7 @@ Other options are documented there
             # compute performance
             elapsed = t.e(timer_img)
             real_time = cfg['enhance']['image_size'] / cfg['acq']['scan_per_s']
-            log.info(f"finished image ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
+            log.info(f"{output_name} done ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
             
             # reset flat-fielding and global timers for next iteration
             timer_ff = t.b()
