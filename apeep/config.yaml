@@ -68,11 +68,11 @@ segment:
   
   # Whether to write an image stack with the segmentation mask on top of the enhanced image
   write_stack: false
-  # Format of this stack: photoshop file, multilayer tiff, or RGB image with mask in R
+  # Format of this stack
   stack_format:
-    - psd
-    - tif
-    - rgb
+    - psd # photoshop file
+    - tif # multilayer tiff
+    - rgb # RGB image with mask in R and data in G+B
   
   # Method to identify particles of interest
   # valid values are 'static', 'percentile'
