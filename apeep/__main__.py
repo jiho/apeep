@@ -196,7 +196,7 @@ Other options are documented there
                     im.save(output_labelled == 0, os.path.join(segmented_image_dir, output_name + ".png"))
                 
                 if cfg['segment']['write_stack']:
-                    stack_image_dir = os.path.join(project_dir, "masked")
+                    stack_image_dir = os.path.join(project_dir, "stacked")
                     os.makedirs(stack_image_dir, exist_ok=True)
                     stack.save_stack(img=output, labels=output_labelled, \
                         dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
