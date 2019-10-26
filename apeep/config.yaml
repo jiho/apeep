@@ -21,6 +21,8 @@ acq:
 # Flat-fielding
 flat_field:
   go: true
+
+  # Whether to write the flat-fielded image to disk
   write_image: false
   
   # Size of moving window to compute flat-fielding (in px)
@@ -38,6 +40,8 @@ flat_field:
 # Output image enhancing
 enhance:
   go: true
+
+  # Whether to write the enhanced image to disk
   write_image: false
   
   # Size of the output image (in px)
@@ -58,9 +62,13 @@ enhance:
 # Segmentation
 segment:
   go: true
+
+  # Whether to write the segmentation mask to disk
   write_image: false
   
+  # Whether to write an image stack with the segmentation mask on top of the enhanced image
   write_stack: false
+  # Format of this stack: photoshop file, multilayer tiff, or RGB image with mask in R
   stack_format:
     - psd
     - tif
@@ -88,6 +96,8 @@ segment:
 # Particle measurements
 measure:
   go: true
+  
+  # Whether to write particle images and properties to disk
   write_particles: true
   
   # Properties of particles to store in the particles.tsv file
