@@ -88,15 +88,19 @@ def configure(project_dir):
 
     assert isin(cfg['segment']['stack_format'], ("psd", "tif", "rgb")), \
             "`segment > stack_format` can only be 'psd', 'tif', 'rgb'"
-    assert cfg['segment']['method'] in ("static", "percentile"), \
-            "`segment > method` should be 'static' or 'percentile'"
+    assert cfg['segment']['method'] in ("static", "percentile", "auto"), \
+            "`segment > method` should be 'static', 'percentile' or 'auto"
     assert isinstance(cfg['segment']['threshold'], (int, float)), \
             "`segment > threshold` should be a number"
     assert (cfg['segment']['threshold'] >= 0 and \
             cfg['segment']['threshold'] <= 100), \
             "`segment > threshold` should be in [0,100] (0, no particles; 100, select everything)"
-    assert isinstance(cfg['segment']['dilate'], (int)), \
-            "`segment > dilate` should be an number"
+    assert isinstance(cfg['segment']['auto_threshold'], (int, float)), \
+            "`segment > auto_threshold` should be a number"
+    assert isinstance(cfg['segment']['adapt_closing'], (int)), \
+            "`segment > adapt_closing` should be an number"
+    assert isinstance(cfg['segment']['otsu_closing'], (int)), \
+            "`segment > otsu_closing` should be an number"
     assert isinstance(cfg['segment']['min_area'], (int, float)), \
             "`segment > min_area` should be an number"
 

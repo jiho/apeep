@@ -182,19 +182,21 @@ Other options are documented there
 
             # enhance output image
             if cfg['enhance']['go']:
-                output = apeep.enhance(output, cfg)
+                enhanced_output = apeep.enhance(output, cfg)
                 
                 if cfg['enhance']['write_image']:
                     enhanced_image_dir = os.path.join(project_dir, "enhanced")
                     os.makedirs(enhanced_image_dir, exist_ok=True)
-                    im.save(output, os.path.join(enhanced_image_dir, output_name + ".png"))
+                    im.save(enhanced_output, os.path.join(enhanced_image_dir, output_name + ".png"))
             
             # segment
             if cfg['segment']['go']:
-                output_labelled = apeep.segment(output,
+                output_labelled = apeep.segment(enhanced_output, output,
                     method=cfg['segment']['method'],
                     threshold=cfg['segment']['threshold'],
-                    dilate=cfg['segment']['dilate'],
+                    auto_threshold=cfg['segment']['auto_threshold'],
+                    adapt_closing=cfg['segment']['adapt_closing'],
+                    otsu_closing=cfg['segment']['otsu_closing'],
                     min_area=cfg['segment']['min_area']
                 )
                 
@@ -206,7 +208,7 @@ Other options are documented there
                 if cfg['segment']['write_stack']:
                     stack_image_dir = os.path.join(project_dir, "stacked")
                     os.makedirs(stack_image_dir, exist_ok=True)
-                    stack.save_stack(img=output, labels=output_labelled, \
+                    stack.save_stack(img=output_0_1, labels=output_labelled, \
                         dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
             
             # measure
