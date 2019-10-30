@@ -170,15 +170,17 @@ Other options are documented there
             time_start = time_end - (output_size * line_timestep)
             output_name = datetime.strftime(time_start, '%Y-%m-%d_%H-%M-%S_%f')
 
-            if cfg['flat_field']['write_image']:
-                flat_fielded_image_dir = os.path.join(project_dir, "flat_fielded")
-                os.makedirs(flat_fielded_image_dir, exist_ok=True)
+            if cfg['flat_field']['go']:
                 # rescale in [0,1] to save the image
                 minv = output.min()
                 maxv = output.max()
                 output_0_1 = (output - minv) / (maxv - minv)
                 # TODO check it more thouroughly but this normalisation creates very inhomogeneous grey levels in the result
-                im.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + ".png"))
+
+                if cfg['flat_field']['write_image']:
+                    flat_fielded_image_dir = os.path.join(project_dir, "flat_fielded")
+                    os.makedirs(flat_fielded_image_dir, exist_ok=True)
+                    im.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + ".png"))
 
             # enhance output image
             if cfg['enhance']['go']:
@@ -208,7 +210,7 @@ Other options are documented there
                 if cfg['segment']['write_stack']:
                     stack_image_dir = os.path.join(project_dir, "stacked")
                     os.makedirs(stack_image_dir, exist_ok=True)
-                    stack.save_stack(img=output_0_1, labels=output_labelled, \
+                    stack.save_stack(img=enhanced_output, labels=output_labelled, \
                         dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
             
             # measure
