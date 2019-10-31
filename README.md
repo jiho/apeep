@@ -18,7 +18,11 @@ Install `pip` for python 3 (usually called `pip3`)
 
 Install `apeep` from this repository
 
-    pip3 install git+https://github.com/jiho/apeep
+    pip3 install --user git+https://github.com/jiho/apeep
+    # to install apeep as a regular user
+    # or
+    sudo pip3 install git+https://github.com/jiho/apeep
+    # to install it system-wide
 
 This should install other python packages `apeep` depends on. 
 
