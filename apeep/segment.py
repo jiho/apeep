@@ -9,7 +9,7 @@ import apeep.timers as t
 # from ipdb import set_trace as db
 
 @t.timer
-def segment(enhanced_img, img, method="auto", threshold=0.4, auto_threshold = 0.0015, adapt_closing=5, otsu_closing = 8, min_area=150):
+def segment(img, method="auto", threshold=0.4, var_limit = 0.0015, closing=5, min_area=150):
     """
     Segment an image into particles
     
@@ -23,16 +23,14 @@ def segment(enhanced_img, img, method="auto", threshold=0.4, auto_threshold = 0.
             thresholding for clear images.
         threshold (flt): percentage or grey level; all pixels darker than 
             threshold will be considered as part of particles.
-        auto_threshold (flt): value of grey level variance for which segmentation 
+        var_limit (flt): value of grey level variance for which segmentation 
             method changes. Images with lower variance are segmented with Otsu, 
             images with higher variance are segmented with 'percentile' method.
             Computed on non enhanced image. 
-        adapt_closing (int): after adaptative thresholding, particles are "closed" by running a 
-            dilatation of 'adapt_closing' pixels followed by an erosion of 'adapt_closing' pixels to
-            fill potentiel gaps in particles
-        otsu_closing (int): after otsu thresholding, particles are "closed" by running a 
-            dilatation of 'adapt_closing' pixels followed by an erosion of 'adapt_closing' pixels to
-            fill potentiel gaps in particles
+        closing (int): after thresholding, particles are "closed" by running a 
+            dilatation of 'closing' pixels followed by an erosion of 'closing' pixels to
+            fill potentiel gaps in particles. If otsu segmentation is used, closing is
+            set to 1.5*closing
         min_area (int): minimum number of pixels in an object to consider it.
     
     Returns:
@@ -41,16 +39,13 @@ def segment(enhanced_img, img, method="auto", threshold=0.4, auto_threshold = 0.
 
     if method == "percentile":
         # compute distribution of grey levels
-        en_img_small = skimage.transform.rescale(enhanced_img, 0.2, multichannel=False, anti_aliasing=False)
+        img_small = skimage.transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
         # TODO check the speed improvement if this is computed only once, during image enhancement
         # define the new threshold based on percentile
-        threshold = np.percentile(en_img_small, (threshold))
+        threshold = np.percentile(img_small, (threshold))
         
         # threshold image
-        img_binary = enhanced_img < threshold
-        
-        # perform morphological closing to fill gaps in particules
-        img_binary = skimage.morphology.binary_closing(img_binary, np.ones((adapt_closing, adapt_closing)))
+        img_binary = img < threshold
         
         
     elif method == "static":
@@ -58,10 +53,7 @@ def segment(enhanced_img, img, method="auto", threshold=0.4, auto_threshold = 0.
         treshold = threshold / 100.
         
         # threshold image
-        img_binary = enhanced_img < threshold
-        
-        # perform morphological closing to fill gaps in particules
-        img_binary = skimage.morphology.binary_closing(img_binary, np.ones((adapt_closing, adapt_closing)))
+        img_binary = img < threshold
         
         
     elif method == "auto":
@@ -72,43 +64,31 @@ def segment(enhanced_img, img, method="auto", threshold=0.4, auto_threshold = 0.
         img_center = img_small[round(img_small.shape[0]/4):round(3*img_small.shape[0]/4),:]
         # compute grey level variance on centered small version of non enhanced image
         var = img_center.var()
-        
-        # make small version of enhanced image to compute thresholds
-        en_img_small = skimage.transform.rescale(enhanced_img, 0.2, multichannel=False, anti_aliasing=False)
     
         # If var higher than method_threshold, use adaptative thresholding
-        if var > auto_threshold:
+        if var > var_limit:
             # define the new threshold based on percentile
-            threshold = np.percentile(en_img_small, (threshold))
+            threshold = np.percentile(img_small, (threshold))
             # threshold image
-            img_binary = enhanced_img < threshold
+            img_binary = img < threshold
             # pixels darker than threshold are True, others are False
-        
-            # perform morphological closing to fill gaps in particules
-            img_binary = skimage.morphology.binary_closing(img_binary, np.ones((adapt_closing, adapt_closing)))
-
         
         # If var lower than method_threshold, use Otsu thresholding
         else:
             # threshold image
-            img_binary = img < skimage.filters.threshold_otsu(en_img_small)
+            img_binary = img < skimage.filters.threshold_otsu(img_small)
             
-            # perform morphological closing to fill gaps in particules
-            #img_binary = skimage.morphology.binary_closing(img_binary, np.ones((otsu_closing, otsu_closing)))
-            
-            
-            ## define the new threshold based on percentile
-            #threshold = np.percentile(en_img_small, (threshold))
-            ## threshold image
-            #img_binary = enhanced_img < threshold
-            ## pixels darker than threshold are True, others are False
-            #
-            ## perform morphological closing to fill gaps in particules
-            #img_binary = skimage.morphology.binary_closing(img_binary, np.ones((adapt_closing, adapt_closing)))
+            # increase closing for otsu
+            closing = round(1.5 * closing)
         
     else:
         raise ValueError("unknown `method` argument")
 
+
+        
+    # perform morphological closing to fill gaps in particules
+    img_binary = skimage.morphology.binary_closing(img_binary, skimage.morphology.disk(closing/2))
+        
     # label (i.e. find connected components of) particles and number them
     img_labelled = skimage.measure.label(img_binary, background=False, connectivity=2)
     

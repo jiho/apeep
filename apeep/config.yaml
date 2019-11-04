@@ -89,12 +89,11 @@ segment:
 
   # Grey level variance for which methods changes between adapttaive threshold ond otsu
   # sane values between 0.001 and 0.002
-  auto_threshold: 0.0015
+  var_limit: 0.0015
   
-  # Number of pixels to grow and shred particles by to perform closing after adaptative thresholding
-  adapt_closing: 5
-  # Number of pixels to grow and shred particles by to perform closing after otsu thresholding
-  otsu_closing: 8
+  # Number of pixels to grow and shred particles by to perform closing after adaptative thresholding.
+  # Value for otsu thresholding is computed as 1.5 * closing
+  closing: 5
 
   # Minimum area of particles to me measured and written out (in px)
   # sane values are ~50 to a few hundred
