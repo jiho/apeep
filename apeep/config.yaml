@@ -56,10 +56,10 @@ enhance:
   # in [0,100]; 0 changes nothing, 100 makes everything black
   # to keep all the subtelities in the dark tones, set to 0
   dark_threshold: 0
-  # Percentage of light grey pixels to clip to white
-  # in [0,100]; 0 changes nothing, 100 makes everything white
-  # most of the image is light so values around 80 are common
-  light_threshold: 85
+  # 1 - percentage of light grey pixels to clip to white
+  # in [0,100]; 100 changes nothing, 0 makes everything white
+  # most of the image is light so values around 50 are common
+  light_threshold: 50
 
 
 # Segmentation
@@ -87,7 +87,7 @@ segment:
   # in [0, 100]; 0 considers nothing, 100 considers all pixels (i.e. 255 for static)
   threshold: 0.4
 
-  # Grey level variance for which methods changes between adapttaive threshold ond otsu
+  # Grey level variance for which methods changes between adaptative threshold ond otsu
   # sane values between 0.001 and 0.002
   var_limit: 0.0015
   
