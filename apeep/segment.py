@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import skimage.transform
 import skimage.morphology
@@ -39,6 +41,9 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_
         ndarray: labelled image (mask with each particle larger than `min_area` 
         numbered as an integer)
     """
+    # get general logger
+    log = logging.getLogger()
+
     if method == "static":
         # convert value to be within [0,1]
         treshold_0_1 = threshold / 100.
@@ -56,6 +61,7 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_
             grey_var = img_small.var()
             # for noisy images, use percentile thresholding, for clean ones use otsu
             if grey_var > var_limit:
+                log.debug("noisy image, switching to percentile tresholding")
                 method = "percentile"
             else:
                 method = "otsu"
