@@ -84,8 +84,7 @@ def configure(project_dir):
     assert (cfg['enhance']['light_threshold'] >= 0 and \
             cfg['enhance']['light_threshold'] <= 100), \
             "`enhance > light_threshold` should be in [0,100]"
-    assert (cfg['enhance']['dark_threshold'] <= \
-            cfg['enhance']['light_threshold']), \
+    assert (cfg['enhance']['dark_threshold'] <= cfg['enhance']['light_threshold']), \
             "`enhance > dark_threshold` should be smaller than `enhance > light_threshold`"
 
     assert isin(cfg['segment']['stack_format'], ("psd", "tif", "rgb")), \
@@ -99,7 +98,7 @@ def configure(project_dir):
             "`segment > threshold` should be in [0,100] (0, no particles; 100, select everything)"
     assert isinstance(cfg['segment']['var_limit'], (int, float)), \
             "`segment > var_limit` should be a number"
-    assert isinstance(cfg['segment']['closing'], (int)), \
+    assert isinstance(cfg['segment']['closing'], (int, float)), \
             "`segment > closing` should be an number"
     assert isinstance(cfg['segment']['min_area'], (int, float)), \
             "`segment > min_area` should be an number"
