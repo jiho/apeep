@@ -6,85 +6,72 @@ import skimage.filters
 
 import apeep.timers as t
 
-# from ipdb import set_trace as db
+from ipdb import set_trace as db
 
 @t.timer
-def segment(img, method="auto", threshold=0.4, var_limit = 0.0015, closing=5, min_area=150):
+def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_area=150):
     """
     Segment an image into particles
     
     Args:
         img (ndarray): image (of type float)
-        method (str): string defining the method for thresholding. 'percentile' 
-            (the default) considers the argument `threshold` as a percentage of
-            grey levels to consider as particles. 'static' considers
-            `threshold` as a grey value in [0,100] directly. 'auto' uses 
-            'percentile' thresholding for noisy images (thermocline) and otsu
-            thresholding for clear images.
-        threshold (flt): percentage or grey level; all pixels darker than 
+        method (str): string defining the method for thresholding.
+            - 'static' considers `threshold` as a grey value in [0,100].
+            - 'percentile' considers `threshold` as a percentile of grey levels,
+              computed on the input image.
+            - 'otsu' uses Otsu thresholding (and disregards the `threshold`
+              argument).
+            - 'auto' uses Otsu thresholding for sufficiently clean images
+              and falls back to 'percentile' thresholding for noisy images
+             (because Otsu thresholding results in too many particles in that
+             case). The switch is determined by `var_limit`.
+        threshold (flt): grey level or percentage; all pixels darker than 
             threshold will be considered as part of particles.
-        var_limit (flt): value of grey level variance for which segmentation 
-            method changes. Images with lower variance are segmented with Otsu, 
-            images with higher variance are segmented with 'percentile' method.
-            Computed on non enhanced image. 
-        closing (int): after thresholding, particles are "closed" by running a 
-            dilatation of 'closing' pixels followed by an erosion of 'closing' pixels to
-            fill potentiel gaps in particles. If otsu segmentation is used, closing is
-            set to 1.5*closing
-        min_area (int): minimum number of pixels in an object to consider it.
+        var_limit (flt): value of the variance in the grey levels of the central
+            part of `img` under which Ostu tresholding is used.
+        closing (int): after thresholding, particles are "closed" (i.e. filled)
+            by running a dilatation of `closing` pixels followed by an erosion 
+            of `closing` pixels to fill potentiel gaps. NB: if Otsu's 
+            tresholding is used, `closing` is increased to `1.5*closing`.
+        min_area (int): minimum number of pixels in a particle to consider it.
     
     Returns:
-        ndarray: labelled image (mask with each particle numbered as an integer)
+        ndarray: labelled image (mask with each particle larger than `min_area` 
+        numbered as an integer)
     """
-
-    if method == "percentile":
-        # compute distribution of grey levels
-        img_small = skimage.transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
-        # TODO check the speed improvement if this is computed only once, during image enhancement
-        # define the new threshold based on percentile
-        threshold = np.percentile(img_small, (threshold))
-        
-        # threshold image
-        img_binary = img < threshold
-        
-        
-    elif method == "static":
-        # convert percentage into [0,1]
-        treshold = threshold / 100.
-        
-        # threshold image
-        img_binary = img < threshold
-        
-        
-    elif method == "auto":
-        # compute distribution of grey levels
-        img_small = skimage.transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
-    
-        # keep only central band of the small image by removing 1/4th of lines at the top and 1/4th of lines at the bottom
-        img_center = img_small[round(img_small.shape[0]/4):round(3*img_small.shape[0]/4),:]
-        # compute grey level variance on centered small version of non enhanced image
-        var = img_center.var()
-    
-        # If var higher than method_threshold, use adaptative thresholding
-        if var > var_limit:
-            # define the new threshold based on percentile
-            threshold = np.percentile(img_small, (threshold))
-            # threshold image
-            img_binary = img < threshold
-            # pixels darker than threshold are True, others are False
-        
-        # If var lower than method_threshold, use Otsu thresholding
-        else:
-            # threshold image
-            img_binary = img < skimage.filters.threshold_otsu(img_small)
-            
-            # increase closing for otsu
-            closing = round(1.5 * closing)
-        
+    if method == "static":
+        # convert value to be within [0,1]
+        treshold_0_1 = threshold / 100.
     else:
-        raise ValueError("unknown `method` argument")
+        # crop and rescale image to compute the distribution of grey levels on 
+        # the center of the image and an on a smaller one, which is both more
+        # precise and faster
+        crop = round(img.shape[0]/4)
+        img_center = img[crop:3*crop,:] # central band = more noise, fewer artifacts
+        img_small = skimage.transform.rescale(img_center, 0.2, multichannel=False, anti_aliasing=False)
+        # TODO check the speed improvement if this is computed only once, during image enhancement
 
+        if method == "auto":
+            # compute grey level variance on centered small version of non enhanced image
+            grey_var = img_small.var()
+            # for noisy images, use percentile thresholding, for clean ones use otsu
+            if grey_var > var_limit:
+                method = "percentile"
+            else:
+                method = "otsu"
 
+        if method == "percentile":
+            threshold_0_1 = np.percentile(img_small, (threshold))
+        elif method == "otsu":
+            threshold_0_1 = skimage.filters.threshold_otsu(img_small)
+            # increase closing for Otsu
+            closing = 1.5 * closing
+        else:
+            raise ValueError("unknown `method` argument")
+
+    # threshold image
+    img_binary = img < threshold_0_1
+    # pixels darker than threshold are True, others are False
         
     # perform morphological closing to fill gaps in particules
     img_binary = skimage.morphology.binary_closing(img_binary, skimage.morphology.disk(closing/2))
@@ -101,7 +88,7 @@ def segment(img, method="auto", threshold=0.4, var_limit = 0.0015, closing=5, mi
     # for r in small_regions:
     #     img_labelled_large[r._slice] = img_labelled_large[r._slice] * (img_labelled_large[r._slice] != r.label)
 
-    # recreate a labelled images wiht only large regions
+    # recreate a labelled image with only large regions
     regions = skimage.measure.regionprops(img_labelled)
     large_regions = [r for r in regions if fast_particle_area(r) > min_area]
     img_labelled_large = np.zeros_like(img_labelled)
