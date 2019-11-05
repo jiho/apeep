@@ -65,7 +65,7 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_
         elif method == "otsu":
             threshold_0_1 = skimage.filters.threshold_otsu(img_small)
             # increase closing for Otsu
-            closing = 1.5 * closing
+            closing = round(1.5 * closing)
         else:
             raise ValueError("unknown `method` argument")
 
