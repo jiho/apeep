@@ -8,7 +8,7 @@ import skimage.filters
 
 import apeep.timers as t
 
-from ipdb import set_trace as db
+# from ipdb import set_trace as db
 
 @t.timer
 def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_area=150):
