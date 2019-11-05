@@ -95,8 +95,8 @@ segment:
   var_limit: 0.0015
   
   # Number of pixels to grow and shrink particles by to fill gaps in particles
-  # NB: when otsu thresholding is used, increased to 1.5 * closing
-  closing: 5
+  # NB: when Otsu thresholding is used, increased to 1.5 * closing
+  closing: 6
 
   # Minimum area of particles to me measured and written out (in px)
   # sane values are ~50 to a few hundreds
