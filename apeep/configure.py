@@ -52,6 +52,8 @@ def configure(project_dir):
             "`acq > top` should be either 'right' or 'left'"
     assert isinstance(cfg['acq']['scan_per_s'], (int, float)), \
             "`acq > scan_per_s` should be a number"
+    assert isinstance(cfg['acq']['window_height_mm'], (int, float)), \
+            "`acq > window_height_mm` should be a number"
 
     assert isinstance(cfg['flat_field']['window_size'], (int, float)), \
             "`flat_field > window_size` should be a number"
