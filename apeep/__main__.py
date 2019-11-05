@@ -161,6 +161,7 @@ Other options are documented there
                 output = np.transpose(output_buffer).copy(order="C")
             # NB: the copy with C order takes time but the operations are faster afterwards and it is worth it
             elapsed = t.el(timer_rot, "rotate")
+            # TODO rotate the final particles only and check wether this is faster
 
             # compute the time stamp of the image
             # start of avi file + n frames + n lines in the last frame
