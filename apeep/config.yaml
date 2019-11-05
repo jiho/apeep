@@ -52,13 +52,13 @@ enhance:
   image_size: 10000
   # NB: image_size will be converted into a multiple of step_size
 
-  # Percentage of dark pixels to clip to black
+  # Percentage below which dark pixels are clipped to black
   # in [0,100]; 0 changes nothing, 100 makes everything black
   # to keep all the subtelities in the dark tones, set to 0
   dark_threshold: 0
-  # 1 - percentage of light grey pixels to clip to white
+  # Percentage ablve which pixels are clipped to white
   # in [0,100]; 100 changes nothing, 0 makes everything white
-  # most of the image is light so values around 50 are common
+  # most of the image is light grey so values around 50 are common
   light_threshold: 50
 
 
