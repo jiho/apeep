@@ -56,7 +56,7 @@ enhance:
   # in [0,100]; 0 changes nothing, 100 makes everything black
   # to keep all the subtelities in the dark tones, set to 0
   dark_threshold: 0
-  # Percentage ablve which pixels are clipped to white
+  # Percentage above which pixels are clipped to white
   # in [0,100]; 100 changes nothing, 0 makes everything white
   # most of the image is light grey so values around 50 are common
   light_threshold: 50
