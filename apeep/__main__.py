@@ -198,7 +198,8 @@ Other options are documented there
                     method=cfg['segment']['method'],
                     threshold=cfg['segment']['threshold'],
                     var_limit=cfg['segment']['var_limit'],
-                    closing=cfg['segment']['closing'],
+                    dilate=cfg['segment']['dilate'],
+                    erode=cfg['segment']['erode'],
                     min_area=cfg['segment']['min_area']
                 )
                 

@@ -94,11 +94,15 @@ segment:
   # sane values are between 0.001 and 0.002
   var_limit: 0.0015
   
-  # Number of pixels to grow and shrink particles by to fill gaps in particles
-  # NB: when Otsu thresholding is used, increased to 1.5 * closing
-  closing: 6
+  # Number of pixels to grow  by to fill gaps in particles
+  # NB: when Otsu thresholding is used, increased to 4/3 * dilate
+  dilate: 3
+  
+  # Number of pixels to shrink particles by 
+  erode: 3
 
   # Minimum area of particles to me measured and written out (in px)
+  # NB: when Otsu thresholding is used, increased to 4/3 * min_area
   # sane values are ~50 to a few hundreds
   min_area: 150
 

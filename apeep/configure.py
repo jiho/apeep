@@ -98,8 +98,10 @@ def configure(project_dir):
             "`segment > threshold` should be in [0,100] (0, no particles; 100, select everything)"
     assert isinstance(cfg['segment']['var_limit'], (int, float)), \
             "`segment > var_limit` should be a number"
-    assert isinstance(cfg['segment']['closing'], (int)), \
-            "`segment > closing` should be an number"
+    assert isinstance(cfg['segment']['dilate'], (int)), \
+            "`segment > dilate` should be an number"
+    assert isinstance(cfg['segment']['erode'], (int)), \
+            "`segment > erode` should be an number"            
     assert isinstance(cfg['segment']['min_area'], (int, float)), \
             "`segment > min_area` should be an number"
 

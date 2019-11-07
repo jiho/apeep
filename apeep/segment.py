@@ -11,7 +11,7 @@ import apeep.timers as t
 # from ipdb import set_trace as db
 
 @t.timer
-def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_area=150):
+def segment(img, method="auto", threshold=0.5, var_limit=0.0015, dilate=3, erode = 3,  min_area=150):
     """
     Segment an image into particles
     
@@ -31,15 +31,20 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_
             threshold will be considered as part of particles.
         var_limit (flt): value of the variance in the grey levels of the central
             part of `img` under which Ostu tresholding is used.
-        closing (int): after thresholding, particles are "closed" (i.e. filled)
-            by running a dilatation of `closing` pixels followed by an erosion 
-            of `closing` pixels to fill potentiel gaps. NB: if Otsu's 
-            tresholding is used, `closing` is increased to `1.5*closing`.
+        dilate (int): after thresholding, particles are "grown" by 'dilate' 
+            pixels to include surrounding pixels which may be part of the object 
+            but are not dark enough. NB: if Otsu's tresholding is used, `dilate` 
+            is increased to `4/3*dilate`.
+        erode (int): after thresholding, particles are "shredded" by 'erode' 
+            pixels to avoid including too many pixels. The combination of 
+            dilation + erosion fills gaps in particles. 
         min_area (int): minimum number of pixels in a particle to consider it.
+            NB: if Otsu's tresholding is used, `min_area` is increased to 
+            `4/3*min_area`.
     
     Returns:
         ndarray: labelled image (mask with each particle larger than `min_area` 
-        numbered as an integer)
+            numbered as an integer)
     """
     # get general logger
     log = logging.getLogger()
@@ -70,8 +75,11 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_
             threshold_0_1 = np.percentile(img_small, (threshold))
         elif method == "otsu":
             threshold_0_1 = skimage.filters.threshold_otsu(img_small)
-            # increase closing for Otsu
-            closing = round(1.5 * closing)
+            # increase dilate for Otsu
+            dilate = round(4/3 * dilate)
+            
+            # increase min_area for Otsu
+            min_area = round(4/3 * min_area)
         else:
             raise ValueError("unknown `method` argument")
 
@@ -80,7 +88,8 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, closing=5, min_
     # pixels darker than threshold are True, others are False
         
     # perform morphological closing to fill gaps in particules
-    img_binary = skimage.morphology.binary_closing(img_binary, skimage.morphology.disk(closing/2))
+    img_binary = skimage.morphology.binary_dilation(img_binary, skimage.morphology.disk(dilate))
+    img_binary = skimage.morphology.binary_erosion(img_binary, skimage.morphology.disk(erode))
         
     # label (i.e. find connected components of) particles and number them
     img_labelled = skimage.measure.label(img_binary, background=False, connectivity=2)
