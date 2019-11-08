@@ -11,7 +11,7 @@ import apeep.timers as t
 # from ipdb import set_trace as db
 
 @t.timer
-def segment(img, method="auto", threshold=0.5, var_limit=0.0015, dilate=3, erode = 3,  min_area=150):
+def segment(img, method="auto", threshold=0.5, var_limit=0.0015, dilate=3, erode=3,  min_area=150):
     """
     Segment an image into particles
     
@@ -58,12 +58,15 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, dilate=3, erode
         # precise and faster
         crop = round(img.shape[0]/4)
         img_center = img[crop:3*crop,:] # central band = more noise, fewer artifacts
+        img_center_small = skimage.transform.rescale(img_center, 0.2, multichannel=False, anti_aliasing=False)
+        
+        # Small image to compute thresholds
         img_small = skimage.transform.rescale(img_center, 0.2, multichannel=False, anti_aliasing=False)
         # TODO check the speed improvement if this is computed only once, during image enhancement
 
         if method == "auto":
             # compute grey level variance on centered small version of non enhanced image
-            grey_var = img_small.var()
+            grey_var = img_center_small.var()
             # for noisy images, use percentile thresholding, for clean ones use otsu
             if grey_var > var_limit:
                 log.debug("noisy image, switching to percentile tresholding")
