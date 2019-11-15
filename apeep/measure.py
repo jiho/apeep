@@ -47,7 +47,7 @@ def measure(img, img_labelled, props=['area']):
     log.debug(f"{len(particles)} particles")
     
     # store this as their first property
-    particle_props = {'object_id': list(particles.keys())}    
+    particle_props = {'id': list(particles.keys())}    
     # append the other properties we need
     # NB: append so that the md5 column is the first one
     particle_props.update(skimage.measure._regionprops._props_to_dict(regions, properties=props))
@@ -98,14 +98,24 @@ def write_particles_props(particles_props, destination):
 
     # convert to pandas DataFrame
     particles_props = pd.DataFrame(particles_props)
+    # add "object_" to column names 
+    particles_props.columns = "object_" + particles_props.columns
     
     # for EcoTaxa:
     # compute image file name
     particles_props['img_file_name'] = sub_dir + "/" + particles_props['object_id'] + ".png"
         
     # write to file
-    particles_file = os.path.join(base_dir, "ecotaxa_particles.tsv.gz")
+    particles_file = os.path.join(base_dir, "ecotaxa_particles.tsv")
     if not os.path.exists(particles_file):
+        
+        # add second row, containing data format codes; [f] for floats, [t] for text
+        # "object_id", "object_label" and "img_file_name" are text, other are floats
+        second_row = ['[t]'] * 2 + ['[f]'] * (particles_props.shape[1]-3) + ['[t]']
+        particles_props.loc[-1] = second_row
+        particles_props.index = particles_props.index + 1
+        particles_props = particles_props.sort_index()
+        
         # initialise, with headers
         particles_props.to_csv(particles_file,
             index=False, sep="\t", header=True)
