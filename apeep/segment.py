@@ -61,7 +61,7 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, dilate=3, erode
         img_center_small = skimage.transform.rescale(img_center, 0.2, multichannel=False, anti_aliasing=False)
         
         # Small image to compute thresholds
-        img_small = skimage.transform.rescale(img_center, 0.2, multichannel=False, anti_aliasing=False)
+        img_small = skimage.transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
         # TODO check the speed improvement if this is computed only once, during image enhancement
 
         if method == "auto":
