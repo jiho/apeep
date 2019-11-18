@@ -73,7 +73,7 @@ def get_particle_array(x):
     # extract the particle region
     particle = x._intensity_image[x._slice] * 0.997
     # mask the outside of the particle with white
-    particle = np.where(x._label_image[x._slice] != 0, particle, 1.)
+    particle = np.where(x._label_image[x._slice] == x.label, particle, 1.)
     return(particle)
 
 
