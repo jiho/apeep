@@ -88,7 +88,10 @@ Other options are documented there
         log.warning("no environmental data found")
     else:
         log.info(str(len(e.index)) + " rows of environmental data")
-
+            
+    ## Initiate particles properties dataframe ----
+    all_particles_props = pd.DataFrame()
+        
     ## Setup processing loop ----
     # hardcode frame dimensions
     img_height = 2048
@@ -227,7 +230,13 @@ Other options are documented there
                     # write particles images
                     apeep.write_particles(particles, particles_images_dir, px2mm=cfg['acq']['window_height_mm']/img_width)      
                     # and properties
-                    apeep.write_particles_props(particles_props, particles_images_dir)
+                    #apeep.write_particles_props(particles_props, particles_images_dir)
+                    particles_props = apeep.get_particles_props(particles_props, particles_images_dir)
+                    all_particles_props = pd.concat([all_particles_props, particles_props])
+                    
+            # write particles props
+            apeep.write_particles_table(all_particles_props, particles_images_dir)
+            
             
             # compute performance
             elapsed = t.e(timer_img)
