@@ -75,6 +75,20 @@ def read_environ(path):
     # drop peaks and pits
     e = e.drop(["peaks", "pits"], axis=1)
 
+    ## Reorder columns
+    # columns to move at the beginning
+    cols_to_order = ["sampleid"]
+    new_columns = cols_to_order + (e.columns.drop(cols_to_order).tolist())
+    e = e[new_columns]
+    
+    ## Add first row
+    # The first column is text, other are floats
+    first_row = ['t'] + (e.shape[1]-1)*['f']
+    
+    # insert at top of dataframe 
+    e.loc[-1] = first_row
+    e.index = e.index + 1
+    e = e.sort_index()
     return(e)
     
 
@@ -83,89 +97,69 @@ def merge_environ(env, parts):
     Join enviromental and particles data based on datetime. Return an ecotaxa compatible dataframe ready to be written as a tsv. 
     
     Args:
-        env (DataFrame): dataframe with environmental data
-        parts (DataFrame): dataframe with particles properties data
+        env (DataFrame): dataframe with environmental data and ecotaxa formats as first row
+        parts (DataFrame): dataframe with particles properties data and ecotaxa formats as first row
     
     Returns:
         (DataFrame) with environmental and particles data, proper columns names and formats as first row
     """
     
-#    ## Prepare env dataframe
-#    # rename env dataframe columns 
-#    envir = env.rename(columns=lambda x: x.split(" (")[0].replace(' ', '_').replace('.', '').lower())
-#    envir.columns =  "object_" + envir.columns
-#
-#    # drop time column
-#    envir = envir.drop('object_time', axis=1)
-#    
-#    # smooth depth 
-#    envir['object_depth'] = smooth(envir['object_depth'], k = 10, n = 5)
-#    
-#    # compute cast number
-#    # find peaks indexes
-#    peaks, _ =  scipy.signal.find_peaks(envir.object_depth, distance = 1000)
-#    
-#    # find pits indexes
-#    pits, _ = scipy.signal.find_peaks(envir.object_depth * (-1), distance = 1000)
-#    
-#    # set all peaks and pits to False
-#    envir['peaks'] = False
-#    envir['pits'] = False
-#    
-#    # set to True at indexes of peaks and pits
-#    envir.loc[peaks, 'peaks'] = True
-#    envir.loc[pits, 'pits'] = True
-#    
-#    # compute cast as cumulative sum of peaks or pits + 1
-#    envir['sampleid'] = np.cumsum(np.logical_or(envir.pits, envir.peaks)) + 1
-#    
-#    # drop peaks and pits
-#    envir = envir.drop(["peaks", "pits"], axis=1)
-#
-    ## Prepare parts dataframe
-    # compute date_time in particles dataframe, to join with date_time in envir dataframe
-    parts["object_orig_img"] = parts.img_file_name.str.split("/").str[0]
-    parts["object_date_time"] = pd.to_datetime(parts.object_orig_img, format="%Y-%m-%d_%H-%M-%S_%f")
+    nrows = len(env.index)
     
-    # drop useless columns
-    parts = parts.drop('object_orig_img', axis=1)
+    # if environmental data is available, proceed to join with parts data
+    if nrows > 0:
+        
+        ## Prepare parts dataframe
+        # remove and store first row with data format
+        parts_first_row = parts.iloc[[0]]
+        parts_first_row = parts_first_row.drop('object_date_time', axis=1)
+        parts = parts.drop(parts.index[0])
+        
+        # convert date_time to datetime
+        parts['object_date_time'] = pd.to_datetime(parts['object_date_time'], format="%Y-%m-%d %H:%M:%S.%f")
+        
+        ## Prepare env dataframe
+        # remove and store first row with data format
+        env_first_row = env.iloc[[0]]
+        env_first_row = env_first_row.drop('object_date_time', axis=1)
+        env = env.drop(env.index[0])
     
-    # compute date and time with ecotaxa format
-    parts["object_date"] = parts["object_date_time"].dt.strftime('%Y%d%m')
-    parts["object_time"] = parts["object_date_time"].dt.strftime('%H%M%S')
-
-
-    ## Join
-    # fuzzy join by datetime to nearest, with 1s tolerance
-    df = pd.merge_asof(parts.sort_values("object_date_time"), env.sort_values("object_date_time"),
-                  left_on="object_date_time", right_on="object_date_time", direction="nearest", 
-                  tolerance=pd.Timedelta('1s'))
-    
-    # drop obj_date_time column
-    df = df.drop('object_date_time', axis=1)
-    
-    ## Reorder columns
-    # columns to move at the beginning
-    cols_to_order = ["img_file_name",
-                 "object_id",
-                 "object_label",
-                 "sampleid",
-                 "object_date",
-                 "object_time",
-                 "object_lat",
-                 "object_long",
-                 "object_depth"]
-    new_columns = cols_to_order + (df.columns.drop(cols_to_order).tolist())
-    df = df[new_columns]
-    
-    ## Add first row
-    # The 6 first columns are text, other are floats
-    first_row = 6*['t'] + (df.shape[1]-6)*['f']
-    
-    # insert at top of dataframe 
-    df.loc[-1] = first_row
-    df.index = df.index + 1
-    df = df.sort_index()
+        # convert date_time to datetime
+        env['object_date_time'] = pd.to_datetime(env['object_date_time'], format="%Y-%m-%d %H:%M:%S.%f")
+        
+        ## Join
+        # fuzzy join by datetime to nearest, with 1s tolerance
+        df = pd.merge_asof(parts.sort_values("object_date_time"), env.sort_values("object_date_time"),
+                      left_on="object_date_time", right_on="object_date_time", direction="nearest", 
+                      tolerance=pd.Timedelta('1s'))
+        
+        # drop obj_date_time column
+        df = df.drop('object_date_time', axis=1)
+        
+        # join first rows
+        first_row = parts_first_row.join(env_first_row)
+        
+        # Reinsert first row
+        df = pd.merge(first_row, df, how='outer')
+        
+        ## Reorder columns
+        # columns to move at the beginning
+        cols_to_order = ["img_file_name",
+                     "object_id",
+                     "object_label",
+                     "sampleid",
+                     "object_date",
+                     "object_time",
+                     "object_lat",
+                     "object_long",
+                     "object_depth"]
+        new_columns = cols_to_order + (df.columns.drop(cols_to_order).tolist())
+        df = df[new_columns]
+        
+    # if no environmental data available
+    else:
+        # delete useless object_date_time column
+        df = parts.drop('object_date_time', axis = 1)
         
     return(df)
 

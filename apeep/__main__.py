@@ -233,10 +233,12 @@ Other options are documented there
                     #apeep.write_particles_props(particles_props, particles_images_dir)
                     particles_props = apeep.get_particles_props(particles_props, particles_images_dir)
                     all_particles_props = pd.concat([all_particles_props, particles_props])
-            
+    
+    ## Order and add second row to particles props dataframe
+    all_particles_props = apeep.add_first_row(all_particles_props)
+    
     ## Merge particles and environment data if environmental data is available
-    if nrows > 0:
-        all_particles_props = apeep.merge_environ(e, all_particles_props)
+    all_particles_props = apeep.merge_environ(e, all_particles_props)
                         
     # write particles props
     apeep.write_particles_table(all_particles_props, particles_images_dir)
