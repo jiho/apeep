@@ -233,19 +233,23 @@ Other options are documented there
                     #apeep.write_particles_props(particles_props, particles_images_dir)
                     particles_props = apeep.get_particles_props(particles_props, particles_images_dir)
                     all_particles_props = pd.concat([all_particles_props, particles_props])
-                    
-            # write particles props
-            apeep.write_particles_table(all_particles_props, particles_images_dir)
+            
+    ## Merge particles and environment data if environmental data is available
+    if nrows > 0:
+        all_particles_props = apeep.merge_environ(e, all_particles_props)
+                        
+    # write particles props
+    apeep.write_particles_table(all_particles_props, particles_images_dir)
             
             
-            # compute performance
-            elapsed = t.e(timer_img)
-            real_time = cfg['enhance']['image_size'] / cfg['acq']['scan_per_s']
-            log.info(f"{output_name} done ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
-            
-            # reset flat-fielding and global timers for next iteration
-            timer_ff = t.b()
-            timer_img = t.b()
+    # compute performance
+    elapsed = t.e(timer_img)
+    real_time = cfg['enhance']['image_size'] / cfg['acq']['scan_per_s']
+    log.info(f"{output_name} done ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
+    
+    # reset flat-fielding and global timers for next iteration
+    timer_ff = t.b()
+    timer_img = t.b()
             
 
 if __name__ == "__main__":

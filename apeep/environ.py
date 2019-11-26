@@ -1,6 +1,6 @@
 import glob
 import datetime
-
+import scipy
 import pandas as pd
 import numpy as np
 
@@ -44,4 +44,164 @@ def read_environ(path):
     # import re
     # [re.sub("[ \(\)\.\/]", "_", k).lower().replace("°", "deg").replace("__", "_") for k in e.keys()]
 
+    # rename env dataframe columns 
+    e = e.rename(columns=lambda x: x.split(" (")[0].replace(' ', '_').replace('.', '').lower())
+    e.columns =  "object_" + e.columns
+
+    # drop time column
+    e = e.drop('object_time', axis=1)
+    
+    # smooth depth, keep only 2 decimals
+    e['object_depth'] = [round(x, 2) for x in smooth(e['object_depth'], k = 10, n = 5)]
+    
+    # compute cast number
+    # find peaks indexes
+    peaks, _ =  scipy.signal.find_peaks(e.object_depth, distance = 1000)
+    
+    # find pits indexes
+    pits, _ = scipy.signal.find_peaks(e.object_depth * (-1), distance = 1000)
+    
+    # set all peaks and pits to False
+    e['peaks'] = False
+    e['pits'] = False
+    
+    # set to True at indexes of peaks and pits
+    e.loc[peaks, 'peaks'] = True
+    e.loc[pits, 'pits'] = True
+    
+    # compute cast as cumulative sum of peaks or pits + 1
+    e['sampleid'] = np.cumsum(np.logical_or(e.pits, e.peaks)) + 1
+    
+    # drop peaks and pits
+    e = e.drop(["peaks", "pits"], axis=1)
+
     return(e)
+    
+
+def merge_environ(env, parts):
+    """
+    Join enviromental and particles data based on datetime. Return an ecotaxa compatible dataframe ready to be written as a tsv. 
+    
+    Args:
+        env (DataFrame): dataframe with environmental data
+        parts (DataFrame): dataframe with particles properties data
+    
+    Returns:
+        (DataFrame) with environmental and particles data, proper columns names and formats as first row
+    """
+    
+#    ## Prepare env dataframe
+#    # rename env dataframe columns 
+#    envir = env.rename(columns=lambda x: x.split(" (")[0].replace(' ', '_').replace('.', '').lower())
+#    envir.columns =  "object_" + envir.columns
+#
+#    # drop time column
+#    envir = envir.drop('object_time', axis=1)
+#    
+#    # smooth depth 
+#    envir['object_depth'] = smooth(envir['object_depth'], k = 10, n = 5)
+#    
+#    # compute cast number
+#    # find peaks indexes
+#    peaks, _ =  scipy.signal.find_peaks(envir.object_depth, distance = 1000)
+#    
+#    # find pits indexes
+#    pits, _ = scipy.signal.find_peaks(envir.object_depth * (-1), distance = 1000)
+#    
+#    # set all peaks and pits to False
+#    envir['peaks'] = False
+#    envir['pits'] = False
+#    
+#    # set to True at indexes of peaks and pits
+#    envir.loc[peaks, 'peaks'] = True
+#    envir.loc[pits, 'pits'] = True
+#    
+#    # compute cast as cumulative sum of peaks or pits + 1
+#    envir['sampleid'] = np.cumsum(np.logical_or(envir.pits, envir.peaks)) + 1
+#    
+#    # drop peaks and pits
+#    envir = envir.drop(["peaks", "pits"], axis=1)
+#
+    ## Prepare parts dataframe
+    # compute date_time in particles dataframe, to join with date_time in envir dataframe
+    parts["object_orig_img"] = parts.img_file_name.str.split("/").str[0]
+    parts["object_date_time"] = pd.to_datetime(parts.object_orig_img, format="%Y-%m-%d_%H-%M-%S_%f")
+    
+    # drop useless columns
+    parts = parts.drop('object_orig_img', axis=1)
+    
+    # compute date and time with ecotaxa format
+    parts["object_date"] = parts["object_date_time"].dt.strftime('%Y%d%m')
+    parts["object_time"] = parts["object_date_time"].dt.strftime('%H%M%S')
+
+
+    ## Join
+    # fuzzy join by datetime to nearest, with 1s tolerance
+    df = pd.merge_asof(parts.sort_values("object_date_time"), env.sort_values("object_date_time"),
+                  left_on="object_date_time", right_on="object_date_time", direction="nearest", 
+                  tolerance=pd.Timedelta('1s'))
+    
+    # drop obj_date_time column
+    df = df.drop('object_date_time', axis=1)
+    
+    ## Reorder columns
+    # columns to move at the beginning
+    cols_to_order = ["img_file_name",
+                 "object_id",
+                 "object_label",
+                 "sampleid",
+                 "object_date",
+                 "object_time",
+                 "object_lat",
+                 "object_long",
+                 "object_depth"]
+    new_columns = cols_to_order + (df.columns.drop(cols_to_order).tolist())
+    df = df[new_columns]
+    
+    ## Add first row
+    # The 6 first columns are text, other are floats
+    first_row = 6*['t'] + (df.shape[1]-6)*['f']
+    
+    # insert at top of dataframe 
+    df.loc[-1] = first_row
+    df.index = df.index + 1
+    df = df.sort_index()
+        
+    return(df)
+
+    
+    
+def smooth(x, k=1, n=1):
+    """
+    Smooth a variable in a cast using a weighted moving average. 
+    
+    Args:
+        x : vector to smooth
+        k (int) : order of the window
+        n (int) : number of times to smooth the data
+    
+    Returns:
+        (list) with the smoothed data
+    """
+    
+    # make sure that x is a list
+    if type(x)!=list:
+        x = x.tolist()
+        
+    # repeat n times
+    for t in range(1,n):
+        
+    # pad the extremities of data to be able to compute over the whole vector
+        x = np.insert(x, 0, [np.nan]*k)
+        x = np.append(x, [np.nan]*k)
+        
+        # compute centered weights
+        w = list(range(1, k+1, 1)) + [k+1] + list(range(k, 0, -1))
+        
+        # Run weighted average on sliding window, ignoring nan values
+        x = [np.average(np.ma.MaskedArray(np.take(x, range(i-k, i+k+1, 1)), 
+                                          mask=np.isnan(np.take(x, range(i-k, i+k+1, 1)))),
+                        weights=np.ma.MaskedArray(w, mask=np.isnan(np.take(x, range(i-k, i+k+1, 1))))) 
+             for i in range(k, len(x)-k)]
+        
+    return(x)

@@ -153,17 +153,20 @@ def get_particles_props(particles_props, destination):
     # for EcoTaxa:
     # compute image file name
     df_particles['img_file_name'] = sub_dir + "/" + df_particles['object_id'] + ".png"
+    
+    # reorder columns
+    
         
     return(df_particles)
     
-def write_particles_table(all_particles_props, destination):
+def write_particles_table(particles_props, destination):
     """
     Write particles properties to disk
     
     Args:
-        all_particles_props (DataFrame): particles properties to write as tsk
+        all_particles_props (DataFrame): particles properties to write as tsv
         destination (str): path to the directory where *particles* are
-            (i.e. has the subdirectory below "particles")
+        (i.e. has the subdirectory below "particles")
     
     Returns:
         Nothing
@@ -171,15 +174,11 @@ def write_particles_table(all_particles_props, destination):
 
     # split the destination directory
     base_dir = os.path.dirname(destination)
-    #sub_dir = os.path.basename(destination)
-        
+    
     # write to file
     particles_file = os.path.join(base_dir, "ecotaxa_particles.tsv")
-   
-    # just append to the file
-    with open(particles_file, "a") as outfile:
-        all_particles_props.to_csv(outfile,
-            index=False, sep="\t", header=True)
+    particles_props.to_csv(particles_file,index=False, sep="\t", header=True)
+    
     pass
 
 @t.timer
