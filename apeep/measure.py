@@ -188,13 +188,12 @@ def add_first_row(df_particles):
     
     
     ## Add first row
-    # The 5 first columns are text, other are floats
-    first_row = 5*['t'] + (df_particles.shape[1]-5)*['f']
+    # The first column is text, other are floats
+    first_row = pd.DataFrame(5*['t'] + (df_particles.shape[1]-5)*['f']).T
+    first_row.columns = df_particles.columns
     
     # insert at top of dataframe 
-    df_particles.loc[-1] = first_row
-    df_particles.index = df_particles.index + 1
-    df_particles = df_particles.sort_index()
+    df_particles = pd.concat([first_row, df_particles], ignore_index=True)
         
     return(df_particles)
 

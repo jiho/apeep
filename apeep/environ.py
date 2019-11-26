@@ -83,12 +83,12 @@ def read_environ(path):
     
     ## Add first row
     # The first column is text, other are floats
-    first_row = ['t'] + (e.shape[1]-1)*['f']
+    first_row = pd.DataFrame(['t'] + (e.shape[1]-1)*['f']).T
+    first_row.columns = e.columns
     
     # insert at top of dataframe 
-    e.loc[-1] = first_row
-    e.index = e.index + 1
-    e = e.sort_index()
+    e = pd.concat([first_row, e], ignore_index=True)    
+    
     return(e)
     
 
