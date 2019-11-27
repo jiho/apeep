@@ -73,20 +73,26 @@ def read_environ(path):
     e.loc[pits, 'pits'] = True
     
     # compute cast as cumulative sum of peaks or pits + 1
-    e['sampleid'] = np.cumsum(np.logical_or(e.pits, e.peaks)) + 1
+    e['sample_id'] = np.cumsum(np.logical_or(e.pits, e.peaks)) + 1
     
     # drop peaks and pits
     e = e.drop(["peaks", "pits"], axis=1)
-
+    
+    # split object_depth to object_depth_min and object_depth_max
+    e = e.rename(columns={"object_depth": "object_depth_min"})
+    e['object_depth_max'] = e['object_depth_min']
+    
     ## Reorder columns
     # columns to move at the beginning
-    cols_to_order = ["sampleid"]
+    cols_to_order = ["sample_id",
+                    "object_depth_min",
+                    "object_depth_max"]
     new_columns = cols_to_order + (e.drop(cols_to_order, axis = 1).columns.tolist())
     e = e[new_columns]
     
     ## Add first row
     # The first column is text, other are floats
-    first_row = pd.DataFrame(['t'] + (e.shape[1]-1)*['f']).T
+    first_row = pd.DataFrame(['[t]'] + (e.shape[1]-1)*['[f]']).T
     first_row.columns = e.columns
     
     # insert at top of dataframe 
@@ -150,12 +156,13 @@ def merge_environ(env, parts):
         cols_to_order = ["img_file_name",
                      "object_id",
                      "object_label",
-                     "sampleid",
+                     "sample_id",
                      "object_date",
                      "object_time",
                      "object_lat",
                      "object_lon",
-                     "object_depth"]
+                     "object_depth_min",
+                     "object_depth_min"]
         new_columns = cols_to_order + (df.drop(cols_to_order, axis = 1).columns.tolist())
         df = df[new_columns]
         

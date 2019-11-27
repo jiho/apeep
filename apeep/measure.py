@@ -161,7 +161,7 @@ def get_particles_props(particles_props, destination):
     df_particles["object_time"] = pd.to_datetime(df_particles.object_date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%H%M%S')
 
     # compute date
-    df_particles["object_date"] = pd.to_datetime(df_particles.object_date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%Y%d%m')    
+    df_particles["object_date"] = pd.to_datetime(df_particles.object_date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%Y%m%d')    
         
     return(df_particles)
 
@@ -189,7 +189,7 @@ def add_first_row(df_particles):
     
     ## Add first row
     # The first column is text, other are floats
-    first_row = pd.DataFrame(5*['t'] + (df_particles.shape[1]-5)*['f']).T
+    first_row = pd.DataFrame(5*['[t]'] + (df_particles.shape[1]-5)*['[f]']).T
     first_row.columns = df_particles.columns
     
     # insert at top of dataframe 
