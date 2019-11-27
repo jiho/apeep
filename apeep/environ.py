@@ -23,6 +23,9 @@ def read_environ(path):
     e = pd.read_csv(path, sep="\t", skiprows=10, encoding="latin1", header=0, na_values=["NA", "NaN", "No GPS Data"])
     # NB: content only has times, not date+time
     
+    # indexes start at 1, make it start at 0
+    e.index = e.index-1
+    
     # add a datetime column
     # parse the start date and time
     start = head[1][6:14] + " " + e['Time'][0]
@@ -45,7 +48,7 @@ def read_environ(path):
     # [re.sub("[ \(\)\.\/]", "_", k).lower().replace("°", "deg").replace("__", "_") for k in e.keys()]
 
     # rename env dataframe columns 
-    e = e.rename(columns=lambda x: x.split(" (")[0].replace(' ', '_').replace('.', '').lower())
+    e = e.rename(columns=lambda x: x.split("..")[0].replace('.', '_').replace(' ', '_').lower())
     e.columns =  "object_" + e.columns
 
     # drop time column
@@ -78,7 +81,7 @@ def read_environ(path):
     ## Reorder columns
     # columns to move at the beginning
     cols_to_order = ["sampleid"]
-    new_columns = cols_to_order + (e.columns.drop(cols_to_order).tolist())
+    new_columns = cols_to_order + (e.drop(cols_to_order, axis = 1).columns.tolist())
     e = e[new_columns]
     
     ## Add first row
@@ -140,7 +143,7 @@ def merge_environ(env, parts):
         first_row = parts_first_row.join(env_first_row)
         
         # Reinsert first row
-        df = pd.merge(first_row, df, how='outer')
+        df = pd.concat([first_row, df], ignore_index=True)
         
         ## Reorder columns
         # columns to move at the beginning
@@ -151,9 +154,9 @@ def merge_environ(env, parts):
                      "object_date",
                      "object_time",
                      "object_lat",
-                     "object_long",
+                     "object_lon",
                      "object_depth"]
-        new_columns = cols_to_order + (df.columns.drop(cols_to_order).tolist())
+        new_columns = cols_to_order + (df.drop(cols_to_order, axis = 1).columns.tolist())
         df = df[new_columns]
         
     # if no environmental data available
