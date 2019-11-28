@@ -23,18 +23,15 @@ def read_environ(path):
     e = pd.read_csv(path, sep="\t", skiprows=10, encoding="latin1", header=0, na_values=["NA", "NaN", "No GPS Data"])
     # NB: content only has times, not date+time
     
-    # indexes start at 1, make it start at 0
-    e.index = e.index-1
-    
     # add a datetime column
     # parse the start date and time
-    start = head[1][6:14] + " " + e['Time'][0]
+    start = head[1][6:14] + " " + e['Time'][min(e.index)]
     start = datetime.datetime.strptime(start, "%m/%d/%y %H:%M:%S.%f")
     
     # compute the time steps between each record in the file
     # NB: repeat the first time to get a start step of 0
     times = list(e['Time'])
-    times.insert(0, e['Time'][0])
+    times.insert(0, e['Time'][min(e.index)])
     # then compute the deltas
     steps = np.diff([datetime.datetime.strptime(t, "%H:%M:%S.%f") for t in times])
     # deal with crossing midnight
@@ -48,7 +45,8 @@ def read_environ(path):
     # [re.sub("[ \(\)\.\/]", "_", k).lower().replace("°", "deg").replace("__", "_") for k in e.keys()]
 
     # rename env dataframe columns 
-    e = e.rename(columns=lambda x: x.split("..")[0].replace('.', '_').replace(' ', '_').lower())
+    #e = e.rename(columns=lambda x: x.split("..")[0].replace('.', '_').replace(' ', '_').lower())
+    e = e = e.rename(columns=lambda x: x.lower().split(" (")[0].split("..")[0].replace('. ', ' ').replace('.', ' ').replace(' ', '_').replace('long', 'lon'))
     e.columns =  "object_" + e.columns
 
     # drop time column
@@ -85,8 +83,8 @@ def read_environ(path):
     ## Reorder columns
     # columns to move at the beginning
     cols_to_order = ["sample_id",
-                    "object_depth_min",
-                    "object_depth_max"]
+                     "object_depth_min",
+                     "object_depth_max"]
     new_columns = cols_to_order + (e.drop(cols_to_order, axis = 1).columns.tolist())
     e = e[new_columns]
     

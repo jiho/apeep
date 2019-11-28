@@ -129,6 +129,7 @@ def write_particles_props(particles_props, destination):
                 index=False, sep="\t", header=False)
     pass
 
+@t.timer
 def get_particles_props(particles_props, destination):
     """
     Write a set of particles to disk
