@@ -79,7 +79,7 @@ Other options are documented there
         cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
 
     ## Read environmental data ----
-    all_txt = glob.glob(cfg['io']['input_dir'] + "/new_ISIIS*.txt")
+    all_txt = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
     e = pd.DataFrame()
     for txt in all_txt:
         e = pd.concat([e,apeep.read_environ(txt)], ignore_index=True)
