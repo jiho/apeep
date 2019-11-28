@@ -79,7 +79,7 @@ Other options are documented there
         cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
 
     ## Read environmental data ----
-    all_txt = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
+    all_txt = glob.glob(cfg['io']['input_dir'] + "/new_ISIIS*.txt")
     e = pd.DataFrame()
     for txt in all_txt:
         e = pd.concat([e,apeep.read_environ(txt)], ignore_index=True)
@@ -227,22 +227,15 @@ Other options are documented there
                 if cfg['measure']['write_particles']:
                     particles_images_dir = os.path.join(project_dir, "particles", output_name)
                     os.makedirs(particles_images_dir, exist_ok=True)
+                    
+                    # merge particles and environment data
+                    particles_props = apeep.merge_environ(e, particles_props, output_name)
+                    
                     # write particles images
                     apeep.write_particles(particles, particles_images_dir, px2mm=cfg['acq']['window_height_mm']/img_width)      
                     # and properties
-                    #apeep.write_particles_props(particles_props, particles_images_dir)
-                    particles_props = apeep.get_particles_props(particles_props, particles_images_dir)
-                    all_particles_props = pd.concat([all_particles_props, particles_props])
-    
-    ## Order and add second row to particles props dataframe
-    all_particles_props = apeep.add_first_row(all_particles_props)
-    
-    ## Merge particles and environment data if environmental data is available
-    all_particles_props = apeep.merge_environ(e, all_particles_props)
-                        
-    # write particles props
-    apeep.write_particles_table(all_particles_props, particles_images_dir)
-            
+                    apeep.write_particles_props(particles_props, particles_images_dir, e)
+                                
             
     # compute performance
     elapsed = t.e(timer_img)
