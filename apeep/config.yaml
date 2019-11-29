@@ -59,7 +59,7 @@ enhance:
   # Percentage above which pixels are clipped to white
   # in [0,100]; 100 changes nothing, 0 makes everything white
   # most of the image is light grey so values around 50 are common
-  light_threshold: 50
+  light_threshold: 40
 
 
 # Segmentation
@@ -88,11 +88,11 @@ segment:
   # for method=static : grey value (where 0 is black and 100 is white) below which dark grey pixels are considered as particles
   # for method=percentile : percentage of dark grey pixels to consider as particles
   # in [0, 100]; 0 considers nothing, 100 considers all pixels
-  threshold: 0.5
+  threshold: 1.2
 
   # Value of variance in grey level below which 'auto' tresholding switches from 'otsu' to 'percentile'
   # sane values are between 0.001 and 0.002
-  var_limit: 0.0015
+  var_limit: 0.001
   
   # Number of pixels to grow  by to fill gaps in particles
   # NB: when Otsu thresholding is used, increased to 4/3 * dilate
@@ -119,6 +119,7 @@ measure:
   properties:
     - label
     - area
+	- bbox
     - convex_area
     - filled_area
     - eccentricity
