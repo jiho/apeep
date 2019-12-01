@@ -139,7 +139,7 @@ def merge_environ(env, parts, name):
                      "object_lat",
                      "object_lon",
                      "object_depth_min",
-                     "object_depth_min"]
+                     "object_depth_max"]
         new_columns = cols_to_order + (parts.drop(cols_to_order, axis = 1).columns.tolist())
         parts = parts[new_columns]
         
