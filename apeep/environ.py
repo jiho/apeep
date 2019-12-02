@@ -146,7 +146,7 @@ def merge_environ(env, parts, name):
     # if no environmental data available
     else:
         # delete useless object_date_time column
-        df = parts.drop('object_date_time', axis = 1)
+        parts = parts.drop('object_date_time', axis = 1)
         
         # reorder columns
         cols_to_order = ["img_file_name",
