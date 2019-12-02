@@ -123,7 +123,7 @@ def merge_environ(env, parts, name):
         # fuzzy join by datetime to nearest, with 1s tolerance
         parts = pd.merge_asof(parts.sort_values("object_date_time"), env.sort_values("object_date_time"),
                       left_on="object_date_time", right_on="object_date_time", direction="nearest", 
-                      tolerance=pd.Timedelta('1s'))
+                      tolerance=pd.Timedelta('5s'))
         
         # drop obj_date_time (joining) column
         parts = parts.drop('object_date_time', axis=1)
