@@ -123,9 +123,10 @@ Other options are documented there
     output_buffer = np.empty((output_size, img_width))
     i_o = 0
     
-    # initiate sub-sampling
+    # initialise sub-sampling
     # compute n as in subsampling_rate = 1/n
     subsampling_lag = round(1/cfg['subsampling']['subsampling_rate'])
+    # initialise counter
     subsampling_count = -cfg['subsampling']['first_image'] 
     
     # initialise flat-fielding timer
@@ -179,7 +180,7 @@ Other options are documented there
             time_start = time_end - (output_size * line_timestep)
             output_name = datetime.strftime(time_start, '%Y-%m-%d_%H-%M-%S_%f')
             
-            # inrement subsample counter
+            # increment subsample counter
             subsampling_count = subsampling_count + 1
             
             # process 1 image every 'subsample_rate'
