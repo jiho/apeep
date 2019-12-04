@@ -20,6 +20,12 @@ acq:
   # (this allows to compute the pixel size)
   window_height_mm: 105
 
+# Sub-sampling.
+subsampling:
+    # Proportion of image to process. Between 0 and 1, 0 excluded
+    subsampling_rate: 1
+    # Rank of first image to process. Use this option to process new images without changing subsampling rate. Should be stictly positive. 
+    first_image: 1
 
 # Flat-fielding
 flat_field:

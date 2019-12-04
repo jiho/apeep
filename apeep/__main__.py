@@ -123,6 +123,11 @@ Other options are documented there
     output_buffer = np.empty((output_size, img_width))
     i_o = 0
     
+    # initiate sub-sampling
+    # compute n as in subsampling_rate = 1/n
+    subsampling_lag = round(1/cfg['subsampling']['subsampling_rate'])
+    subsampling_count = -cfg['subsampling']['first_image'] 
+    
     # initialise flat-fielding timer
     timer_ff = t.b()
     timer_img = t.b()
@@ -173,79 +178,84 @@ Other options are documented there
                         piece['line_nb'] * line_timestep
             time_start = time_end - (output_size * line_timestep)
             output_name = datetime.strftime(time_start, '%Y-%m-%d_%H-%M-%S_%f')
-
-            if cfg['flat_field']['go']:
-                # rescale in [0,1] to save the image
-                minv = output.min()
-                maxv = output.max()
-                output_0_1 = (output - minv) / (maxv - minv)
-                # TODO check it more thouroughly but this normalisation creates very inhomogeneous grey levels in the result
-
-                if cfg['flat_field']['write_image']:
-                    flat_fielded_image_dir = os.path.join(project_dir, "flat_fielded")
-                    os.makedirs(flat_fielded_image_dir, exist_ok=True)
-                    im.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + ".png"))
-
-            # enhance output image
-            if cfg['enhance']['go']:
-                output = apeep.enhance(output, cfg)
-                
-                if cfg['enhance']['write_image']:
-                    enhanced_image_dir = os.path.join(project_dir, "enhanced")
-                    os.makedirs(enhanced_image_dir, exist_ok=True)
-                    im.save(output, os.path.join(enhanced_image_dir, output_name + ".png"))
             
-            # segment
-            if cfg['segment']['go']:
-                output_labelled = apeep.segment(output,
-                    method=cfg['segment']['method'],
-                    threshold=cfg['segment']['threshold'],
-                    var_limit=cfg['segment']['var_limit'],
-                    dilate=cfg['segment']['dilate'],
-                    erode=cfg['segment']['erode'],
-                    min_area=cfg['segment']['min_area']
-                )
-                
-                if cfg['segment']['write_image']:
-                    segmented_image_dir = os.path.join(project_dir, "segmented")
-                    os.makedirs(segmented_image_dir, exist_ok=True)
-                    im.save(output_labelled == 0, os.path.join(segmented_image_dir, output_name + ".png"))
-                
-                if cfg['segment']['write_stack']:
-                    stack_image_dir = os.path.join(project_dir, "stacked")
-                    os.makedirs(stack_image_dir, exist_ok=True)
-                    stack.save_stack(img=output, labels=output_labelled, \
-                        dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
+            # inrement subsample counter
+            subsampling_count = subsampling_count + 1
             
-            # measure
-            if cfg['measure']['go'] and np.sum(output_labelled) != 0 :
-                particles, particles_props = apeep.measure(
-                    img=output,
-                    img_labelled=output_labelled,
-                    props=cfg['measure']['properties']
-                )
-                if cfg['measure']['write_particles']:
-                    particles_images_dir = os.path.join(project_dir, "particles", output_name)
-                    os.makedirs(particles_images_dir, exist_ok=True)
+            # process 1 image every 'subsample_rate'
+            # if subsample counter is divisible by sumsampling_rate and first image to process is reached
+            if (subsampling_count%subsampling_lag == 0 and subsampling_count >= 0):
+            
+                if cfg['flat_field']['go']:
+                    # rescale in [0,1] to save the image
+                    minv = output.min()
+                    maxv = output.max()
+                    output_0_1 = (output - minv) / (maxv - minv)
+                    # TODO check it more thouroughly but this normalisation creates very inhomogeneous grey levels in the result
+                
+                    if cfg['flat_field']['write_image']:
+                        flat_fielded_image_dir = os.path.join(project_dir, "flat_fielded")
+                        os.makedirs(flat_fielded_image_dir, exist_ok=True)
+                        im.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + ".png"))
+                
+                # enhance output image
+                if cfg['enhance']['go']:
+                    output = apeep.enhance(output, cfg)
                     
-                    # merge particles and environment data
-                    particles_props = apeep.merge_environ(e, particles_props, output_name)
+                    if cfg['enhance']['write_image']:
+                        enhanced_image_dir = os.path.join(project_dir, "enhanced")
+                        os.makedirs(enhanced_image_dir, exist_ok=True)
+                        im.save(output, os.path.join(enhanced_image_dir, output_name + ".png"))
+                
+                # segment
+                if cfg['segment']['go']:
+                    output_labelled = apeep.segment(output,
+                        method=cfg['segment']['method'],
+                        threshold=cfg['segment']['threshold'],
+                        var_limit=cfg['segment']['var_limit'],
+                        dilate=cfg['segment']['dilate'],
+                        erode=cfg['segment']['erode'],
+                        min_area=cfg['segment']['min_area']
+                    )
                     
-                    # write particles images
-                    apeep.write_particles(particles, particles_images_dir, px2mm=cfg['acq']['window_height_mm']/img_width)      
-                    # and properties
-                    apeep.write_particles_props(particles_props, particles_images_dir, e)
-                                
-            
-            # compute performance
-            elapsed = t.e(timer_img)
-            real_time = cfg['enhance']['image_size'] / cfg['acq']['scan_per_s']
-            log.info(f"{output_name} done ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
-            
-            # reset flat-fielding and global timers for next iteration
-            timer_ff = t.b()
-            timer_img = t.b()
-            
-
+                    if cfg['segment']['write_image']:
+                        segmented_image_dir = os.path.join(project_dir, "segmented")
+                        os.makedirs(segmented_image_dir, exist_ok=True)
+                        im.save(output_labelled == 0, os.path.join(segmented_image_dir, output_name + ".png"))
+                    
+                    if cfg['segment']['write_stack']:
+                        stack_image_dir = os.path.join(project_dir, "stacked")
+                        os.makedirs(stack_image_dir, exist_ok=True)
+                        stack.save_stack(img=output, labels=output_labelled, \
+                            dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
+                
+                # measure
+                if cfg['measure']['go'] and np.sum(output_labelled) != 0 :
+                    particles, particles_props = apeep.measure(
+                        img=output,
+                        img_labelled=output_labelled,
+                        props=cfg['measure']['properties']
+                    )
+                    if cfg['measure']['write_particles']:
+                        particles_images_dir = os.path.join(project_dir, "particles", output_name)
+                        os.makedirs(particles_images_dir, exist_ok=True)
+                        
+                        # merge particles and environment data
+                        particles_props = apeep.merge_environ(e, particles_props, output_name)
+                        
+                        # write particles images
+                        apeep.write_particles(particles, particles_images_dir, px2mm=cfg['acq']['window_height_mm']/img_width)      
+                        # and properties
+                        apeep.write_particles_props(particles_props, particles_images_dir, e)
+                                    
+                # compute performance
+                elapsed = t.e(timer_img)
+                real_time = cfg['enhance']['image_size'] / cfg['acq']['scan_per_s']
+                log.info(f"{output_name} done ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
+                
+                # reset flat-fielding and global timers for next iteration
+                timer_ff = t.b()
+                timer_img = t.b()
+                
 if __name__ == "__main__":
     main()
