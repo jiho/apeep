@@ -249,14 +249,14 @@ Other options are documented there
                         # and properties
                         apeep.write_particles_props(particles_props, particles_images_dir, e)
                                     
-                # compute performance
-                elapsed = t.e(timer_img)
-                real_time = cfg['enhance']['image_size'] / cfg['acq']['scan_per_s']
-                log.info(f"{output_name} done ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
-                
-                # reset flat-fielding and global timers for next iteration
-                timer_ff = t.b()
-                timer_img = t.b()
+            # compute performance
+            elapsed = t.e(timer_img)
+            real_time = cfg['enhance']['image_size'] / cfg['acq']['scan_per_s']
+            log.info(f"{output_name} done ({elapsed:.3f}s @ {real_time/elapsed:.2f}x)")
+            
+            # reset flat-fielding and global timers for next iteration
+            timer_ff = t.b()
+            timer_img = t.b()
                 
 if __name__ == "__main__":
     main()
