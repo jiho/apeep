@@ -24,6 +24,7 @@ import apeep.im_pillow as im
 # import apeep.im_opencv as im
 # import apeep.im_lycon as im
 from apeep import stack
+from ipdb import set_trace as db
 
 # from ipdb import set_trace as db
 
@@ -123,6 +124,9 @@ Other options are documented there
     output_buffer = np.empty((output_size, img_width))
     i_o = 0
     
+    # list avi files with their frames and start number
+    frames = apeep.frame_list(dir=cfg['io']['input_dir'])
+
     # initialise sub-sampling
     # compute n as in subsampling_rate = 1/n
     subsampling_lag = round(1/cfg['subsampling']['subsampling_rate'])
@@ -180,6 +184,10 @@ Other options are documented there
             time_start = time_end - (output_size * line_timestep)
             output_name = datetime.strftime(time_start, '%Y-%m-%d_%H-%M-%S_%f')
             
+            # Absolute lines of start and end of the image
+            abs_line_end = piece['frame_nb'] * 2048 + piece['line_nb']
+            abs_line_start = abs_line_end - output_size + 1
+            
             # increment subsample counter
             subsampling_count = subsampling_count + 1
             
@@ -235,8 +243,12 @@ Other options are documented there
                     particles, particles_props = apeep.measure(
                         img=output,
                         img_labelled=output_labelled,
-                        props=cfg['measure']['properties']
+                        props=cfg['measure']['properties'],
+                        abs_line_start=abs_line_start, 
+                        frames=frames, 
+                        part_loc = True
                     )
+
                     if cfg['measure']['write_particles']:
                         particles_images_dir = os.path.join(project_dir, "particles", output_name)
                         os.makedirs(particles_images_dir, exist_ok=True)
@@ -247,7 +259,7 @@ Other options are documented there
                         # write particles images
                         apeep.write_particles(particles, particles_images_dir, px2mm=cfg['acq']['window_height_mm']/img_width)      
                         # and properties
-                        apeep.write_particles_props(particles_props, particles_images_dir, e)
+                        apeep.write_particles_props(particles_props, particles_images_dir)
                                     
             # compute performance
             elapsed = t.e(timer_img)
