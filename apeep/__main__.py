@@ -26,7 +26,7 @@ import apeep.im_pillow as im
 from apeep import stack
 from ipdb import set_trace as db
 
-# from ipdb import set_trace as db
+from ipdb import set_trace as db
 
 def main():
     
@@ -126,12 +126,14 @@ Other options are documented there
     
     # list avi files with their frames and start number
     frames = apeep.frame_list(dir=cfg['io']['input_dir'])
-
+    
     # initialise sub-sampling
     # compute n as in subsampling_rate = 1/n
     subsampling_lag = round(1/cfg['subsampling']['subsampling_rate'])
     # initialise counter
     subsampling_count = -cfg['subsampling']['first_image'] 
+    log.info("processing with a subsampling rate of " + str(cfg['subsampling']['subsampling_rate']) + " (1 image processed every " + str(subsampling_lag) + " images)")
+    log.info("starting at image number  " + str(cfg['subsampling']['first_image']))
     
     # initialise flat-fielding timer
     timer_ff = t.b()
