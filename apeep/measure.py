@@ -11,7 +11,7 @@ import apeep.timers as t
 import apeep.im_opencv as im
 # TODO homogenise the image saving with the rest
 
-from ipdb import set_trace as db
+#from ipdb import set_trace as db
 
 @t.timer
 def measure(img, img_labelled, props=['area'], abs_line_start = None, frames = None, part_loc = False):
@@ -63,20 +63,25 @@ def measure(img, img_labelled, props=['area'], abs_line_start = None, frames = N
     
     # convert to dataframe
     particle_props = pd.DataFrame(particle_props)
-    
+
     # add particles localisation info
     if part_loc:
         # compute absolute line for each particle and sort
         particle_props = particle_props.assign(part_abs_line = particle_props['bbox-1'] + abs_line_start).sort_values('part_abs_line')
         
         # join frame and avi_file info
-        particle_props = pd.merge_asof(particle_props, frames, left_on='part_abs_line', right_on='frame_line_start', direction='backward')
+        particle_props = pd.merge_asof(particle_props, frames, left_on="part_abs_line", right_on="frame_line_start", direction="backward")
     
         # compute particle line in frame
         particle_props = particle_props.assign(line_in_frame = particle_props.part_abs_line - particle_props.frame_line_start)
     
         # drop useless columns
-        particle_props = particle_props.drop(columns=['part_abs_line','frame_line_start'])
+        particle_props = particle_props.drop(columns=["part_abs_line","frame_line_start"])
+        
+        # reorder columns
+        cols_to_order = ["id", "avi_file", "frame", "line_in_frame"]
+        new_columns = cols_to_order + (particle_props.drop(cols_to_order, axis = 1).columns.tolist())
+        particle_props = particle_props[new_columns]
     
     # add "object_" to column names 
     particle_props.columns = "object_" + particle_props.columns
