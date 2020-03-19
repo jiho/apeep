@@ -123,6 +123,9 @@ Other options are documented there
     output_buffer = np.empty((output_size, img_width))
     i_o = 0
     
+    # initiate image number
+    image_nb = 0
+    
     # list avi files with their frames and start number
     frames = apeep.frame_list(dir=cfg['io']['input_dir'])
     
@@ -166,6 +169,9 @@ Other options are documented there
 
             # reinitialise output_buffer
             i_o = 0
+            
+            # increment image number
+            image_nb = image_nb + 1
 
             # rotate the image so that motion is from the left to the right
             timer_rot = t.b()
@@ -186,7 +192,7 @@ Other options are documented there
             output_name = datetime.strftime(time_start, '%Y-%m-%d_%H-%M-%S_%f')
             
             # Absolute lines of start and end of the image
-            abs_line_end = piece['frame_nb'] * 2048 + piece['line_nb']
+            abs_line_end = image_nb * output_size
             abs_line_start = abs_line_end - output_size + 1
             
             # increment subsample counter
