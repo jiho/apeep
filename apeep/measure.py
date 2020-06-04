@@ -14,7 +14,7 @@ import apeep.im_opencv as im
 #from ipdb import set_trace as db
 
 @t.timer
-def measure(img, img_labelled, props=['area']):
+def measure(img, img_labelled, image_info, props=['area']):
     """
     Measure particles
     
@@ -22,6 +22,8 @@ def measure(img, img_labelled, props=['area']):
         img (ndarray): image (of type float)
         img_labelled (ndarray): labelled image (mask with each particle 
             numbered as an integer)
+        image_info (dict): dict containing avi_file, frame_nb and line_nb at the 
+            beggining and the end of image
         properties (list): list of properties to extract from each particle
     
     Returns:
@@ -57,6 +59,46 @@ def measure(img, img_labelled, props=['area']):
     #     intensity_image=img,
     #     properties=props
     # ))
+    
+    # particle localisation within avi files
+    # if image is from a single avi file
+    if image_info['start_avi_file'] == image_info['end_avi_file']:
+        
+        # compute avi file and append to particles properties  
+        particle_props.update({'avi_file': np.repeat(image_info['start_avi_file'], len(particle_props['bbox-1']))})
+        
+        # compute frame number and append to particles properties 
+        particle_props.update({'frame_nb': image_info['start_frame_nb'] + (image_info['start_line_nb'] + particle_props['bbox-1'])//2048})
+        
+        # compute line number and append to particles properties 
+        particle_props.update({'line_nb': image_info['start_line_nb'] + particle_props['bbox-1'] - (2048 * (particle_props['frame_nb'] - image_info['start_frame_nb']))})
+    
+    # if image is from multiple avi files
+    else:
+        # compute number of lines from the second avi file
+        lines_after = image_info['end_frame_nb']*2048 + image_info['end_line_nb'] + 1
+        # compute number of lines from the first avi file
+        output_size = img_labelled.shape[1]
+        lines_before = output_size - lines_after
+        
+        # compute avi file and append to particles properties  
+        particle_props.update({'avi_file': np.array([image_info['end_avi_file'] if output_size-x <= lines_after \
+        else image_info['start_avi_file'] \
+        for x in particle_props['bbox-1']])})
+        
+        # compute frame number and append to particles properties 
+        # start_image['frame_nb'] + (start_image['line_nb'] + particle_props['bbox-1']) // 2048 if first avi
+        # (lines_after - (output_size - particle_props['bbox-1'])) // 2048 if second avi 
+        particle_props.update({'frame_nb': np.array([(lines_after - (output_size - x)) // 2048 if output_size-x <= lines_after \
+        else image_info['start_frame_nb'] + (image_info['start_line_nb'] + x)//2048 \
+        for x in particle_props['bbox-1']])})
+        
+        # compute line number and append to particles properties 
+        # start_image['line_nb'] + particle_props['bbox-1'] % 2048 if first avi
+        # (lines_after - (output_size - particle_props['bbox-1'])) % 2048 if second avi
+        particle_props.update({'line_nb': np.array([(lines_after - (output_size - x)) % 2048 if output_size-x <= lines_after \
+        else image_info['start_line_nb'] + x % 2048 \
+        for x in particle_props['bbox-1']])})
     
     # convert to dataframe
     particle_props = pd.DataFrame(particle_props)

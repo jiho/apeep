@@ -155,6 +155,14 @@ Other options are documented there
         
         # log.debug("add block to output buffer")
         output_buffer[i_o:i_o+step,:] = piece['data']
+        
+        # store avi file, frame number and line number at beginning of image
+        if i_o == 0:
+            image_info = {
+                'start_avi_file': os.path.split(piece['filename'])[1],
+                'start_frame_nb': piece['frame_nb'],
+                'start_line_nb': piece['line_nb']
+            }        
         i_o = i_o + step
         
         # when output_buffer is full
@@ -164,7 +172,14 @@ Other options are documented there
 
             # reinitialise output_buffer
             i_o = 0
-
+            
+             # store avi file, frame number and line number at end of image
+            image_info.update({
+                'end_avi_file': os.path.split(piece['filename'])[1],
+                'end_frame_nb': piece['frame_nb'],
+                'end_line_nb': piece['line_nb']
+            })    
+            
             # rotate the image so that motion is from the left to the right
             timer_rot = t.b()
             if cfg['acq']['top'] == "right":
@@ -238,6 +253,7 @@ Other options are documented there
                     particles, particles_props = apeep.measure(
                         img=output,
                         img_labelled=output_labelled,
+                        image_info=image_info,
                         props=cfg['measure']['properties']
                     )
                     
