@@ -20,9 +20,9 @@ import pandas as pd
 
 import apeep
 import apeep.timers as t
-import apeep.im_pillow as im
-# import apeep.im_opencv as im
-# import apeep.im_lycon as im
+#import apeep.im_pillow as im
+import apeep.im_opencv as im
+#import apeep.im_lycon as im
 from apeep import stack
 #from ipdb import set_trace as db
 
@@ -113,6 +113,7 @@ Other options are documented there
     window_size = int(cfg['flat_field']['window_size'] / step) * step
     # get data in the first window and compute the mean
     input_stream = apeep.stream(dir=cfg['io']['input_dir'], n=window_size)
+    
     window = next(input_stream)
     mavg = np.mean(window['data'], axis=0) # columnw-wise mean
     log.debug("moving average line initialised, mean value = " + str(np.mean(mavg)))
@@ -122,12 +123,6 @@ Other options are documented there
     output_size = int(cfg['enhance']['image_size'] / step) * step
     output_buffer = np.empty((output_size, img_width))
     i_o = 0
-    
-    # initiate image number
-    image_nb = 0
-    
-    # list avi files with their frames and start number
-    frames = apeep.frame_list(dir=cfg['io']['input_dir'])
     
     # initialise sub-sampling
     # compute n as in subsampling_rate = 1/n
@@ -169,9 +164,6 @@ Other options are documented there
 
             # reinitialise output_buffer
             i_o = 0
-            
-            # increment image number
-            image_nb = image_nb + 1
 
             # rotate the image so that motion is from the left to the right
             timer_rot = t.b()
@@ -190,10 +182,6 @@ Other options are documented there
                         piece['line_nb'] * line_timestep
             time_start = time_end - (output_size * line_timestep)
             output_name = datetime.strftime(time_start, '%Y-%m-%d_%H-%M-%S_%f')
-            
-            # Absolute lines of start and end of the image
-            abs_line_end = image_nb * output_size
-            abs_line_start = abs_line_end - output_size + 1
             
             # increment subsample counter
             subsampling_count = subsampling_count + 1
@@ -250,12 +238,9 @@ Other options are documented there
                     particles, particles_props = apeep.measure(
                         img=output,
                         img_labelled=output_labelled,
-                        props=cfg['measure']['properties'],
-                        abs_line_start=abs_line_start, 
-                        frames=frames, 
-                        part_loc = True
+                        props=cfg['measure']['properties']
                     )
-
+                    
                     if cfg['measure']['write_particles']:
                         particles_images_dir = os.path.join(project_dir, "particles", output_name)
                         os.makedirs(particles_images_dir, exist_ok=True)
