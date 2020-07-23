@@ -111,8 +111,8 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, dilate=3, erode
     large_regions = [r for r in regions if fast_particle_area(r) > min_area]
     img_labelled_large = np.zeros_like(img_labelled)
     for r in large_regions:
-        img_labelled_large[img_labelled == r.label] = r.label
-    
+        img_labelled_large[r._slice] = img_labelled_large[r._slice] + r.label*r.image
+
     return(img_labelled_large)
 
  
