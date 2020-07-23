@@ -79,10 +79,10 @@ Other options are documented there
         cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
 
     ## Read environmental data ----
-    all_txt = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
-    e = pd.DataFrame()
-    for txt in all_txt:
-        e = pd.concat([e,apeep.read_environ(txt)], ignore_index=True)
+    log.debug("read environmental data")
+    all_environ = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
+    e = (apeep.read_environ(f) for f in all_environ)
+    e = pd.concat(e, ignore_index=True)
     nrows = len(e.index)
     if nrows == 0:
         log.warning("no environmental data found")
