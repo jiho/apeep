@@ -10,4 +10,4 @@ doc/*
 apeep_test*
 #
 .Rproj*
-
+.Rproj.user
