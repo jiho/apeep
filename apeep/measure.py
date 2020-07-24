@@ -145,7 +145,7 @@ def write_particles_props(particles_props, destination):
     sub_dir = os.path.basename(destination)
         
     # write to file
-    particles_file = os.path.join(base_dir, "ecotaxa_particles.tsv")
+    particles_file = os.path.join(destination, "ecotaxa_particles_" + sub_dir + ".tsv")
     # if file does't exist, create file with appropriate first row
     if not os.path.exists(particles_file):
         
