@@ -81,13 +81,13 @@ Other options are documented there
     ## Read environmental data ----
     log.debug("read environmental data")
     all_environ = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
-    e = (apeep.read_environ(f) for f in all_environ)
-    e = pd.concat(e, ignore_index=True)
-    nrows = len(e.index)
-    if nrows == 0:
-        log.warning("no environmental data found")
-    else:
+    e = [apeep.read_environ(f) for f in all_environ]
+    if len(e) > 0:
+        e = pd.concat(e, ignore_index=True)
         log.info(str(len(e.index)) + " rows of environmental data")
+    else:
+        e = pd.DataFrame()
+        log.warning("no environmental data found")
             
     ## Initiate particles properties dataframe ----
     all_particles_props = pd.DataFrame()
