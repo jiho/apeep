@@ -112,6 +112,9 @@ def measure(img, img_labelled, image_info, props=['area']):
     # add "object_" to column names 
     particle_props.columns = "object_" + particle_props.columns
     
+    # add particle names as img_file_name
+    particle_props["img_file_name"] = particle_props["object_id"] + ".png"
+    
     return (particles, particle_props)
 
 def get_particle_array(x):

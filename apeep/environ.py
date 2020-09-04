@@ -105,10 +105,6 @@ def merge_environ(env, parts, name):
         (DataFrame) with environmental and particles data, proper columns names and formats as first row
     """
     
-    # prepare parts dataframe for ecotaxa  
-    # compute image file name
-    parts['img_file_name'] = name + "/" + parts['object_id'] + ".png"
-    
     # if environmental data is available, proceed to join with parts data
     if len(env.index) > 0:
         # convert date_time to datetime
