@@ -201,7 +201,7 @@ Other options are documented there
             image_info.update({
                 'img_name': output_name
             })
-            db()
+            
             # increment subsample counter
             subsampling_count = subsampling_count + 1
             

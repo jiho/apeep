@@ -108,12 +108,6 @@ def merge_environ(env, parts, name):
     # prepare parts dataframe for ecotaxa  
     # compute image file name
     parts['img_file_name'] = name + "/" + parts['object_id'] + ".png"
-    # compute date_time
-    parts["object_date_time"] = pd.to_datetime(name, format="%Y-%m-%d_%H-%M-%S_%f")
-    # compute time
-    parts["object_time"] = pd.to_datetime(parts.object_date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%H%M%S')
-    # compute date
-    parts["object_date"] = pd.to_datetime(parts.object_date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%Y%m%d')
     
     # if environmental data is available, proceed to join with parts data
     if len(env.index) > 0:

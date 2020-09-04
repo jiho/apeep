@@ -103,9 +103,15 @@ def measure(img, img_labelled, image_info, props=['area']):
     # convert to dataframe
     particle_props = pd.DataFrame(particle_props)
     
+    # add date and time information for particles
+    name = image_info['img_name']
+    particle_props["date_time"] = pd.to_datetime(name, format="%Y-%m-%d_%H-%M-%S_%f") 
+    particle_props["time"] = pd.to_datetime(particle_props.date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%H%M%S')
+    particle_props["date"] = pd.to_datetime(particle_props.date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%Y%m%d')
+    
     # add "object_" to column names 
     particle_props.columns = "object_" + particle_props.columns
-    db()
+    
     return (particles, particle_props)
 
 def get_particle_array(x):
