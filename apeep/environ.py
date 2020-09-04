@@ -3,6 +3,7 @@ import datetime
 import scipy
 import pandas as pd
 import numpy as np
+#from ipdb import set_trace as db
 
 def read_environ(path):
     """
@@ -72,7 +73,21 @@ def read_environ(path):
     e.loc[pits, 'pits'] = True
     
     # compute cast as cumulative sum of peaks or pits + 1
-    e['sample_id'] = np.cumsum(np.logical_or(e.pits, e.peaks)) + 1
+    sample_ids = np.cumsum(np.logical_or(e.pits, e.peaks)) + 1
+    
+    # find transect name and type to write sample_id as lagXX_yoYY, ccXX_yoYY or acXX_yoYY
+    transect_name = path.split("/")[-2] # should be something like: Lagrangian_XX, Cross-current_XX or Along-current_XX
+    transect_nb = transect_name.split("_")[-1]
+    if "lagrangian" in transect_name.lower():
+        transect_type = "lag"
+    elif "cross" in transect_name.lower():
+        transect_type = "cc"
+    elif "along" in transect_name.lower():
+        transect_type = "ac"
+    else:
+        transect_type = ""
+    
+    e['sample_id'] = [transect_type + transect_nb + "_yo" + str(s) for s in sample_ids]
     
     # drop peaks and pits
     e = e.drop(["peaks", "pits"], axis=1)
