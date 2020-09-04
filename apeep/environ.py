@@ -21,7 +21,7 @@ def read_environ(path):
     
     # read the content
     e = pd.read_csv(path, sep="\t", skiprows=10, encoding="latin1", header=0, na_values=["NA", "NaN", "No GPS Data"])
-    db()
+
     # NB: content only has times, not date+time
     
     # add a datetime column
