@@ -24,7 +24,7 @@ import apeep.timers as t
 import apeep.im_opencv as im
 #import apeep.im_lycon as im
 from apeep import stack
-#from ipdb import set_trace as db
+from ipdb import set_trace as db
 
 
 def main():
