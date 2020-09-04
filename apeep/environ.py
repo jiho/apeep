@@ -21,6 +21,7 @@ def read_environ(path):
     
     # read the content
     e = pd.read_csv(path, sep="\t", skiprows=10, encoding="latin1", header=0, na_values=["NA", "NaN", "No GPS Data"])
+    db()
     # NB: content only has times, not date+time
     
     # add a datetime column
@@ -46,7 +47,7 @@ def read_environ(path):
 
     # rename env dataframe columns 
     #e = e.rename(columns=lambda x: x.split("..")[0].replace('.', '_').replace(' ', '_').lower())
-    e = e = e.rename(columns=lambda x: x.lower().split(" (")[0].split("..")[0].replace('. ', ' ').replace('.', ' ').replace(' ', '_').replace('long', 'lon'))
+    e = e.rename(columns=lambda x: x.lower().split(" (")[0].split("..")[0].replace('. ', ' ').replace('.', ' ').replace(' ', '_').replace('long', 'lon'))
     e.columns =  "object_" + e.columns
 
     # drop time column
