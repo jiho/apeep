@@ -198,6 +198,10 @@ Other options are documented there
             time_start = time_end - (output_size * line_timestep)
             output_name = datetime.strftime(time_start, '%Y-%m-%d_%H-%M-%S_%f')
             
+            image_info.update({
+                'img_name': output_name
+            })
+            db()
             # increment subsample counter
             subsampling_count = subsampling_count + 1
             
