@@ -144,6 +144,7 @@ def merge_environ(env, parts, name):
         cols_to_order = ["img_file_name",
                      "object_id",
                      "object_label",
+                     "acq_id",
                      "object_date",
                      "object_time"]
         new_columns = cols_to_order + (parts.drop(cols_to_order, axis = 1).columns.tolist())
