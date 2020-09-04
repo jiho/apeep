@@ -121,17 +121,19 @@ def merge_environ(env, parts, name):
 
         ## Reorder columns
         # columns to move at the beginning
-        cols_to_order = ["img_file_name",
-                     "object_id",
-                     "object_label",
-                     "sample_id",
-                     "acq_id",
-                     "object_date",
-                     "object_time",
-                     "object_lat",
-                     "object_lon",
-                     "object_depth_min",
-                     "object_depth_max"]
+        cols_to_order = [
+            "img_file_name",
+            "object_id",
+            "object_label",
+            "sample_id",
+            "acq_id",
+            "object_date",
+            "object_time",
+            "object_lat",
+            "object_lon",
+            "object_depth_min",
+            "object_depth_max"
+        ]
         new_columns = cols_to_order + (parts.drop(cols_to_order, axis = 1).columns.tolist())
         parts = parts[new_columns]
         
@@ -141,12 +143,14 @@ def merge_environ(env, parts, name):
         parts = parts.drop('object_date_time', axis = 1)
         
         # reorder columns
-        cols_to_order = ["img_file_name",
-                     "object_id",
-                     "object_label",
-                     "acq_id",
-                     "object_date",
-                     "object_time"]
+        cols_to_order = [
+            "img_file_name",
+            "object_id",
+            "object_label",
+            "acq_id",
+            "object_date",
+            "object_time"
+        ]
         new_columns = cols_to_order + (parts.drop(cols_to_order, axis = 1).columns.tolist())
         parts = parts[new_columns]
         
