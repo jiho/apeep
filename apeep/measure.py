@@ -115,6 +115,9 @@ def measure(img, img_labelled, image_info, props=['area']):
     # add particle names as img_file_name
     particle_props["img_file_name"] = particle_props["object_id"] + ".png"
     
+    # add image name as acquisition is
+    particle_props["acq_id"] = name
+    
     return (particles, particle_props)
 
 def get_particle_array(x):
@@ -171,6 +174,7 @@ def write_particles_props(particles_props, destination):
                    'object_time',
                    'object_date',
                    'sample_id',
+                   'acq_id',
                    'object_label']
         
         # for columns in particles_props and with text format, change first row to [t]
