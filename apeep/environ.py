@@ -58,10 +58,10 @@ def read_environ(path):
     
     # compute cast number
     # find peaks indexes
-    peaks, _ =  scipy.signal.find_peaks(e.object_depth, prominence = 100, width = 1000, distance = 1000)
+    peaks, _ =  scipy.signal.find_peaks(e.object_depth, width = 100, distance = 1000)
     
     # find pits indexes
-    pits, _ = scipy.signal.find_peaks(e.object_depth * (-1), prominence = 100, width = 1000, distance = 1000)
+    pits, _ = scipy.signal.find_peaks(e.object_depth * (-1), width = 100, distance = 1000)
     
     # set all peaks and pits to False
     e['peaks'] = False
