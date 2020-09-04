@@ -11,7 +11,7 @@ import apeep.timers as t
 import apeep.im_opencv as im
 # TODO homogenise the image saving with the rest
 
-from ipdb import set_trace as db
+#from ipdb import set_trace as db
 
 @t.timer
 def measure(img, img_labelled, image_info, props=['area']):
