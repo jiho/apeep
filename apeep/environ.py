@@ -125,6 +125,7 @@ def merge_environ(env, parts, name):
                      "object_id",
                      "object_label",
                      "sample_id",
+                     "acq_id",
                      "object_date",
                      "object_time",
                      "object_lat",

@@ -118,6 +118,18 @@ def measure(img, img_labelled, image_info, props=['area']):
     # add image name as acquisition is
     particle_props["acq_id"] = name
     
+    # reorder columns
+    cols_to_order = [
+        "img_file_name",
+        "object_id",
+        "object_label",
+        "acq_id",
+        "object_date",
+        "object_time"
+    ]
+    new_columns = cols_to_order + (particle_props.drop(cols_to_order, axis = 1).columns.tolist())
+    particle_props = particle_props[new_columns]
+
     return (particles, particle_props)
 
 def get_particle_array(x):
