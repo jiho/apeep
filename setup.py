@@ -38,6 +38,7 @@ setuptools.setup(
         'Pillow',           # image saving
         'opencv-python',    # image saving
         'pytoshop',         # Photoshop image saving (1.1.0 works on mac, 1.2.0 works on linux)
-        'packbits'          # to save compressed Photoshop files (not explicitely required by pytoshop but should be)
+        'packbits',         # to save compressed Photoshop files (not explicitely required by pytoshop but should be)
+        'pandas'            # dataframe manipulation
     ]
 )
