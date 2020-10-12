@@ -120,6 +120,9 @@ measure:
   # Whether to write particle images and properties to disk
   write_particles: true
   
+  # Whether particle directories should be tar archives
+  as_tar: true
+  
   # Properties of particles to store in the particles.tsv file
   # see http://scikit-image.org/docs/dev/api/skimage.measure.html#regionprops
   properties:

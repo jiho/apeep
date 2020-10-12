@@ -14,6 +14,8 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
+import tarfile
+import shutil
 
 import numpy as np
 import pandas as pd
@@ -272,6 +274,17 @@ Other options are documented there
                         apeep.write_particles(particles, particles_images_dir, px2mm=cfg['acq']['window_height_mm']/img_width)      
                         # and properties
                         apeep.write_particles_props(particles_props, particles_images_dir)
+                        
+                        
+                        if cfg['measure']['as_tar']:
+                            # Create a tar archive containing particles and properties 
+                            with tarfile.open(particles_images_dir + '.tar', 'w') as tar:
+                                tar.add(particles_images_dir, arcname=os.path.basename(particles_images_dir))
+                                tar.close()
+                            
+                            # Delete directory 
+                            shutil.rmtree(particles_images_dir)
+                        
                                     
             # compute performance
             elapsed = t.e(timer_img)
