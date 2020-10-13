@@ -87,7 +87,7 @@ def read_environ(path):
     else:
         transect_type = ""
     
-    e['sample_id'] = [transect_type + transect_nb + "_yo" + str(s) for s in sample_ids]
+    e['sample_id'] = [transect_type + transect_nb + "_yo" + str(s).zfill(2) for s in sample_ids]
     
     # drop peaks and pits
     e = e.drop(["peaks", "pits"], axis=1)
