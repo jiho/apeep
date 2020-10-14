@@ -11,7 +11,7 @@ import apeep.timers as t
 import apeep.im_opencv as im
 # TODO homogenise the image saving with the rest
 
-#from ipdb import set_trace as db
+from ipdb import set_trace as db
 
 @t.timer
 def measure(img, img_labelled, image_info, props=['area']):
@@ -118,12 +118,16 @@ def measure(img, img_labelled, image_info, props=['area']):
     # add image name as acquisition is
     particle_props["acq_id"] = name
     
+    # set process_id as "apeep" 
+    particle_props["process_id"] = "apeep"
+    
     # reorder columns
     cols_to_order = [
         "img_file_name",
         "object_id",
         "object_label",
         "acq_id",
+        "process_id",
         "object_date",
         "object_time"
     ]
@@ -176,7 +180,7 @@ def write_particles_props(particles_props, destination):
         # add first row, containing data format codes; [f] for floats, [t] for text
         # initiate first_row as floats
         first_row = ['[f]'] * (particles_props.shape[1])
-        
+
         # list of possible columns with data format as text [t]
         as_text = ['img_file_name',
                    'object_id',
@@ -187,8 +191,9 @@ def write_particles_props(particles_props, destination):
                    'object_date',
                    'sample_id',
                    'acq_id',
+                   'process_id',
                    'object_label']
-        
+
         # for columns in particles_props and with text format, change first row to [t]
         col_ind_text = [particles_props.columns.get_loc(col) for col in list(set(particles_props.columns) & set(as_text))]
         for i in col_ind_text:
