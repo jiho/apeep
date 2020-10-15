@@ -76,8 +76,8 @@ def read_environ(path):
     sample_ids = np.cumsum(np.logical_or(e.pits, e.peaks)) + 1
     
     # find transect name and type to write sample_id as lagXX_yoYY, ccXX_yoYY or acXX_yoYY
-    transect_name = path.split("/")[-2] # should be something like: Lagrangian_XX, Cross-current_XX or Along-current_XX
-    transect_nb = transect_name.split("_")[-1]
+    transect_name = path.split("/")[-2] # should be something like: lagrangian-XX, cross-current-XX or along-current-XX
+    transect_nb = transect_name.split("-")[-1]
     if "lagrangian" in transect_name.lower():
         transect_type = "lag"
     elif "cross" in transect_name.lower():
