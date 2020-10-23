@@ -88,7 +88,7 @@ segment:
   # 'percentile' considers pixels below a percentile of grey levels
   # 'otsu' uses Otsu thresholding (https://en.wikipedia.org/wiki/Otsu%27s_method)
   # 'auto' uses 'otsu' for clean images, 'percentile' otherwise
-  method: auto
+  method: percentile
 
   # Treshold
   # for method=static : grey value (where 0 is black and 100 is white) below which dark grey pixels are considered as particles
@@ -105,12 +105,12 @@ segment:
   dilate: 3
   
   # Number of pixels to shrink particles by 
-  erode: 3
+  erode: 2
 
   # Minimum area of particles to me measured and written out (in px)
   # NB: when Otsu thresholding is used, increased to 4/3 * min_area
   # sane values are ~50 to a few hundreds
-  min_area: 150
+  min_area: 50
 
 
 # Particle measurements
