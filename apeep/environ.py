@@ -84,6 +84,7 @@ def read_environ(path, first_avi):
     
     # find transect name and type to write sample_id as lagXX_yoYY, ccXX_yoYY or acXX_yoYY
     transect_name = path.split("/")[-2] # should be something like: lagrangian-XX, cross-current-XX or along-current-XX
+    transect_name = transect_name.replace("_", "-")
     transect_nb = transect_name.split("-")[-1]
     if "lagrangian" in transect_name.lower():
         transect_type = "lag"
