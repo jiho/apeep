@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 #from ipdb import set_trace as db
 
-def read_environ(path):
+def read_environ(path, first_avi):
     """
     Read a text file containing environmental data collected by ISIIS
     
@@ -42,6 +42,13 @@ def read_environ(path):
     # now compute date_time using cumulated time since start
     e['Date Time'] = start + np.cumsum(steps)
 
+    ## Discard data before beginning of recording by ISIIS
+    # beginning of recording, based on name of first avi file
+    rec_start = first_avi.replace('.avi', '')
+    rec_start = datetime.datetime.strptime(rec_start, "%Y%m%d%H%M%S.%f")
+    # discard data before recording
+    e = e[e['Date Time'] > rec_start].reset_index(drop=True)
+    
     # clean column names
     # import re
     # [re.sub("[ \(\)\.\/]", "_", k).lower().replace("°", "deg").replace("__", "_") for k in e.keys()]

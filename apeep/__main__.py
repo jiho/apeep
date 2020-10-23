@@ -79,18 +79,7 @@ Other options are documented there
     # make it relative to the project dir
     if not os.path.isabs(cfg['io']['input_dir']):
         cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
-
-    ## Read environmental data ----
-    log.debug("read environmental data")
-    all_environ = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
-    e = [apeep.read_environ(f) for f in all_environ]
-    if len(e) > 0:
-        e = pd.concat(e, ignore_index=True)
-        log.info(str(len(e.index)) + " rows of environmental data")
-    else:
-        e = pd.DataFrame()
-        log.warning("no environmental data found")
-            
+         
     ## Initiate particles properties dataframe ----
     all_particles_props = pd.DataFrame()
         
@@ -126,6 +115,21 @@ Other options are documented there
     output_buffer = np.empty((output_size, img_width))
     i_o = 0
     
+    ## Read environmental data ----
+    # get name of first avi file
+    first_input = next(input_stream)
+    first_avi = os.path.split(first_input['filename'])[-1]
+    
+    log.debug("read environmental data")
+    all_environ = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
+    e = [apeep.read_environ(f, first_avi) for f in all_environ]
+    if len(e) > 0:
+        e = pd.concat(e, ignore_index=True)
+        log.info(str(len(e.index)) + " rows of environmental data")
+    else:
+        e = pd.DataFrame()
+        log.warning("no environmental data found")
+        
     # initialise sub-sampling
     # compute n as in subsampling_rate = 1/n
     subsampling_lag = round(1/cfg['subsampling']['subsampling_rate'])
@@ -137,7 +141,7 @@ Other options are documented there
     # initialise flat-fielding timer
     timer_ff = t.b()
     timer_img = t.b()
-        
+    
     # loop over files
     input_stream = apeep.stream(dir=cfg['io']['input_dir'], n=step)
     for piece in input_stream:
