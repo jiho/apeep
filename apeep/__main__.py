@@ -165,7 +165,7 @@ Other options are documented there
         # store transect name, avi file, frame number and line number at beginning of image
         if i_o == 0:
             image_info = {
-                'transect_name': os.path.split(cfg['io']['input_dir'])[1],
+                'transect_name': cfg['io']['input_dir'].split('/')[-1] if len(cfg['io']['input_dir'].split('/')[-1]) > 0 else cfg['io']['input_dir'].split('/')[-2],
                 'start_avi_file': os.path.split(piece['filename'])[1],
                 'start_frame_nb': piece['frame_nb'],
                 'start_line_nb': piece['line_nb']

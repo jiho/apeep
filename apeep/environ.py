@@ -133,6 +133,9 @@ def merge_environ(env, parts, name):
         # convert date_time to datetime in env data
         env['object_date_time'] = pd.to_datetime(env['object_date_time'], format="%Y-%m-%d %H:%M:%S.%f")
         
+        # delete sample_id column in parts as it is computed in env
+        parts = parts.drop('sample_id', axis=1)
+        
         ## Join
         # fuzzy join by datetime to nearest, with 1s tolerance
         parts = pd.merge_asof(parts.sort_values("object_date_time"), env.sort_values("object_date_time"),
