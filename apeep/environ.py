@@ -130,7 +130,7 @@ def merge_environ(env, parts, name):
     
     # if environmental data is available, proceed to join with parts data
     if len(env.index) > 0:
-        # convert date_time to datetime
+        # convert date_time to datetime in env data
         env['object_date_time'] = pd.to_datetime(env['object_date_time'], format="%Y-%m-%d %H:%M:%S.%f")
         
         ## Join
@@ -171,7 +171,9 @@ def merge_environ(env, parts, name):
             "img_file_name",
             "object_id",
             "object_label",
+            "sample_id",
             "acq_id",
+            "process_id", 
             "object_date",
             "object_time"
         ]

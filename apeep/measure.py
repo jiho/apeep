@@ -109,6 +109,9 @@ def measure(img, img_labelled, image_info, props=['area']):
     particle_props["time"] = pd.to_datetime(particle_props.date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%H%M%S')
     particle_props["date"] = pd.to_datetime(particle_props.date_time, format="%Y-%m-%d_%H-%M-%S_%f").dt.strftime('%Y%m%d')
     
+    # remove datetime column
+    #particle_props = particle_props.drop("date_time", axis=1)
+    
     # add "object_" to column names 
     particle_props.columns = "object_" + particle_props.columns
     
@@ -121,11 +124,15 @@ def measure(img, img_labelled, image_info, props=['area']):
     # set process_id as "apeep" 
     particle_props["process_id"] = "apeep"
     
+    # set sample_id as "apeep" 
+    particle_props["sample_id"] = image_info["transect_name"]
+    
     # reorder columns
     cols_to_order = [
         "img_file_name",
         "object_id",
         "object_label",
+        "sample_id",
         "acq_id",
         "process_id",
         "object_date",

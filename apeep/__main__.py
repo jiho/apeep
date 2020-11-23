@@ -162,9 +162,10 @@ Other options are documented there
         # log.debug("add block to output buffer")
         output_buffer[i_o:i_o+step,:] = piece['data']
         
-        # store avi file, frame number and line number at beginning of image
+        # store transect name, avi file, frame number and line number at beginning of image
         if i_o == 0:
             image_info = {
+                'transect_name': os.path.split(cfg['io']['input_dir'])[1],
                 'start_avi_file': os.path.split(piece['filename'])[1],
                 'start_frame_nb': piece['frame_nb'],
                 'start_line_nb': piece['line_nb']
