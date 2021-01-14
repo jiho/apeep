@@ -8,7 +8,7 @@ import skimage.filters
 
 import apeep.timers as t
 
-# from ipdb import set_trace as db
+#from ipdb import set_trace as db
 
 @t.timer
 def segment(img, method="auto", threshold=0.5, var_limit=0.0015, dilate=3, erode=3,  min_area=150):
@@ -110,8 +110,15 @@ def segment(img, method="auto", threshold=0.5, var_limit=0.0015, dilate=3, erode
     regions = skimage.measure.regionprops(img_labelled)
     large_regions = [r for r in regions if fast_particle_area(r) > min_area]
     img_labelled_large = np.zeros_like(img_labelled)
-    for r in large_regions:
-        img_labelled_large[r._slice] = img_labelled_large[r._slice] + r.label*r.filled_image
+    
+    # create list of odd numbers for labels to avoid multiple particles with identical labels
+    # If one particle is located inside another one, the sum of their label is an even number, different from every other label.
+    n_large_regions = len(large_regions)
+    labels = range(1, n_large_regions*2+1, 2)
+    
+    for i in range(n_large_regions):
+        r = large_regions[i]
+        img_labelled_large[r._slice] = img_labelled_large[r._slice] + labels[i]*r.filled_image
 
     return(img_labelled_large)
 
