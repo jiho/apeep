@@ -6,7 +6,7 @@ import sys
 import yaml
 import numpy as np
 
-# from ipdb import set_trace as db
+#from ipdb import set_trace as db
 
 def configure(project_dir):
     """
@@ -41,7 +41,6 @@ def configure(project_dir):
     # settings in the project's config will update those in the defaults
     # settings missing in the project's config will be kept at their default values (and added to the project's config after writing the file back)
     cfg = left_join_dict(defaults_cfg, project_cfg)
-
 
     # check correctedness of configuration values
     log.debug("check configuration values")
@@ -99,7 +98,7 @@ def configure(project_dir):
     
     assert isin(cfg['segment']['stack_format'], ("psd", "tif", "rgb")), \
             "`segment > stack_format` can only be 'psd', 'tif', 'rgb'"
-    assert isin(cfg['segment']['pipeline'], ("semantic", "regular", "both")), \
+    assert cfg['segment']['pipeline'] in ("semantic", "regular", "both"), \
             "`segment > pipeline` can only be 'semantic', 'regular', 'both'" 
     assert (cfg['segment']['sem_conf_threshold'] >= 0 and \
             cfg['segment']['sem_conf_threshold'] <= 1), \

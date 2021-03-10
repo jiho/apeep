@@ -241,22 +241,31 @@ Other options are documented there
                 if cfg['segment']['go']:
                     # compute gray segmentation threshold
                     
+                    gray_threshold = apeep.segmentation_threshold(
+                        output,
+                        method=cfg['segment']['method'],
+                        threshold=cfg['segment']['threshold'],
+                        var_limit=cfg['segment']['var_limit']
+                    )
+                        
                     if cfg['segment']['pipeline'] == 'semantic':
                         # do semantic segmentation
+                        pass
                     elif cfg['segment']['pipeline'] == 'regular':
                         # do regular segmentaion
+                        pass
                     elif cfg['segment']['pipeline'] == 'both':
                         # do semantic segmentation
                         # do regular segmentation
                         # merge masks
+                        pass
                     
-                    output_labelled = apeep.segment(output,
-                        method=cfg['segment']['method'],
-                        threshold=cfg['segment']['threshold'],
-                        var_limit=cfg['segment']['var_limit'],
+                    output_labelled = apeep.segment(
+                        output,
+                        gray_threshold=gray_threshold,
                         dilate=cfg['segment']['dilate'],
                         erode=cfg['segment']['erode'],
-                        min_area=cfg['segment']['min_area']
+                        min_area=cfg['segment']['reg_min_area']
                     )
                     
                     if cfg['segment']['write_image']:

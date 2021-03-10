@@ -87,7 +87,7 @@ segment:
   # 'regular' uses a gray level segmentation
   # 'semantic' uses semantic segmentation
   # 'both' uses a combination of semantic segmentation (better for small particles) and regular segmentation (better for large particles)
-  pipeline: both
+  pipeline: regular
   
   # Path to Detectron2 semantic segmentation model weights. Mandatory if pipeline is 'semantic' or 'both'.
   sem_model: /path/to/model
