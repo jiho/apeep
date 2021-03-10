@@ -96,9 +96,20 @@ def configure(project_dir):
             "`enhance > light_threshold` should be in [0,100]"
     assert (cfg['enhance']['dark_threshold'] <= cfg['enhance']['light_threshold']), \
             "`enhance > dark_threshold` should be smaller than `enhance > light_threshold`"
-
+    
     assert isin(cfg['segment']['stack_format'], ("psd", "tif", "rgb")), \
             "`segment > stack_format` can only be 'psd', 'tif', 'rgb'"
+    assert isin(cfg['segment']['pipeline'], ("semantic", "regular", "both")), \
+            "`segment > pipeline` can only be 'semantic', 'regular', 'both'" 
+    assert (cfg['segment']['sem_conf_threshold'] >= 0 and \
+            cfg['segment']['sem_conf_threshold'] <= 1), \
+            "`segment > sem_conf_threshold` should be in [0,1]"
+    assert isinstance(cfg['segment']['sem_min_area'], (int, float)), \
+            "`segment > sem_min_area` should be an number"
+    assert isinstance(cfg['segment']['sem_max_area'], (int, float)), \
+            "`segment > sem_max_area` should be an number"
+    assert cfg['segment']['sem_min_area'] < cfg['segment']['sem_max_area'], \
+            "`segment > sem_min_area` should smaller than `segment > sem_max_area`"
     assert cfg['segment']['method'] in ("static", "percentile", "otsu", "auto"), \
             "`segment > method` should be 'static', 'percentile', 'otsu' or 'auto'"
     assert isinstance(cfg['segment']['threshold'], (int, float)), \
@@ -112,9 +123,13 @@ def configure(project_dir):
             "`segment > dilate` should be an number"
     assert isinstance(cfg['segment']['erode'], (int)), \
             "`segment > erode` should be an number"            
-    assert isinstance(cfg['segment']['min_area'], (int, float)), \
-            "`segment > min_area` should be an number"
-
+    assert isinstance(cfg['segment']['reg_min_area'], (int, float)), \
+            "`segment > reg_min_area` should be an number"
+    assert isinstance(cfg['segment']['reg_max_area'], (int, float)), \
+            "`segment > reg_max_area` should be an number"
+    assert cfg['segment']['reg_min_area'] < cfg['segment']['reg_max_area'], \
+            "`segment > reg_min_area` should smaller than `segment > reg_max_area`"
+    
     # TODO check boolean values
 
     # add the configuration to the log
