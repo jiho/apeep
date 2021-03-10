@@ -239,6 +239,17 @@ Other options are documented there
                 
                 # segment
                 if cfg['segment']['go']:
+                    # compute gray segmentation threshold
+                    
+                    if cfg['segment']['pipeline'] == 'semantic':
+                        # do semantic segmentation
+                    elif cfg['segment']['pipeline'] == 'regular':
+                        # do regular segmentaion
+                    elif cfg['segment']['pipeline'] == 'both':
+                        # do semantic segmentation
+                        # do regular segmentation
+                        # merge masks
+                    
                     output_labelled = apeep.segment(output,
                         method=cfg['segment']['method'],
                         threshold=cfg['segment']['threshold'],
