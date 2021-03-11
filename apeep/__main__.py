@@ -26,7 +26,7 @@ import apeep.timers as t
 import apeep.im_opencv as im
 #import apeep.im_lycon as im
 from apeep import stack
-#from ipdb import set_trace as db
+from ipdb import set_trace as db
 
 
 def main():
@@ -79,7 +79,10 @@ Other options are documented there
     # make it relative to the project dir
     if not os.path.isabs(cfg['io']['input_dir']):
         cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
-         
+    # also correct path for semantic model weights     
+    if not os.path.isabs(cfg['segment']['sem_model_path']):
+        cfg['segment']['sem_model_path'] = os.path.join(project_dir, cfg['segment']['sem_model_path'])
+        
     ## Initiate particles properties dataframe ----
     all_particles_props = pd.DataFrame()
         
@@ -249,8 +252,18 @@ Other options are documented there
                     )
                         
                     if cfg['segment']['pipeline'] == 'semantic':
-                        # do semantic segmentation
-                        pass
+                        # run semantic segmentation
+                        output_sem = apeep.semantic_segment(
+                            output, 
+                            gray_threshold=gray_threshold, 
+                            sem_model_path=cfg['segment']['sem_model_path'], 
+                            sem_conf_threshold=cfg['segment']['sem_conf_threshold'], 
+                            dilate=cfg['segment']['dilate'], 
+                            erode=cfg['segment']['erode'], 
+                            sem_min_area=cfg['segment']['sem_min_area'], 
+                            sem_max_area=cfg['segment']['sem_max_area']
+                        )
+                       
                     elif cfg['segment']['pipeline'] == 'regular':
                         # do regular segmentaion
                         pass
