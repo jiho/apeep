@@ -26,7 +26,7 @@ import apeep.timers as t
 import apeep.im_opencv as im
 #import apeep.im_lycon as im
 from apeep import stack
-from ipdb import set_trace as db
+#from ipdb import set_trace as db
 
 
 def main():
@@ -243,17 +243,16 @@ Other options are documented there
                 # segment
                 if cfg['segment']['go']:
                     # compute gray segmentation threshold
-                    
                     gray_threshold = apeep.segmentation_threshold(
                         output,
                         method=cfg['segment']['method'],
                         threshold=cfg['segment']['threshold'],
                         var_limit=cfg['segment']['var_limit']
                     )
-                        
+                    
                     if cfg['segment']['pipeline'] == 'semantic':
                         # run semantic segmentation
-                        output_sem = apeep.semantic_segment(
+                        output_labelled = apeep.semantic_segment(
                             output, 
                             gray_threshold=gray_threshold, 
                             sem_model_path=cfg['segment']['sem_model_path'], 
@@ -265,21 +264,43 @@ Other options are documented there
                         )
                        
                     elif cfg['segment']['pipeline'] == 'regular':
-                        # do regular segmentaion
-                        pass
+                        # run regular segmentaion
+                        output_labelled = apeep.segment(
+                            output,
+                            gray_threshold=gray_threshold,
+                            dilate=cfg['segment']['dilate'],
+                            erode=cfg['segment']['erode'],
+                            min_area=cfg['segment']['reg_min_area']
+                        )
+                        
                     elif cfg['segment']['pipeline'] == 'both':
-                        # do semantic segmentation
-                        # do regular segmentation
+                        # run semantic segmentation
+                        output_sem = apeep.semantic_segment(
+                            output, 
+                            gray_threshold=gray_threshold, 
+                            sem_model_path=cfg['segment']['sem_model_path'], 
+                            sem_conf_threshold=cfg['segment']['sem_conf_threshold'], 
+                            dilate=cfg['segment']['dilate'], 
+                            erode=cfg['segment']['erode'], 
+                            sem_min_area=cfg['segment']['sem_min_area'], 
+                            sem_max_area=cfg['segment']['sem_max_area']
+                        )
+                        
+                        # run regular segmentaion
+                        output_reg = apeep.segment(
+                            output,
+                            gray_threshold=gray_threshold,
+                            dilate=cfg['segment']['dilate'],
+                            erode=cfg['segment']['erode'],
+                            min_area=cfg['segment']['reg_min_area']
+                        )
+                        
                         # merge masks
-                        pass
+                        output_labelled = apeep.merge_masks(
+                            semantic_mask=output_sem,
+                            regular_mask=output_reg,
+                        )
                     
-                    output_labelled = apeep.segment(
-                        output,
-                        gray_threshold=gray_threshold,
-                        dilate=cfg['segment']['dilate'],
-                        erode=cfg['segment']['erode'],
-                        min_area=cfg['segment']['reg_min_area']
-                    )
                     
                     if cfg['segment']['write_image']:
                         segmented_image_dir = os.path.join(project_dir, "segmented")
