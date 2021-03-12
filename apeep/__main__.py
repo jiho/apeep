@@ -276,7 +276,8 @@ Other options are documented there
                             gray_threshold=gray_threshold,
                             dilate=cfg['segment']['dilate'],
                             erode=cfg['segment']['erode'],
-                            min_area=cfg['segment']['reg_min_area']
+                            min_area=cfg['segment']['reg_min_area'],
+                            max_area=cfg['segment']['reg_max_area']
                         )
                         
                     elif cfg['segment']['pipeline'] == 'both':
@@ -297,7 +298,8 @@ Other options are documented there
                             gray_threshold=gray_threshold,
                             dilate=cfg['segment']['dilate'],
                             erode=cfg['segment']['erode'],
-                            min_area=cfg['segment']['reg_min_area']
+                            min_area=cfg['segment']['reg_min_area'],
+                            max_area=cfg['segment']['reg_max_area']
                         )
                         
                         # merge masks

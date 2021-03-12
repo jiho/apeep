@@ -11,7 +11,7 @@ import apeep.timers as t
 #from ipdb import set_trace as db
 
 @t.timer
-def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150):
+def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=400000):
     """
     Segment an image into particles
     
@@ -28,6 +28,8 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150):
         min_area (int): minimum number of pixels in a particle to consider it.
             NB: if Otsu's tresholding is used, `min_area` is increased to 
             `4/3*min_area`.
+        max_area (int): maximum number of pixels in a particle to consider it.
+            NB: this avoids the time-consuming segmentation of non relevant very large particles (streaks).
     
     Returns:
         ndarray: labelled image (mask with each particle larger than `min_area` 
@@ -56,7 +58,7 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150):
 
     # recreate a labelled image with only large regions
     regions = skimage.measure.regionprops(img_labelled)
-    large_regions = [r for r in regions if fast_particle_area(r) > min_area]
+    large_regions = [r for r in regions if max_area > fast_particle_area(r) > min_area]
     img_labelled_large = np.zeros_like(img_labelled)
     
     # create list of odd numbers for labels to avoid multiple particles with identical labels

@@ -134,6 +134,7 @@ segment:
 
   # Maximum area of particles generated regular pipeline to me measured and written out (in px) 
   # This allows to ignore very large irrelevant particles and save computation time.
+  # Largist relevant particles (colonial collodarians) can be 200000 to 300000 px
   reg_max_area: 400000
 
 

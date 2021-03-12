@@ -69,7 +69,8 @@ def semantic_segment(img, gray_threshold, predictor, dilate=3, erode=2, sem_min_
         gray_threshold=gray_threshold,
         dilate=dilate,
         erode=erode,
-        min_area=sem_min_area
+        min_area=sem_min_area,
+        max_area=sem_max_area
     )
     
     return(mask_lab)
