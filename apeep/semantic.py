@@ -17,15 +17,14 @@ from .segment import *
 #from ipdb import set_trace as db
 
 @t.timer
-def semantic_segment(img, gray_threshold, sem_model_path, sem_conf_threshold, dilate=3, erode=2, sem_min_area=50, sem_max_area=300):
+def semantic_segment(img, gray_threshold, predictor, dilate=3, erode=2, sem_min_area=50, sem_max_area=300):
     """
     Segment an image into particles using semantic segmentation
     
     Args:
         img (ndarray): image (of type float) to segment
         gray_threshold (float): gray level threshold bellow which to consider particles
-        sem_model_path (str): path to Detectron2 model weights
-        sem_conf_threshold (float): confidence threshold above which to consider 
+        predictor (detectron2.engine.defaults.DefaultPredictor): Detectron2 model to use for prediction
         dilate (int): after thresholding, particles are "grown" by 'dilate' 
             pixels to include surrounding pixels which may be part of the object 
             but are not dark enough. NB: if Otsu's tresholding is used, `dilate` 
@@ -43,13 +42,6 @@ def semantic_segment(img, gray_threshold, sem_model_path, sem_conf_threshold, di
     """
     # get general logger
     log = logging.getLogger()
-    
-    # create predictor
-    predictor = create_predictor(
-        model_path=sem_model_path,
-        threshold=sem_conf_threshold,
-        nb_classes=1
-    )
     
     # generate frames
     frames = generate_frames(img)

@@ -79,9 +79,16 @@ Other options are documented there
     # make it relative to the project dir
     if not os.path.isabs(cfg['io']['input_dir']):
         cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
-    # also correct path for semantic model weights     
-    if not os.path.isabs(cfg['segment']['sem_model_path']):
-        cfg['segment']['sem_model_path'] = os.path.join(project_dir, cfg['segment']['sem_model_path'])
+       
+    # if semantic segmentation is used, correct path to model weights and load model
+    if cfg['segment']['pipeline'] !=  'regular':
+        if not os.path.isabs(cfg['segment']['sem_model_path']):
+            cfg['segment']['sem_model_path'] = os.path.join(project_dir, cfg['segment']['sem_model_path'])
+            predictor = apeep.create_predictor(
+                model_path=cfg['segment']['sem_model_path'],
+                threshold=cfg['segment']['sem_conf_threshold'],
+                nb_classes=1
+            )
         
     ## Initiate particles properties dataframe ----
     all_particles_props = pd.DataFrame()
@@ -255,8 +262,7 @@ Other options are documented there
                         output_labelled = apeep.semantic_segment(
                             output, 
                             gray_threshold=gray_threshold, 
-                            sem_model_path=cfg['segment']['sem_model_path'], 
-                            sem_conf_threshold=cfg['segment']['sem_conf_threshold'], 
+                            predictor=predictor, 
                             dilate=cfg['segment']['dilate'], 
                             erode=cfg['segment']['erode'], 
                             sem_min_area=cfg['segment']['sem_min_area'], 
@@ -278,8 +284,7 @@ Other options are documented there
                         output_sem = apeep.semantic_segment(
                             output, 
                             gray_threshold=gray_threshold, 
-                            sem_model_path=cfg['segment']['sem_model_path'], 
-                            sem_conf_threshold=cfg['segment']['sem_conf_threshold'], 
+                            predictor=predictor,
                             dilate=cfg['segment']['dilate'], 
                             erode=cfg['segment']['erode'], 
                             sem_min_area=cfg['segment']['sem_min_area'], 
