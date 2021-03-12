@@ -118,13 +118,14 @@ def measure(img, img_labelled, image_info, props=['area']):
     # add particle names as img_file_name
     particle_props["img_file_name"] = particle_props["object_id"] + ".png"
     
-    # add image name as acquisition is
+    # add image name as acquisition id
     particle_props["acq_id"] = name
     
-    # set process_id as "apeep" 
-    particle_props["process_id"] = "apeep"
+    # set process_id identical to aquisition id
+    particle_props["process_id"] = name
     
-    # set sample_id as "apeep" 
+    # set sample_id as transect name
+    # NB: sample_id will be replaced by transcectXX_yoYY in presence of env data
     particle_props["sample_id"] = image_info["transect_name"]
     
     # reorder columns
