@@ -32,8 +32,8 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=4000
             NB: this avoids the time-consuming segmentation of non relevant very large particles (streaks).
     
     Returns:
-        ndarray: labelled image (mask with each particle larger than `min_area` 
-            numbered as an integer)
+        ndarray: labelled image (mask with each particle larger than `min_area` and smaller than
+            `max_area` numbered as an integer)
     """
 
     # threshold image
