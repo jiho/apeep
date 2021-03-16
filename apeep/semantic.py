@@ -53,7 +53,10 @@ def semantic_segment(img, gray_threshold, predictor, dilate=3, erode=2, sem_min_
     )
     
     # resolve overlaps
-    predictions = resolve_overlaps(img_preds=predictions)
+    predictions = resolve_overlaps(
+        img_preds=predictions,
+        frames_props=frames
+    )
     
     # generate new image with ROIs only
     img_rois = extract_rois(
@@ -181,7 +184,7 @@ def predict_frames(img, frames_props, predictor):
         predictor: Detectron2 model to use for prediction
     
     Returns:
-        dataframe: predictions found in image
+        DataFrame: predictions found in image
     """
     ## Preprocess image for prediction
     # Apeep image is in range [0,1], change it to range [0, 255]
@@ -263,7 +266,7 @@ def predict_frames(img, frames_props, predictor):
     return(preds)
 
 
-def resolve_overlaps(img_preds, overlap_threshold=0.2):
+def resolve_overlaps(img_preds, frames_props, overlap_threshold=0.2):
     """
     Resolve semantic prediction overlaps.
     
@@ -274,11 +277,14 @@ def resolve_overlaps(img_preds, overlap_threshold=0.2):
 
     Args:
         img_preds (df): semantic predictions with frame and pred info
+        frames_props (dict): dict of frames label and coordinates
         overlap_threshold (float): mask iou between to predictions to consider an overlap. In range ]0,1]
 
     Returns:
-        df: semantic predictions without overlapping predictions
+        DataFrame: semantic predictions without overlapping predictions
     """
+    # Convert frames properties to dataframe
+    frames_props = pd.DataFrame(frames_props)
     
     ## Detect bbox overlaps to list potential overlaps
     # Initiate empty dict to store potential overlapping predictions 
@@ -342,30 +348,56 @@ def resolve_overlaps(img_preds, overlap_threshold=0.2):
         # Case 2: 
         if (frame_col_i < frame_col_j) & (frame_row_i == frame_row_j):
             # Frame 1 is at left of frame 2
+            # Compute horizontal overlap
+            col1_i = frames_props.loc[(frames_props['frame_row'] == frame_row_i) & (frames_props['frame_col'] == frame_col_i), 'col1'].values[0] # right column of frame 1
+            col0_j = frames_props.loc[(frames_props['frame_row'] == frame_row_j) & (frames_props['frame_col'] == frame_col_j), 'col0'].values[0] # left column of frame 2
+            over_h = int(col1_i - col0_j) # horizontal overlap
+            
             # Extract masks of overlap area
-            mask_over_i = img_preds['mask'][i][:, -144:-1]
-            mask_over_j = img_preds['mask'][j][:, 0:143]
+            mask_over_i = img_preds['mask'][i][:, -over_h-1:-1]
+            mask_over_j = img_preds['mask'][j][:, 0:over_h]
         
         # Case 3: 
         if (frame_col_i == frame_col_j) & (frame_row_i < frame_row_j):
             # Frame 1 is on top of frame 2
+            # Compute vertical overlap
+            row1_i = frames_props.loc[(frames_props['frame_row'] == frame_row_i) & (frames_props['frame_col'] == frame_col_i), 'row1'].values[0] # bottom row of frame 1
+            row0_j = frames_props.loc[(frames_props['frame_row'] == frame_row_j) & (frames_props['frame_col'] == frame_col_j), 'row0'].values[0] # top row of frame 1
+            over_v = int(row1_i - row0_j) # horizontal overlap
+            
             # Extract masks of overlap area
-            mask_over_i = img_preds['mask'][i][-144:-1, :]
-            mask_over_j = img_preds['mask'][j][0:143,:]
+            mask_over_i = img_preds['mask'][i][-over_v-1:-1, :]
+            mask_over_j = img_preds['mask'][j][0:over_v,:]
             
         # Case 4:
         if (frame_col_i < frame_col_j) & (frame_row_i < frame_row_j):
             # Frame 1 is on top-left diagonal of frame 2
+            # Compute horizontal and vertical overlap
+            col1_i = frames_props.loc[(frames_props['frame_row'] == frame_row_i) & (frames_props['frame_col'] == frame_col_i), 'col1'].values[0] # right column of frame 1
+            col0_j = frames_props.loc[(frames_props['frame_row'] == frame_row_j) & (frames_props['frame_col'] == frame_col_j), 'col0'].values[0] # left column of frame 2
+            over_h = int(col1_i - col0_j) # horizontal overlap
+            row1_i = frames_props.loc[(frames_props['frame_row'] == frame_row_i) & (frames_props['frame_col'] == frame_col_i), 'row1'].values[0] # bottom row of frame 1
+            row0_j = frames_props.loc[(frames_props['frame_row'] == frame_row_j) & (frames_props['frame_col'] == frame_col_j), 'row0'].values[0] # top row of frame 1
+            over_v = int(row1_i - row0_j) # horizontal overlap
+            
             # Extract masks of overlap area
-            mask_over_i = img_preds['mask'][i][-144:-1, -144:-1]
-            mask_over_j = img_preds['mask'][j][0:143,0:143]
+            mask_over_i = img_preds['mask'][i][-over_v-1:-1, -over_h-1:-1]
+            mask_over_j = img_preds['mask'][j][0:over_v,0:over_h]
             
         # Case 5:
         if (frame_col_i > frame_col_j) & (frame_row_i < frame_row_j):
             # Frame 1 is on top-right diagonal of frame 2
+            # Compute horizontal and vertical overlap
+            col0_i = frames_props.loc[(frames_props['frame_row'] == frame_row_i) & (frames_props['frame_col'] == frame_col_i), 'col0'].values[0] # right column of frame 1
+            col1_j = frames_props.loc[(frames_props['frame_row'] == frame_row_j) & (frames_props['frame_col'] == frame_col_j), 'col1'].values[0] # left column of frame 2
+            over_h = int(col1_j - col0_i) # horizontal overlap
+            row1_i = frames_props.loc[(frames_props['frame_row'] == frame_row_i) & (frames_props['frame_col'] == frame_col_i), 'row1'].values[0] # bottom row of frame 1
+            row0_j = frames_props.loc[(frames_props['frame_row'] == frame_row_j) & (frames_props['frame_col'] == frame_col_j), 'row0'].values[0] # top row of frame 1
+            over_v = int(row1_i - row0_j) # horizontal overlap
+            
             # Extract masks of overlap area
-            mask_over_i = img_preds['mask'][i][-144:-1, 0:143]
-            mask_over_j = img_preds['mask'][j][0:143,-144:-1]
+            mask_over_i = img_preds['mask'][i][-over_v-1:-1, 0:over_h]
+            mask_over_j = img_preds['mask'][j][0:over_v,-over_h-1:-1]
             
         # Compute mask intersection over union (iou)
         mask_inter = np.sum(np.logical_and(mask_over_i, mask_over_j))
