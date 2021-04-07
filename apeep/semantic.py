@@ -7,9 +7,10 @@ from itertools import product
 import skimage.transform
 import skimage.morphology
 
-from detectron2 import model_zoo
+import torch
 from detectron2.config import get_cfg
-from detectron2.engine import DefaultPredictor
+from detectron2.modeling import build_model
+from detectron2.checkpoint import DetectionCheckpointer
 import apeep.timers as t
 
 from .segment import *
@@ -43,19 +44,19 @@ def semantic_segment(img, gray_threshold, predictor, dilate=3, erode=2, sem_min_
     log = logging.getLogger()
     
     # generate frames
-    frames = generate_frames(img)
+    frames, frames_props = generate_frames(img)
     
     # predict frames
     predictions = predict_frames(
-        img=img, 
-        frames_props=frames, 
+        frames=frames, 
+        frames_props=frames_props, 
         predictor=predictor
     )
     
     # resolve overlaps
     predictions = resolve_overlaps(
         img_preds=predictions,
-        frames_props=frames
+        frames_props=frames_props,
     )
     
     # generate new image with ROIs only
@@ -78,32 +79,40 @@ def semantic_segment(img, gray_threshold, predictor, dilate=3, erode=2, sem_min_
     return(mask_lab)
 
 
-def create_predictor(model_path, threshold, nb_classes=1):
+def create_predictor(model_weights, config_file, threshold):
     """
     Create a Detectron2 predictor
     
     Args:
-        model_path (str): path to model weights
+        model_weights (str): path to model weights
+        config_file (str): name of file with training model config
         threshold (float): threshold above which to consider detected objects in range ]0, 1[
-        nb_classes (int): number of classes to predict
         
     Returns:
-        detectron2.engine.defaults.DefaultPredictor: Detectron2 model to use for prediction
+        model (detectron2.modeling.meta_arch.rcnn.GeneralizedRCNN): Detectron2 model to use for prediction
     """
+    
     # Get default config
     cfg = get_cfg()
-    # Customize predictor
-    cfg.merge_from_file(model_zoo.get_config_file('COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml'))
-    cfg.MODEL.WEIGHTS = model_path
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = nb_classes
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = threshold
-    predictor = DefaultPredictor(cfg)
     
-    return(predictor)
+    # Load training config
+    cfg.merge_from_file(config_file)
+    
+    # Set detection threshold
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = threshold
+    
+    # Build model 
+    model = build_model(cfg)
+    # Load weights from training
+    DetectionCheckpointer(model).load(model_weights)
+    # Change mode to eval
+    model.eval()
+    
+    return(model)
 
 
 
-def generate_frames(img, nb_h_frames=5, nb_w_frames=6, frame_size=524):
+def generate_frames(img, nb_h_frames=5, nb_w_frames=26, frame_size=524):
     """
     Generate frames coordinates in an Apeep image.
     
@@ -114,13 +123,17 @@ def generate_frames(img, nb_h_frames=5, nb_w_frames=6, frame_size=524):
         frame_size (int): frames size
         
     Returns:
-        dict: dict of frames label and coordinates
+        frames (list): list of dicts with frames to predict formatted for Detectron2 prediction
+        frames_props (dict): dict of frames label and coordinates
     """
-    #TODO: does args  nb_h_frames, b_w_frames and frame_size have to be hardcoded?
+    ## Convert large image to range [0, 255] and make it a 3 channels image
+    if img.max() <= 1:
+        img = img*255    
+    img = np.stack([img, img, img], axis=2)
     
     # Initiate empty dict for frames properties
     frames_props = {
-        'frame_label': [], # frame label
+        'frame_label': [],       # frame label
         'frame_row': [],   # #row of frame alignment (0 = first row of frames)
         'frame_col': [],   # #column of frame alignment (0 = first column of frames)
         'h_center': [],    # vertical frame center 
@@ -131,20 +144,24 @@ def generate_frames(img, nb_h_frames=5, nb_w_frames=6, frame_size=524):
         'col1': [],        # frame right column
     }
     
+    # Initiate empty list for frames
+    frames = []
+    
     # Create all combination of frames rows and cols
-    all_frames = list(product(range(0, nb_h_frames), range(0, nb_w_frames)))
+    frames_comb = list(product(range(0, nb_h_frames), range(0, nb_w_frames)))
     
     # Compute distance between two frame centers in height and width
-    height, width = img.shape
+    height, width, _ = img.shape
     h_dist = (height - frame_size) / (nb_h_frames - 1) # Distance between succesive frame centers in height
     w_dist = (width - frame_size)  / (nb_w_frames - 1) # Distance between succesive frame centers in width
     
     # Loop over frames
-    for frame in all_frames:
+    for pos in frames_comb:
         
+        ## Frame props
         # Extract frame row and col and create label
-        frame_row = frame[0]
-        frame_col = frame[1]
+        frame_row = pos[0]
+        frame_col = pos[1]
         label = frame_row + frame_row * (nb_w_frames - 1) + frame_col
         
         # Compute frame center in height and width
@@ -152,10 +169,10 @@ def generate_frames(img, nb_h_frames=5, nb_w_frames=6, frame_size=524):
         w_center = round((frame_size / 2) + (frame_col * w_dist))
         
         # Compute frame limits
-        row0 = h_center - frame_size/2
-        row1 = h_center + frame_size/2
-        col0 = w_center - frame_size/2
-        col1 = w_center + frame_size/2
+        row0 = int(h_center - frame_size/2)
+        row1 = int(h_center + frame_size/2)
+        col0 = int(w_center - frame_size/2)
+        col1 = int(w_center + frame_size/2)
     
         # Append to dict
         frames_props['frame_label'].append(label)
@@ -168,33 +185,40 @@ def generate_frames(img, nb_h_frames=5, nb_w_frames=6, frame_size=524):
         frames_props['row0'].append(row0)
         frames_props['row1'].append(row1)
         frames_props['col0'].append(col0)
-        frames_props['col1'].append(col1)   
+        frames_props['col1'].append(col1)
+        
+        ## Frame
+        # Extract frame
+        frame = img[row0:row1, col0:col1, :].astype('int')
+        # Reshape from (H, W, C) to (C, H, W) for Detectron2 input
+        frame = np.moveaxis(frame, 2, 0)
+        # Convert to tensor
+        frame = torch.tensor(frame)
+        # Store in list of dicts with 'image' entry 
+        frames.append({'image': frame})
     
-    return(frames_props)
+    return(frames, frames_props)
     
 
-#TODO make this more efficient
-def predict_frames(img, frames_props, predictor):
+def predict_frames(frames, frames_props, predictor):
     """
-    Predict frames.
+    Generate Detectron2 predictions for a batch of frames.
     
     Args:
-        img (array): Apeep image
+        frames (list(dict)): frames to predict as a list of dicts with frame as a tensor (C, H, W) in 'image' entry
         frames_props (dict): dict of frames label and coordinates
         predictor: Detectron2 model to use for prediction
     
     Returns:
-        DataFrame: predictions found in image
+        preds (dataframe): predictions found in all frames of apeep image
     """
-    ## Preprocess image for prediction
-    # Apeep image is in range [0,1], change it to range [0, 255]
-    # TODO make sure it's alsways the case to avoid useless computation
-    if img.max() <= 1:
-        img = img*255    
-    # Apeep image has 1 channel, duplicate it to create a 3 channels image
-    img = np.stack([img, img, img], axis=2)
     
-    ## Initiate empty dict to store image predictions
+    ## Predict all frames at once
+    with torch.no_grad():
+        raw_preds = predictor(frames)
+    
+    ## Process predictions
+    # Initiate empty dict to store image predictions
     preds = {
         'frame_label': [],
         'frame_row': [],
@@ -205,9 +229,9 @@ def predict_frames(img, frames_props, predictor):
         'mask': [],       # predicted mask
     }
     
-    ## Loop over frames to predict
-    for i in range(len(frames_props['frame_label'])):
-    
+    # Loop over predicted frames
+    for i in range(len(frames)):
+        ## Frames props
         # Extract frame labels
         frame_label = frames_props['frame_label'][i]
         frame_row = frames_props['frame_row'][i]
@@ -219,23 +243,18 @@ def predict_frames(img, frames_props, predictor):
         col0 = int(frames_props['col0'][i]) # left column
         col1 = int(frames_props['col1'][i]) # right column
         
-        # Extract frame from image
-        frame = img[row0:row1, col0:col1, :]
-        
-        # Predict frame
-        pred = predictor(frame)
-        
-        # If instances are detected, process them
-        if len(pred['instances']) > 0:
+        ## Predictions
+        instances = raw_preds[i]['instances'] # extract predictions
+        # if instances found in frame, process them
+        if len(instances) > 0:
             # Loop over prediction instances
-            for idx in range(len(pred['instances'])):
+            for idx in range(len(instances)):
                 
                 # Extract instance
-                inst = pred['instances'][idx]
+                inst = instances[idx]
                 
                 # Extract prediction score
                 score = inst.scores.cpu().numpy()[0]
-                
                 # Extract bbox
                 bbox = inst.pred_boxes.tensor.cpu().numpy()[0]
                 # Round and convert bbox values to int

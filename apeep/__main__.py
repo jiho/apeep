@@ -79,15 +79,16 @@ Other options are documented there
     # make it relative to the project dir
     if not os.path.isabs(cfg['io']['input_dir']):
         cfg['io']['input_dir'] = os.path.join(project_dir, cfg['io']['input_dir'])
-       
+    
     # if semantic segmentation is used, correct path to model weights and load model
     if cfg['segment']['pipeline'] !=  'regular':
         if not os.path.isabs(cfg['segment']['sem_model_path']):
             cfg['segment']['sem_model_path'] = os.path.join(project_dir, cfg['segment']['sem_model_path'])
+            cfg['segment']['sem_model_config'] = os.path.join(project_dir, cfg['segment']['sem_model_config'])
             predictor = apeep.create_predictor(
-                model_path=cfg['segment']['sem_model_path'],
-                threshold=cfg['segment']['sem_conf_threshold'],
-                nb_classes=1
+                model_weights=cfg['segment']['sem_model_path'],
+                config_file=cfg['segment']['sem_model_config'],
+                threshold=cfg['segment']['sem_conf_threshold']
             )
         
     ## Initiate particles properties dataframe ----

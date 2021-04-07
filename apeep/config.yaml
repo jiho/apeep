@@ -92,6 +92,9 @@ segment:
   # Path to Detectron2 semantic segmentation model weights. Mandatory if pipeline is 'semantic' or 'both'.
   sem_model_path: /path/to/model
   
+  # Path to Detectron2 semantic segmentation model configuration. Mandatory if pipeline is 'semantic' or 'both'.
+  sem_model_config: /path/to/config
+  
   # Confidence threshold above which to consider semantic segmentation predictions. 
   # Low value to increase recall, high value to increase precision.
   sem_conf_threshold: 0.6
