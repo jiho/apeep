@@ -54,11 +54,10 @@ def configure(project_dir):
     assert isinstance(cfg['acq']['window_height_mm'], (int, float)), \
             "`acq > window_height_mm` should be a number"
 
-    assert isinstance(cfg['subsampling']['subsampling_rate'], (int, float)), \
-            "`subsampling > subsampling_rate` should be a number"
-    assert (cfg['subsampling']['subsampling_rate'] > 0 and \
-            cfg['subsampling']['subsampling_rate'] <= 1), \
-            "`subsampling > subsampling_rate` should be in ]0,1]"
+    assert isinstance(cfg['subsampling']['interval'], (int)), \
+            "`subsampling > interval` should be an integer"
+    assert (cfg['subsampling']['interval'] > 0), \
+            "`subsampling > interval` should be > 0"
     assert isinstance(cfg['subsampling']['first_image'], (int)), \
             "`subsampling > first_image` should be an integer"
     assert (cfg['subsampling']['first_image'] > 0), \

@@ -140,13 +140,13 @@ Other options are documented there
     else:
         e = pd.DataFrame()
         log.warning("no environmental data found")
-        
+    
     # initialise sub-sampling
-    # compute n as in subsampling_rate = 1/n
-    subsampling_lag = round(1/cfg['subsampling']['subsampling_rate'])
+    # read subsampling interval
+    subsampling_int = cfg['subsampling']['interval']
     # initialise counter
     subsampling_count = -cfg['subsampling']['first_image'] 
-    log.info("processing with a subsampling rate of " + str(cfg['subsampling']['subsampling_rate']) + " (1 image processed every " + str(subsampling_lag) + " images)")
+    log.info("processing one image every " + str(subsampling_int) + " images")
     log.info("starting at image number  " + str(cfg['subsampling']['first_image']))
     
     # initialise flat-fielding timer
@@ -224,8 +224,8 @@ Other options are documented there
             subsampling_count = subsampling_count + 1
             
             # process 1 image every 'subsample_rate'
-            # if subsample counter is divisible by sumsampling_rate and first image to process is reached
-            if (subsampling_count%subsampling_lag == 0 and subsampling_count >= 0):
+            # if subsample counter is divisible by subsampling interval and first image to process is reached
+            if (subsampling_count%subsampling_int == 0 and subsampling_count >= 0):
             
                 if cfg['flat_field']['go']:
                     # rescale in [0,1] to save the image

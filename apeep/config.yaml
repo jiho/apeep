@@ -22,8 +22,8 @@ acq:
 
 # Sub-sampling.
 subsampling:
-    # Proportion of image to process. Between 0 and 1, 0 excluded
-    subsampling_rate: 1
+    # Subsampling interval. Process one image every this number of images. 
+    interval: 1
     # Rank of first image to process. Use this option to process new images without changing subsampling rate. Should be stictly positive. 
     first_image: 1
 
