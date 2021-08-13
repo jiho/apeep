@@ -58,7 +58,7 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=4000
 
     # recreate a labelled image with only large regions
     regions = skimage.measure.regionprops(img_labelled)
-    large_regions = [r for r in regions if max_area > fast_particle_area(r) > min_area]
+    large_regions = [r for r in regions if max_area >= fast_particle_area(r) > min_area]
     img_labelled_large = np.zeros_like(img_labelled)
     
     # create list of odd numbers for labels to avoid multiple particles with identical labels
