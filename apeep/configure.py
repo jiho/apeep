@@ -102,6 +102,10 @@ def configure(project_dir):
     assert (cfg['segment']['sem_conf_threshold'] >= 0 and \
             cfg['segment']['sem_conf_threshold'] <= 1), \
             "`segment > sem_conf_threshold` should be in [0,1]"
+    assert isinstance(cfg['segment']['sem_upsample_size'], (int)), \
+            "`segment > sem_upsample_size` should be an integer"
+    assert (cfg['segment']['sem_upsample_size'] > 0), \
+            "`segment > sem_upsample_size` should be strictly positive"
     assert isinstance(cfg['segment']['sem_min_area'], (int, float)), \
             "`segment > sem_min_area` should be an number"
     assert isinstance(cfg['segment']['sem_max_area'], (int, float)), \

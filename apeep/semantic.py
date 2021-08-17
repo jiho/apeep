@@ -11,6 +11,8 @@ import torch
 from detectron2.config import get_cfg
 from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
+import detectron2.data.transforms as T
+
 import apeep.timers as t
 
 from .segment import *
@@ -18,7 +20,7 @@ from .segment import *
 #from ipdb import set_trace as db
 
 @t.timer
-def semantic_segment(img, gray_threshold, predictor, dilate=3, erode=2, sem_min_area=50, sem_max_area=300):
+def semantic_segment(img, gray_threshold, predictor, sem_upsample_size, dilate=3, erode=2, sem_min_area=50, sem_max_area=300):
     """
     Segment an image into particles using semantic segmentation
     
@@ -44,7 +46,7 @@ def semantic_segment(img, gray_threshold, predictor, dilate=3, erode=2, sem_min_
     log = logging.getLogger()
     
     # generate frames
-    frames, frames_props = generate_frames(img)
+    frames, frames_props = generate_frames(img, sem_upsample_size=sem_upsample_size)
     
     # predict frames
     predictions = predict_frames(
@@ -112,7 +114,7 @@ def create_predictor(model_weights, config_file, threshold):
 
 
 
-def generate_frames(img, nb_h_frames=5, nb_w_frames=26, frame_size=524):
+def generate_frames(img, nb_h_frames=5, nb_w_frames=26, frame_size=524, sem_upsample_size=800):
     """
     Generate frames from an Apeep image.
     
@@ -121,6 +123,7 @@ def generate_frames(img, nb_h_frames=5, nb_w_frames=26, frame_size=524):
         nb_h_frames (int): number of frames to fit vertically in image
         nb_w_frames (int): number of frames to fit horizontally in image
         frame_size (int): frames size
+        sem_upsample_size (int): size of upsampled frames
         
     Returns:
         frames (list(dict)): list of dicts with frames to predict formatted for Detectron2 prediction
@@ -184,13 +187,15 @@ def generate_frames(img, nb_h_frames=5, nb_w_frames=26, frame_size=524):
         
         ## Frame
         # Extract frame
-        frame = img[row0:row1, col0:col1, :].astype('int')
-        # Reshape from (H, W, C) to (C, H, W) for Detectron2 input
-        frame = np.moveaxis(frame, 2, 0)
-        # Convert to tensor
-        frame = torch.tensor(frame)
-        # Store in list of dicts with 'image' entry 
-        frames.append({'image': frame})
+        frame = img[row0:row1, col0:col1, :].astype('uint8')
+        # Create data augmentor to upsample frames
+        aug1 = T.ResizeShortestEdge(short_edge_length=[sem_upsample_size], sample_style='choice')
+        # Apply resizing
+        frame = aug1.get_transform(frame).apply_image(frame)
+        # Reshape frame from (H, W, C) to (C, H, W) for Detectron2 input and convert to tensor
+        frame = torch.as_tensor(frame.astype('uint8').transpose(2, 0, 1))
+        # Store in list of dicts with 'image', 'height' and 'width'
+        frames.append({'image': frame, 'height': frame_size, 'width': frame_size})
     
     return(frames, frames_props)
     
