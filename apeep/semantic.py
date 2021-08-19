@@ -20,7 +20,7 @@ from .segment import *
 #from ipdb import set_trace as db
 
 @t.timer
-def semantic_segment(img, gray_threshold, predictor, sem_upsample_size, dilate=3, erode=2, sem_min_area=50, sem_max_area=300):
+def semantic_segment(img, gray_threshold, predictor, sem_upsample_size, sem_n_batches=1, dilate=3, erode=2, sem_min_area=50, sem_max_area=300):
     """
     Segment an image into particles using semantic segmentation
     
@@ -28,6 +28,8 @@ def semantic_segment(img, gray_threshold, predictor, sem_upsample_size, dilate=3
         img (ndarray): image (of type float) to segment
         gray_threshold (float): gray level threshold bellow which to consider particles
         predictor (detectron2.modeling.meta_arch.rcnn.GeneralizedRCNN): Detectron2 model to use for prediction
+        sem_upsample_size (int): size of upsampled frames
+        sem_n_batches (int): number of batches to distribute frames in
         dilate (int): after thresholding, particles are "grown" by 'dilate' 
             pixels to include surrounding pixels which may be part of the object 
             but are not dark enough. NB: if Otsu's tresholding is used, `dilate` 
@@ -52,6 +54,7 @@ def semantic_segment(img, gray_threshold, predictor, sem_upsample_size, dilate=3
     predictions = predict_frames(
         frames=frames, 
         frames_props=frames_props, 
+        n_batches=sem_n_batches,
         predictor=predictor
     )
     
@@ -200,22 +203,32 @@ def generate_frames(img, nb_h_frames=5, nb_w_frames=26, frame_size=524, sem_upsa
     return(frames, frames_props)
     
 
-def predict_frames(frames, frames_props, predictor):
+def predict_frames(frames, frames_props, n_batches, predictor):
     """
     Generate Detectron2 predictions for a batch of frames.
     
     Args:
         frames (list(dict)): frames to predict as a list of dicts with frame as a tensor (C, H, W) in 'image' entry
         frames_props (dict): dict of frames label and coordinates
+        n_batches (int): number of batches to distribute frames in
         predictor (detectron2.modeling.meta_arch.rcnn.GeneralizedRCNN): Detectron2 model to use for prediction
     
     Returns:
         preds (dataframe): predictions found in all frames of apeep image
     """
+
+    ## Distribute frames into batches
+    if n_batches > 1: # Case of 1 batch
+        batches = [list(t) for t in np.array_split(frames, n_batches)]
+    else: # Case of multiple batches
+        batches = [frames]
     
-    ## Predict all frames at once
+    ## Predict batches frames at once
+    # Initiate empty list to store predictions
+    raw_preds = []
     with torch.no_grad():
-        raw_preds = predictor(frames)
+        for batch in batches:
+            raw_preds.extend(predictor(batch))
     
     ## Process predictions
     # Initiate empty dict to store image predictions
