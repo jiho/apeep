@@ -696,17 +696,5 @@ def merge_masks(semantic_mask, regular_mask):
             
     ## Label particles
     mask_labelled = skimage.measure.label(mask, background=False, connectivity=2)
-    regions = skimage.measure.regionprops(mask_labelled)
-    
-    mask_labelled_unique = np.zeros_like(mask_labelled) # initiate empty mask for new labels
-    
-    # create list of odd numbers for labels to avoid multiple particles with identical labels
-    # If one particle is located inside another one, the sum of their label is an even number, different from every other label.
-    n_regions = len(regions)
-    labels = range(1, n_regions*2+1, 2)
-    # Replace labels in mask
-    for i in range(n_regions):
-        r = regions[i]
-        mask_labelled_unique[r._slice] = mask_labelled_unique[r._slice] + labels[i]*r.filled_image
-    
-    return(mask_labelled_unique)
+
+    return(mask_labelled)
