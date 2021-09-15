@@ -286,39 +286,23 @@ def extract_rois(img, preds, dilate=2):
     # Get image dimensions
     h, w = img.shape
     
-    # Create a blank mask for particles bbox and paste bbox
+    # Create a blank mask for predictions bbox 
     img_blank = np.zeros_like(img)
 
     for i in preds.index:
-        # Extract bbox of each prediction
+        # Extract bbox of each prediction 
         bbox = preds.loc[i, 'bbox_corr']
-        # Replace prediction slice by 1
-        img_blank[bbox[1]:bbox[3], bbox[0]:bbox[2]] = 1
-        
-    # Label bbox
-    img_lab = skimage.measure.label(img_blank, background=False, connectivity=2)
-
-    # Measure particles
-    bbox_meas = skimage.measure.regionprops(label_image=img_lab)
-    
-    # Initiate new image with white background
-    img_rois = np.ones_like(img)
-    
-    # Loop over bbox and paste image bbox content
-    for i in range(len(bbox_meas)):
-        
-        # Get bbox of prediction
-        bbox = bbox_meas[i].bbox
-        
-        # Extract bbox content slice with `dilate` extra px on each side so particle can be dilated
+        # Replace prediction bbox by 1 with `dilate` extra px on each side so particle can be dilated
         # Make sure that slice do not cross images borders
-        slice_bbox = (
-            slice(max(0, bbox[0]-dilate), min(h, bbox[2]+dilate)), 
-            slice(max(0, bbox[1]-dilate), min(w, bbox[3]+dilate))
-        )
-        
-        # Paste bbox content into new image
-        img_rois[slice_bbox] = img[slice_bbox]
+        img_blank[
+            max(0, bbox[1]-dilate):min(h, bbox[3]+dilate),
+            max(0, bbox[0]-dilate):min(w, bbox[2]+dilate)
+        ] = 1
+    
+    # Create a blank image to paste prediction bbox content
+    img_rois = np.ones_like(img)
+    # Paste bbox content into new image
+    img_rois = np.multiply(img_blank, img) + (np.ones_like(img) - img_blank)
     
     return(img_rois)
 
