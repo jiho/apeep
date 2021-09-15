@@ -225,15 +225,9 @@ def predict_frames(frames, frames_props, n_batches, predictor):
             raw_preds.extend(predictor(batch))
     
     ## Process predictions
-    # Initiate empty dict to store image predictions
+    # Initiate empty dict to store bbox of image predictions
     preds = {
-        'frame_label': [],
-        'frame_row': [],
-        'frame_col': [],
-        'score': [],      # prediction score
-        'bbox': [],       # predicted bbox
         'bbox_corr': [],  # predicted bbox corrected for frame position in image
-        'mask': [],       # predicted mask
     }
     
     # Loop over predicted frames
@@ -260,8 +254,6 @@ def predict_frames(frames, frames_props, n_batches, predictor):
                 # Extract instance
                 inst = instances[idx]
                 
-                # Extract prediction score
-                score = inst.scores.cpu().numpy()[0]
                 # Extract bbox
                 bbox = inst.pred_boxes.tensor.cpu().numpy()[0]
                 # Round and convert bbox values to int
@@ -269,25 +261,11 @@ def predict_frames(frames, frames_props, n_batches, predictor):
                 # Correct bbox using frame TL coordinates (i.e. generate bbox in apeep image)
                 bbox_corr = bbox + np.array((col0, row0, col0, row0))
                 
-                # Extract mask
-                mask = inst.pred_masks.cpu().numpy()[0]
-                
-                # Store frame properties
-                preds['frame_label'].append(frame_label)
-                preds['frame_row'].append(frame_row)
-                preds['frame_col'].append(frame_col)
-                
-                # Store predictions
-                preds['score'].append(score)
-                preds['bbox'].append(bbox)
+                # Store prediction bbox
                 preds['bbox_corr'].append(bbox_corr)
-                preds['mask'].append(mask)
     
     # Convert to dataframe
     preds = pd.DataFrame(preds)
-    
-    # Create a column for prediction index
-    preds['pred_index'] = preds.index
     
     return(preds)
 
@@ -345,61 +323,6 @@ def extract_rois(img, preds, dilate=2):
     return(img_rois)
 
 
-def check_bbox_overlap(bb1, bb2):
-    """
-    Check if two bbox overlap or not.
-
-    Args:
-        bb1 (list): coordinates of 1st bbox as [x1, y1, x2, y2] 
-            The (x1, y1) position is at the top left corner,
-            the (x2, y2) position is at the bottom right corner
-        bb2 (list): coordinates of 2nd bbox as [x1, y1, x2, y2] 
-            The (x1, y1) position is at the top left corner,
-            the (x2, y2) position is at the bottom right corner
-
-    Returns:
-        bool: TRUE if there is an intersection, FALSE if not
-    """
-    # Determine the coordinates of the intersection rectangle
-    x_left   = max(bb1[0], bb2[0])
-    y_top    = max(bb1[1], bb2[1])
-    x_right  = min(bb1[2], bb2[2])
-    y_bottom = min(bb1[3], bb2[3])
-
-    if x_right < x_left or y_bottom < y_top:
-        inter = False
-    else:
-        inter = True
-    
-    return(inter)
-
-
-def compute_bbox_union(bb1, bb2):
-    """
-    Compute the union of two bbox
-
-    Args:
-        bb1 (list): coordinates of 1st bbox as [x1, y1, x2, y2] 
-            The (x1, y1) position is at the top left corner,
-            the (x2, y2) position is at the bottom right corner
-        bb2 (list): coordinates of 2nd bbox as [x1, y1, x2, y2] 
-            The (x1, y1) position is at the top left corner,
-            the (x2, y2) position is at the bottom right corner
-
-    Returns:
-        list: coordinates of bbox union as [x1, y1, x2, y2]
-    """
-    # Determine the coordinates of the union
-    x_left   = min(bb1[0], bb2[0])
-    y_top    = min(bb1[1], bb2[1])
-    x_right  = max(bb1[2], bb2[2])
-    y_bottom = max(bb1[3], bb2[3])
-
-    bbox_union = [x_left, y_top, x_right, y_bottom]
-    
-    return(bbox_union)
-
-
 def merge_masks(semantic_mask, regular_mask):
     """
     Merge semantic and regular image masks and return a labelled mask. 
@@ -411,7 +334,8 @@ def merge_masks(semantic_mask, regular_mask):
     Returns:
         ndarray: merged image mask (particles as 1 and background as 0)
     """
+    
     ## Compute mask overlap
-    mask = np.logical_or(semantic_mask > 0, regular_mask > 0).astype(int)
+    mask = np.logical_or(semantic_mask > 0, regular_mask > 0).astype(int);
 
     return(mask)
