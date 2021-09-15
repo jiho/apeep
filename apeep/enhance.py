@@ -19,6 +19,7 @@ def enhance(img, cfg):
     
     Returns:
         ndarray: enhanced image (of type float)
+        ndarray: downscaled enhanced image (of type float)
     """
     # get general logger
     log = logging.getLogger()
@@ -43,4 +44,4 @@ def enhance(img, cfg):
     # sns.distplot(img_eq.flatten(), kde=False, bins=20)
     # plt.show()
     
-    return(img_eq)
+    return(img_eq, img_small)

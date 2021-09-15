@@ -204,6 +204,9 @@ Other options are documented there
                 output = np.rot90(output_buffer).copy(order="C")
             elif cfg['acq']['top'] == "left":
                 output = np.transpose(output_buffer).copy(order="C")
+                
+            # create object for downscaled image
+            output_small = None
             # NB: the copy with C order takes time but the operations are faster afterwards and it is worth it
             elapsed = t.el(timer_rot, "rotate")
             # TODO rotate the final particles only and check wether this is faster
@@ -241,7 +244,7 @@ Other options are documented there
                 
                 # enhance output image
                 if cfg['enhance']['go']:
-                    output = apeep.enhance(output, cfg)
+                    output, output_small = apeep.enhance(output, cfg)
                     
                     if cfg['enhance']['write_image']:
                         enhanced_image_dir = os.path.join(project_dir, "enhanced")
@@ -253,6 +256,7 @@ Other options are documented there
                     # compute gray segmentation threshold
                     gray_threshold = apeep.segmentation_threshold(
                         output,
+                        output_small,
                         method=cfg['segment']['method'],
                         threshold=cfg['segment']['threshold'],
                         var_limit=cfg['segment']['var_limit']
