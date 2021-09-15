@@ -103,18 +103,18 @@ def segmentation_threshold(img, method="auto", threshold=0.5, var_limit=0.0015):
         # convert value to be within [0,1]
         gray_threshold = threshold / 100.
     else:
-        # crop and rescale image to compute the distribution of grey levels on 
-        # the center of the image and an on a smaller one, which is both more
-        # precise and faster
-        crop = round(img.shape[0]/4)
-        img_center = img[crop:3*crop,:] # central band = more noise, fewer artifacts
-        img_center_small = skimage.transform.rescale(img_center, 0.2, multichannel=False, anti_aliasing=False)
-        
         # Small image to compute thresholds
         img_small = skimage.transform.rescale(img, 0.2, multichannel=False, anti_aliasing=False)
         # TODO check the speed improvement if this is computed only once, during image enhancement
 
         if method == "auto":
+            # crop and rescale image to compute the distribution of grey levels on 
+            # the center of the image and an on a smaller one, which is both more
+            # precise and faster
+            crop = round(img.shape[0]/4)
+            img_center = img[crop:3*crop,:] # central band = more noise, fewer artifacts
+            img_center_small = skimage.transform.rescale(img_center, 0.2, multichannel=False, anti_aliasing=False)
+            
             # compute grey level variance on centered small version of non enhanced image
             grey_var = img_center_small.var()
             # for noisy images, use percentile thresholding, for clean ones use otsu
