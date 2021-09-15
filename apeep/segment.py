@@ -32,8 +32,8 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=4000
             NB: this avoids the time-consuming segmentation of non relevant very large particles (streaks).
     
     Returns:
-        ndarray: labelled image (mask with each particle larger than `min_area` and smaller than
-            `max_area` numbered as an integer)
+        ndarray: masked image (mask with each particle larger than `min_area` and smaller than
+            `max_area` numbered as 1 and background as 0)
     """
 
     # threshold image
@@ -59,7 +59,7 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=4000
     # recreate a labelled image with only large regions
     regions = skimage.measure.regionprops(img_labelled)
     large_regions = [r for r in regions if max_area >= fast_particle_area(r) > min_area]
-    img_labelled_large = np.zeros_like(img_labelled)
+    img_masked_large = np.zeros_like(img_labelled)
     
     # create list of odd numbers for labels to avoid multiple particles with identical labels
     # If one particle is located inside another one, the sum of their label is an even number, different from every other label.
@@ -68,9 +68,9 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=4000
     
     for i in range(n_large_regions):
         r = large_regions[i]
-        img_labelled_large[r._slice] = img_labelled_large[r._slice] + labels[i]*r.image
-
-    return(img_labelled_large)
+        img_masked_large[r._slice] = img_masked_large[r._slice] + r.image
+    
+    return(img_masked_large)
 
  
 def fast_particle_area(x):

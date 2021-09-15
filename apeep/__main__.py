@@ -260,7 +260,7 @@ Other options are documented there
                     
                     if cfg['segment']['pipeline'] == 'semantic':
                         # run semantic segmentation
-                        output_labelled = apeep.semantic_segment(
+                        output_masked = apeep.semantic_segment(
                             output, 
                             gray_threshold=gray_threshold, 
                             predictor=predictor, 
@@ -274,7 +274,7 @@ Other options are documented there
                        
                     elif cfg['segment']['pipeline'] == 'regular':
                         # run regular segmentaion
-                        output_labelled = apeep.segment(
+                        output_masked = apeep.segment(
                             output,
                             gray_threshold=gray_threshold,
                             dilate=cfg['segment']['dilate'],
@@ -308,28 +308,27 @@ Other options are documented there
                         )
                         
                         # merge masks
-                        output_labelled = apeep.merge_masks(
+                        output_masked = apeep.merge_masks(
                             semantic_mask=output_sem,
                             regular_mask=output_reg,
                         )
                     
-                    
                     if cfg['segment']['write_image']:
                         segmented_image_dir = os.path.join(project_dir, "segmented")
                         os.makedirs(segmented_image_dir, exist_ok=True)
-                        im.save(output_labelled == 0, os.path.join(segmented_image_dir, output_name + ".png"))
+                        im.save(output_masked == 0, os.path.join(segmented_image_dir, output_name + ".png"))
                     
                     if cfg['segment']['write_stack']:
                         stack_image_dir = os.path.join(project_dir, "stacked")
                         os.makedirs(stack_image_dir, exist_ok=True)
-                        stack.save_stack(img=output, labels=output_labelled, \
+                        stack.save_stack(img=output, labels=output_masked, \
                             dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
                 
                 # measure
-                if cfg['measure']['go'] and np.sum(output_labelled) != 0 :
+                if cfg['measure']['go'] and np.sum(output_masked) != 0 :
                     particles, particles_props = apeep.measure(
                         img=output,
-                        img_labelled=output_labelled,
+                        img_mask=output_masked,
                         image_info=image_info,
                         props=cfg['measure']['properties']
                     )

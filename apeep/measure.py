@@ -14,14 +14,14 @@ import apeep.im_opencv as im
 #from ipdb import set_trace as db
 
 @t.timer
-def measure(img, img_labelled, image_info, props=['area']):
+def measure(img, img_mask, image_info, props=['area']):
     """
     Measure particles
     
     Args:
         img (ndarray): image (of type float)
-        img_labelled (ndarray): labelled image (mask with each particle 
-            numbered as an integer)
+        img_mask (ndarray): masked image (mask with particles as 1 
+            and background as 0)
         image_info (dict): dict containing avi_file, frame_nb and line_nb at the 
             beggining and the end of image
         properties (list): list of properties to extract from each particle
@@ -37,7 +37,10 @@ def measure(img, img_labelled, image_info, props=['area']):
 
     # get general logger
     log = logging.getLogger()
-
+    
+    # label particles
+    img_labelled = skimage.measure.label(img_mask, background=False, connectivity=2)
+    
     # initiate particle measurements
     regions = skimage.measure.regionprops(label_image=img_labelled, intensity_image=img)
     
