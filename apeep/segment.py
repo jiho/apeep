@@ -61,12 +61,7 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=4000
     large_regions = [r for r in regions if max_area >= fast_particle_area(r) > min_area]
     img_masked_large = np.zeros_like(img_labelled)
     
-    # create list of odd numbers for labels to avoid multiple particles with identical labels
-    # If one particle is located inside another one, the sum of their label is an even number, different from every other label.
-    n_large_regions = len(large_regions)
-    labels = range(1, n_large_regions*2+1, 2)
-    
-    for i in range(n_large_regions):
+    for i in range(len(large_regions)):
         r = large_regions[i]
         img_masked_large[r._slice] = img_masked_large[r._slice] + r.image
     
