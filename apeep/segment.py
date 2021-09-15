@@ -68,7 +68,7 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=4000
     
     for i in range(n_large_regions):
         r = large_regions[i]
-        img_labelled_large[r._slice] = img_labelled_large[r._slice] + labels[i]*r.filled_image
+        img_labelled_large[r._slice] = img_labelled_large[r._slice] + labels[i]*r.image
 
     return(img_labelled_large)
 
