@@ -38,7 +38,7 @@ setuptools.setup(
         'Pillow',               # image saving
         'opencv-python',        # image saving
         'pandas'                # dataframe manipulation
-    ]
+    ],
     extras_require={
         'semantic': ['Detectron2']   # object detection for semantic pipeline
         'psd_masks': [
