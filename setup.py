@@ -30,15 +30,20 @@ setuptools.setup(
     },
     python_requires='>=3.6',
     install_requires=[
-        'numpy>=1.17',            # array operations
-        'scikit-image>=0.16',     # image manipulation
-        'PyYaml',           # configuration file
-        'av==6.2.0',        # "video" file reading
-        'lycon',            # image saving
-        'Pillow',           # image saving
-        'opencv-python',    # image saving
-        'pytoshop',         # Photoshop image saving (1.1.0 works on mac, 1.2.0 works on linux)
-        'packbits',         # to save compressed Photoshop files (not explicitely required by pytoshop but should be)
-        'pandas'            # dataframe manipulation
+        'numpy>=1.17',          # array operations
+        'scikit-image>=0.16',   # image manipulation
+        'PyYaml',               # configuration file
+        'av==6.2.0',            # 'video' file reading
+        #'lycon',               # image saving
+        'Pillow',               # image saving
+        'opencv-python',        # image saving
+        'pandas'                # dataframe manipulation
     ]
+    extras_require={
+        'semantic': ['Detectron2']   # object detection for semantic pipeline
+        'psd_masks': [
+            'pytoshop',         # Photoshop image saving (1.1.0 works on mac, 1.2.0 works on linux)
+            'packbits'          # to save compressed Photoshop files (not explicitely required by pytoshop but should be)
+        ]
+    }
 )
