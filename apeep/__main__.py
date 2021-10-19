@@ -244,7 +244,7 @@ Other options are documented there
                 
                 # enhance output image
                 if cfg['enhance']['go']:
-                    output, output_small = apeep.enhance(output, cfg)
+                    output = apeep.enhance(output, cfg)
                     
                     if cfg['enhance']['write_image']:
                         enhanced_image_dir = os.path.join(project_dir, "enhanced")
@@ -254,13 +254,20 @@ Other options are documented there
                 # segment
                 if cfg['segment']['go']:
                     # compute gray segmentation threshold
-                    gray_threshold = apeep.segmentation_threshold(
+                    gray_threshold, gray_threshold_center, gray_median, gray_median_center = apeep.segmentation_threshold(
                         output,
-                        output_small,
                         method=cfg['segment']['method'],
                         threshold=cfg['segment']['threshold'],
                         var_limit=cfg['segment']['var_limit']
                     )
+                    
+                    # store gray segmentation threshold
+                    image_info.update({
+                        'gray_threshold': gray_threshold,
+                        'gray_threshold_center': gray_threshold_center,
+                        'gray_median': gray_median,
+                        'gray_median_center': gray_median_center
+                    })
                     
                     if cfg['segment']['pipeline'] == 'semantic':
                         # run semantic segmentation

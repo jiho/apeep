@@ -124,6 +124,13 @@ def measure(img, img_mask, image_info, props=['area']):
     # add image name as acquisition id
     particle_props["acq_id"] = name
     
+    # add image gray levels properties as acquisition metadata
+    particle_props["acq_gray_threshold"]        = image_info["gray_threshold"]
+    particle_props["acq_gray_threshold_center"] = image_info["gray_threshold_center"]
+    particle_props["acq_gray_median"]           = image_info["gray_median"]
+    particle_props["acq_gray_median_center"]    = image_info["gray_median_center"]
+    
+    
     # set process_id identical to aquisition id
     particle_props["process_id"] = name
     
