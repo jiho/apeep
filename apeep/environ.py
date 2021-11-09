@@ -17,25 +17,25 @@ def read_environ(path, first_avi):
     """
     
     # read the header to parse the date
-    with open(path, encoding="latin1") as f:
+    with open(path, encoding='latin1') as f:
         head = [next(f) for i in range(10)]
     
     # read the content
-    e = pd.read_csv(path, sep="\t", skiprows=10, encoding="latin1", header=0, na_values=["NA", "NaN", "No GPS Data"])
+    e = pd.read_csv(path, sep='\t', skiprows=10, encoding='latin1', header=0, na_values=['NA', 'NaN', 'No GPS Data'])
 
     # NB: content only has times, not date+time
     
     # add a datetime column
     # parse the start date and time
-    start = head[1][6:14] + " " + e['Time'][min(e.index)]
-    start = datetime.datetime.strptime(start, "%m/%d/%y %H:%M:%S.%f")
+    start = head[1][6:14] + ' ' + e['Time'][min(e.index)]
+    start = datetime.datetime.strptime(start, '%m/%d/%y %H:%M:%S.%f')
     
     # compute the time steps between each record in the file
     # NB: repeat the first time to get a start step of 0
     times = list(e['Time'])
     times.insert(0, e['Time'][min(e.index)])
     # then compute the deltas
-    steps = np.diff([datetime.datetime.strptime(t, "%H:%M:%S.%f") for t in times])
+    steps = np.diff([datetime.datetime.strptime(t, '%H:%M:%S.%f') for t in times])
     # deal with crossing midnight
     steps = np.where(steps < datetime.timedelta(seconds=0), steps + datetime.timedelta(days=1), steps)
     
@@ -45,18 +45,18 @@ def read_environ(path, first_avi):
     ## Discard data before beginning of recording by ISIIS
     # beginning of recording, based on name of first avi file
     rec_start = first_avi.replace('.avi', '')
-    rec_start = datetime.datetime.strptime(rec_start, "%Y%m%d%H%M%S.%f")
+    rec_start = datetime.datetime.strptime(rec_start, '%Y%m%d%H%M%S.%f')
     # discard data before recording
     e = e[e['Date Time'] > rec_start].reset_index(drop=True)
     
     # clean column names
     # import re
-    # [re.sub("[ \(\)\.\/]", "_", k).lower().replace("°", "deg").replace("__", "_") for k in e.keys()]
+    # [re.sub('[ \(\)\.\/]', '_', k).lower().replace('°', 'deg').replace('__', '_') for k in e.keys()]
 
     # rename env dataframe columns 
-    #e = e.rename(columns=lambda x: x.split("..")[0].replace('.', '_').replace(' ', '_').lower())
-    e = e.rename(columns=lambda x: x.lower().split(" (")[0].split("..")[0].replace('. ', ' ').replace('.', ' ').replace(' ', '_').replace('long', 'lon'))
-    e.columns =  "object_" + e.columns
+    #e = e.rename(columns=lambda x: x.split('..')[0].replace('.', '_').replace(' ', '_').lower())
+    e = e.rename(columns=lambda x: x.lower().split(' (')[0].split('..')[0].replace('. ', ' ').replace('.', ' ').replace(' ', '_').replace('long', 'lon'))
+    e.columns =  'object_' + e.columns
 
     # drop time column
     e = e.drop('object_time', axis=1)
@@ -83,32 +83,32 @@ def read_environ(path, first_avi):
     sample_ids = np.cumsum(np.logical_or(e.pits, e.peaks)) + 1
     
     # find transect name and type to write sample_id as lagXX_yoYY, ccXX_yoYY or acXX_yoYY
-    transect_name = path.split("/")[-2] # should be something like: lagrangian-XX, cross-current-XX or along-current-XX
-    transect_name = transect_name.replace("_", "-")
-    transect_nb = transect_name.split("-")[-1]
-    if "lagrangian" in transect_name.lower():
-        transect_type = "lag"
-    elif "cross" in transect_name.lower():
-        transect_type = "cc"
-    elif "along" in transect_name.lower():
-        transect_type = "ac"
+    transect_name = path.split('/')[-2] # should be something like: lagrangian-XX, cross-current-XX or along-current-XX
+    transect_name = transect_name.replace('_', '-')
+    transect_nb = transect_name.split('-')[-1]
+    if 'lagrangian' in transect_name.lower():
+        transect_type = 'lag'
+    elif 'cross' in transect_name.lower():
+        transect_type = 'cc'
+    elif 'along' in transect_name.lower():
+        transect_type = 'ac'
     else:
-        transect_type = ""
+        transect_type = ''
     
-    e['sample_id'] = [transect_type + transect_nb + "_yo" + str(s).zfill(2) for s in sample_ids]
+    e['sample_id'] = [transect_type + transect_nb + '_yo' + str(s).zfill(2) for s in sample_ids]
     
     # drop peaks and pits
-    e = e.drop(["peaks", "pits"], axis=1)
+    e = e.drop(['peaks', 'pits'], axis=1)
     
     # split object_depth to object_depth_min and object_depth_max
-    e = e.rename(columns={"object_depth": "object_depth_min"})
+    e = e.rename(columns={'object_depth': 'object_depth_min'})
     e['object_depth_max'] = e['object_depth_min']
     
     ## Reorder columns
     # columns to move at the beginning
-    cols_to_order = ["sample_id",
-                     "object_depth_min",
-                     "object_depth_max"]
+    cols_to_order = ['sample_id',
+                     'object_depth_min',
+                     'object_depth_max']
     new_columns = cols_to_order + (e.drop(cols_to_order, axis = 1).columns.tolist())
     e = e[new_columns]  
     
@@ -131,15 +131,15 @@ def merge_environ(env, parts, name):
     # if environmental data is available, proceed to join with parts data
     if len(env.index) > 0:
         # convert date_time to datetime in env data
-        env['object_date_time'] = pd.to_datetime(env['object_date_time'], format="%Y-%m-%d %H:%M:%S.%f")
+        env['object_date_time'] = pd.to_datetime(env['object_date_time'], format='%Y-%m-%d %H:%M:%S.%f')
         
         # delete sample_id column in parts as it is computed in env
         parts = parts.drop('sample_id', axis=1)
         
         ## Join
         # fuzzy join by datetime to nearest, with 1s tolerance
-        parts = pd.merge_asof(parts.sort_values("object_date_time"), env.sort_values("object_date_time"),
-                      left_on="object_date_time", right_on="object_date_time", direction="nearest", 
+        parts = pd.merge_asof(parts.sort_values('object_date_time'), env.sort_values('object_date_time'),
+                      left_on='object_date_time', right_on='object_date_time', direction='nearest', 
                       tolerance=pd.Timedelta('5s'))
         
         # drop obj_date_time (joining) column
@@ -148,18 +148,18 @@ def merge_environ(env, parts, name):
         ## Reorder columns
         # columns to move at the beginning
         cols_to_order = [
-            "img_file_name",
-            "object_id",
-            "object_label",
-            "sample_id",
-            "acq_id",
-            "process_id",
-            "object_date",
-            "object_time",
-            "object_lat",
-            "object_lon",
-            "object_depth_min",
-            "object_depth_max"
+            'img_file_name',
+            'object_id',
+            'object_label',
+            'sample_id',
+            'acq_id',
+            'process_id',
+            'object_date',
+            'object_time',
+            'object_lat',
+            'object_lon',
+            'object_depth_min',
+            'object_depth_max'
         ]
         new_columns = cols_to_order + (parts.drop(cols_to_order, axis = 1).columns.tolist())
         parts = parts[new_columns]
@@ -171,14 +171,14 @@ def merge_environ(env, parts, name):
         
         # reorder columns
         cols_to_order = [
-            "img_file_name",
-            "object_id",
-            "object_label",
-            "sample_id",
-            "acq_id",
-            "process_id", 
-            "object_date",
-            "object_time"
+            'img_file_name',
+            'object_id',
+            'object_label',
+            'sample_id',
+            'acq_id',
+            'process_id', 
+            'object_date',
+            'object_time'
         ]
         new_columns = cols_to_order + (parts.drop(cols_to_order, axis = 1).columns.tolist())
         parts = parts[new_columns]

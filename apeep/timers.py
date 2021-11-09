@@ -21,10 +21,10 @@ def end(start):
 
 e = end
 
-def end_log(start, message=""):
+def end_log(start, message=''):
     elapsed = time.time() - start
     log = logging.getLogger()
-    log.debug(message + f" ({elapsed:.3f}s)")
+    log.debug(message + f' ({elapsed:.3f}s)')
     return(elapsed)
 
 el = end_log
@@ -36,6 +36,6 @@ def timer(func):
         start = time.time()
         out = func(*args, **kwargs)
         elapsed = time.time() - start
-        log.debug(func.__name__ + f" ({elapsed:.3f}s)")
+        log.debug(func.__name__ + f' ({elapsed:.3f}s)')
         return(out)
     return(wrapper)

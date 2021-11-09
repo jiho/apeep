@@ -18,11 +18,11 @@ def segment(img, gray_threshold, dilate=3, erode=3,  min_area=150, max_area=4000
     Args:
         img (ndarray): image (of type float)
         gray_threshold (float): gray level threshold bellow which to consider particles
-        dilate (int): after thresholding, particles are "grown" by 'dilate' 
+        dilate (int): after thresholding, particles are 'grown' by 'dilate' 
             pixels to include surrounding pixels which may be part of the object 
             but are not dark enough. NB: if Otsu's tresholding is used, `dilate` 
             is increased to `4/3*dilate`.
-        erode (int): after thresholding, particles are "shredded" by 'erode' 
+        erode (int): after thresholding, particles are 'shredded' by 'erode' 
             pixels to avoid including too many pixels. The combination of 
             dilation + erosion fills gaps in particles. 
         min_area (int): minimum number of pixels in a particle to consider it.
@@ -72,7 +72,7 @@ def fast_particle_area(x):
     return(np.sum(x._label_image[x._slice] == x.label))
 
 
-def segmentation_threshold(img, method="auto", threshold=0.5, var_limit=0.0015):
+def segmentation_threshold(img, method='auto', threshold=0.5, var_limit=0.0015):
     """
     Compute image gray level segmentation threshold according to chosen method. 
     
@@ -97,7 +97,7 @@ def segmentation_threshold(img, method="auto", threshold=0.5, var_limit=0.0015):
     # get general logger
     log = logging.getLogger()
 
-    if method == "static":
+    if method == 'static':
         # convert value to be within [0,1]
         gray_threshold = threshold / 100.
     else:
@@ -109,14 +109,14 @@ def segmentation_threshold(img, method="auto", threshold=0.5, var_limit=0.0015):
         img_c = img[crop:3*crop,:] # central band = more noise, fewer artifacts
         img_c_small = skimage.transform.rescale(img_c, 0.2, multichannel=False, anti_aliasing=False)
 
-        if method == "percentile":
+        if method == 'percentile':
             gray_threshold = np.percentile(img_c_small, (threshold))
-        elif method == "otsu":
+        elif method == 'otsu':
             gray_threshold = skimage.filters.threshold_otsu(img_c_small)
-        elif method == "q1":
+        elif method == 'q1':
             q1 = np.percentile(img_c_small, 25)
             gray_threshold = 3.80 * q1 + threshold
         else:
-            raise ValueError("unknown `method` argument")
+            raise ValueError('unknown `method` argument')
     
     return gray_threshold

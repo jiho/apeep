@@ -33,14 +33,14 @@ def main():
     
     ## Parse command line arguments ----
     parser = argparse.ArgumentParser(
-        prog="apeep",
-        description="Process ISIIS data without a peep"
+        prog='apeep',
+        description='Process ISIIS data without a peep'
     )
   
-    parser.add_argument("path", type=str, nargs=1,
-        help="path to the project.")
-    parser.add_argument("-d", "--debug", dest="debug", action="store_true",
-        help="print debug messages.")
+    parser.add_argument('path', type=str, nargs=1,
+        help='path to the project.')
+    parser.add_argument('-d', '--debug', dest='debug', action='store_true',
+        help='print debug messages.')
 
     args = parser.parse_args()
  
@@ -48,7 +48,7 @@ def main():
     project_dir = args.path[0]
     new_project = False
     if not os.path.exists(project_dir):
-        print("This is a new project. Creating it")
+        print('This is a new project. Creating it')
         new_project = True
         os.makedirs(project_dir, exist_ok=True)
 
@@ -63,7 +63,7 @@ def main():
     
     # in the case of a new project, stop here
     if new_project:
-        editor = os.getenv("VISUAL", os.getenv("EDITOR", "your_editor"))
+        editor = os.getenv('VISUAL', os.getenv('EDITOR', 'your_editor'))
         print("""
 Now edit the configuration file. For example with
   {editor} {project}/config.yaml
@@ -100,7 +100,7 @@ Other options are documented there
     img_width  = 2048
     # TODO allow this to not be hardcoded
     
-    log.debug("compute time intervals")
+    log.debug('compute time intervals')
     # compute time step for each frame or each scanned line
     line_timestep = 1. / cfg['acq']['scan_per_s']
     # TODO infer scan_per_s from the first few avi files
@@ -109,7 +109,7 @@ Other options are documented there
     line_timestep = timedelta(seconds=line_timestep)
     frame_timestep = timedelta(seconds=frame_timestep)
     
-    log.debug("initialise moving average line")
+    log.debug('initialise moving average line')
     step = cfg['flat_field']['step_size']
     # make window_size a multiple of step_size
     window_size = int(cfg['flat_field']['window_size'] / step) * step
@@ -118,9 +118,9 @@ Other options are documented there
     
     window = next(input_stream)
     mavg = np.mean(window['data'], axis=0) # columnw-wise mean
-    log.debug("moving average line initialised, mean value = " + str(np.mean(mavg)))
+    log.debug('moving average line initialised, mean value = ' + str(np.mean(mavg)))
     
-    log.debug("initialise output image")
+    log.debug('initialise output image')
     # make output_size a multiple of step_size
     output_size = int(cfg['enhance']['image_size'] / step) * step
     output_buffer = np.empty((output_size, img_width))
@@ -131,23 +131,23 @@ Other options are documented there
     first_input = next(input_stream)
     first_avi = os.path.split(first_input['filename'])[-1]
     
-    log.debug("read environmental data")
-    all_environ = glob.glob(cfg['io']['input_dir'] + "/ISIIS*.txt")
+    log.debug('read environmental data')
+    all_environ = glob.glob(cfg['io']['input_dir'] + '/ISIIS*.txt')
     e = [apeep.read_environ(f, first_avi) for f in all_environ]
     if len(e) > 0:
         e = pd.concat(e, ignore_index=True)
-        log.info(str(len(e.index)) + " rows of environmental data")
+        log.info(str(len(e.index)) + ' rows of environmental data')
     else:
         e = pd.DataFrame()
-        log.warning("no environmental data found")
+        log.warning('no environmental data found')
     
     # initialise sub-sampling
     # read subsampling interval
     subsampling_int = cfg['subsampling']['interval']
     # initialise counter
     subsampling_count = -cfg['subsampling']['first_image'] 
-    log.info("processing one image every " + str(subsampling_int) + " images")
-    log.info("starting at image number  " + str(cfg['subsampling']['first_image']))
+    log.info('processing one image every ' + str(subsampling_int) + ' images')
+    log.info('starting at image number  ' + str(cfg['subsampling']['first_image']))
     
     # initialise flat-fielding timer
     timer_ff = t.b()
@@ -164,13 +164,13 @@ Other options are documented there
             #     faster than recomputing the whole mean every time
             # NB: computing the median is another order of magnitude slower
             mavg = mavg + (np.sum(piece['data'], axis=0) - mavg * step) / window_size
-            # log.debug("moving average line updated, mean value = " + str(np.mean(mavg)))
+            # log.debug('moving average line updated, mean value = ' + str(np.mean(mavg)))
             # TODO we're doing np.sum with axis 0 (=per column) on a C contiguous array, although and F contiguous array would be faster. Look into changing this.
             
             # compute flat-fielding
             piece['data'] = piece['data'] / mavg
         
-        # log.debug("add block to output buffer")
+        # log.debug('add block to output buffer')
         output_buffer[i_o:i_o+step,:] = piece['data']
         
         # store transect name, avi file, frame number and line number at beginning of image
@@ -186,7 +186,7 @@ Other options are documented there
         # when output_buffer is full
         if i_o == output_size:
             # end timer for flat-fielding
-            elapsed = t.el(timer_ff, "flat-field")
+            elapsed = t.el(timer_ff, 'flat-field')
 
             # reinitialise output_buffer
             i_o = 0
@@ -200,15 +200,15 @@ Other options are documented there
             
             # rotate the image so that motion is from the left to the right
             timer_rot = t.b()
-            if cfg['acq']['top'] == "right":
-                output = np.rot90(output_buffer).copy(order="C")
-            elif cfg['acq']['top'] == "left":
-                output = np.transpose(output_buffer).copy(order="C")
+            if cfg['acq']['top'] == 'right':
+                output = np.rot90(output_buffer).copy(order='C')
+            elif cfg['acq']['top'] == 'left':
+                output = np.transpose(output_buffer).copy(order='C')
                 
             # create object for downscaled image
             output_small = None
             # NB: the copy with C order takes time but the operations are faster afterwards and it is worth it
-            elapsed = t.el(timer_rot, "rotate")
+            elapsed = t.el(timer_rot, 'rotate')
             # TODO rotate the final particles only and check wether this is faster
 
             # compute the time stamp of the image
@@ -238,18 +238,18 @@ Other options are documented there
                     # TODO check it more thouroughly but this normalisation creates very inhomogeneous grey levels in the result
                 
                     if cfg['flat_field']['write_image']:
-                        flat_fielded_image_dir = os.path.join(project_dir, "flat_fielded")
+                        flat_fielded_image_dir = os.path.join(project_dir, 'flat_fielded')
                         os.makedirs(flat_fielded_image_dir, exist_ok=True)
-                        im.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + ".png"))
+                        im.save(output_0_1, os.path.join(flat_fielded_image_dir, output_name + '.png'))
                 
                 # enhance output image
                 if cfg['enhance']['go']:
                     output = apeep.enhance(output, cfg)
                     
                     if cfg['enhance']['write_image']:
-                        enhanced_image_dir = os.path.join(project_dir, "enhanced")
+                        enhanced_image_dir = os.path.join(project_dir, 'enhanced')
                         os.makedirs(enhanced_image_dir, exist_ok=True)
-                        im.save(output, os.path.join(enhanced_image_dir, output_name + ".png"))
+                        im.save(output, os.path.join(enhanced_image_dir, output_name + '.png'))
                 
                 # segment
                 if cfg['segment']['go']:
@@ -321,12 +321,12 @@ Other options are documented there
                         )
                     
                     if cfg['segment']['write_image']:
-                        segmented_image_dir = os.path.join(project_dir, "segmented")
+                        segmented_image_dir = os.path.join(project_dir, 'segmented')
                         os.makedirs(segmented_image_dir, exist_ok=True)
-                        im.save(output_masked == 0, os.path.join(segmented_image_dir, output_name + ".png"))
+                        im.save(output_masked == 0, os.path.join(segmented_image_dir, output_name + '.png'))
                     
                     if cfg['segment']['write_stack']:
-                        stack_image_dir = os.path.join(project_dir, "stacked")
+                        stack_image_dir = os.path.join(project_dir, 'stacked')
                         os.makedirs(stack_image_dir, exist_ok=True)
                         stack.save_stack(img=output, labels=output_masked, \
                             dest=os.path.join(stack_image_dir, output_name), format=cfg['segment']['stack_format'])
@@ -341,7 +341,7 @@ Other options are documented there
                     )
                     
                     if cfg['measure']['write_particles']:
-                        particles_images_dir = os.path.join(project_dir, "particles", output_name)
+                        particles_images_dir = os.path.join(project_dir, 'particles', output_name)
                         os.makedirs(particles_images_dir, exist_ok=True)
                         
                         # merge particles and environment data
