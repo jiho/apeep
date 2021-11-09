@@ -254,7 +254,7 @@ Other options are documented there
                 # segment
                 if cfg['segment']['go']:
                     # compute gray segmentation threshold
-                    gray_threshold, gray_threshold_center, gray_median, gray_median_center = apeep.segmentation_threshold(
+                    gray_threshold = apeep.segmentation_threshold(
                         output,
                         method=cfg['segment']['method'],
                         threshold=cfg['segment']['threshold'],
@@ -264,9 +264,6 @@ Other options are documented there
                     # store gray segmentation threshold
                     image_info.update({
                         'gray_threshold': gray_threshold,
-                        'gray_threshold_center': gray_threshold_center,
-                        'gray_median': gray_median,
-                        'gray_median_center': gray_median_center
                     })
                     
                     if cfg['segment']['pipeline'] == 'semantic':
