@@ -48,18 +48,20 @@ def read_environ(path, first_avi):
     rec_start = datetime.datetime.strptime(rec_start, '%Y%m%d%H%M%S.%f')
     # discard data before recording
     e = e[e['Date Time'] > rec_start].reset_index(drop=True)
-    
-    # clean column names
-    # import re
-    # [re.sub('[ \(\)\.\/]', '_', k).lower().replace('°', 'deg').replace('__', '_') for k in e.keys()]
-
+        
     # rename env dataframe columns 
-    #e = e.rename(columns=lambda x: x.split('..')[0].replace('.', '_').replace(' ', '_').lower())
     e = e.rename(columns=lambda x: x.lower().split(' (')[0].split('..')[0].replace('. ', ' ').replace('.', ' ').replace(' ', '_').replace('long', 'lon'))
-    e.columns =  'object_' + e.columns
 
     # drop time column
-    e = e.drop('object_time', axis=1)
+    e = e.drop('time', axis=1)
+    
+    # format column names for ecotaxa ('object_' and 'acq_')
+    # column of object-level descriptors
+    obj_col = ['lat', 'lon', 'depth', 'date_time']
+    # columns of acquisition-level descriptors
+    acq_col = [x for x in e.columns if x not in obj_col]
+    # add appropriate prefix to column names
+    e.columns = ['acq_' + col if col in acq_col else 'object_' + col if col in obj_col else col for col in e.columns]
     
     # smooth depth, keep only 2 decimals
     e['object_depth'] = [round(x, 2) for x in smooth(e['object_depth'], k = 10, n = 5)]
@@ -130,6 +132,7 @@ def merge_environ(env, parts, name):
     
     # if environmental data is available, proceed to join with parts data
     if len(env.index) > 0:
+        
         # convert date_time to datetime in env data
         env['object_date_time'] = pd.to_datetime(env['object_date_time'], format='%Y-%m-%d %H:%M:%S.%f')
         
@@ -153,13 +156,18 @@ def merge_environ(env, parts, name):
             'object_label',
             'sample_id',
             'acq_id',
+            'acq_instrument',
+            'acq_gray_threshold',
             'process_id',
             'object_date',
             'object_time',
             'object_lat',
             'object_lon',
             'object_depth_min',
-            'object_depth_max'
+            'object_depth_max',
+            'object_avi_file',
+            'object_frame_nb',
+            'object_line_nb'
         ]
         new_columns = cols_to_order + (parts.drop(cols_to_order, axis = 1).columns.tolist())
         parts = parts[new_columns]
@@ -176,9 +184,14 @@ def merge_environ(env, parts, name):
             'object_label',
             'sample_id',
             'acq_id',
+            'acq_instrument',
+            'acq_gray_threshold',
             'process_id', 
             'object_date',
-            'object_time'
+            'object_time',
+            'object_avi_file',
+            'object_frame_nb',
+            'object_line_nb'
         ]
         new_columns = cols_to_order + (parts.drop(cols_to_order, axis = 1).columns.tolist())
         parts = parts[new_columns]

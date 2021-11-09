@@ -124,6 +124,9 @@ def measure(img, img_mask, image_info, props=['area']):
     # add image name as acquisition id
     particle_props['acq_id'] = name
     
+    # add instrument name
+    particle_props['acq_instrument'] = 'ISIIS'
+    
     # add image gray levels properties as acquisition metadata
     particle_props['acq_gray_threshold'] = image_info['gray_threshold']
     
@@ -196,17 +199,20 @@ def write_particles_props(particles_props, destination):
         first_row = ['[f]'] * (particles_props.shape[1])
 
         # list of possible columns with data format as text [t]
-        as_text = ['img_file_name',
-                   'object_id',
-                   'object_avi_file',
-                   'object_frame',
-                   'object_line_in_frame',
-                   'object_time',
-                   'object_date',
-                   'sample_id',
-                   'acq_id',
-                   'process_id',
-                   'object_label']
+        as_text = [
+            'img_file_name',
+            'object_id',
+            'object_avi_file',
+            'object_frame',
+            'object_line_in_frame',
+            'object_time',
+            'object_date',
+            'sample_id',
+            'acq_id',
+            'acq_instrument',
+            'process_id',
+            'object_label'
+        ]
 
         # for columns in particles_props and with text format, change first row to [t]
         col_ind_text = [particles_props.columns.get_loc(col) for col in list(set(particles_props.columns) & set(as_text))]
