@@ -63,6 +63,9 @@ def measure(img, img_mask, image_info, props=['area']):
     #     properties=props
     # ))
     
+    # fix orientation value by adding pi/2 to the skimage computed value
+    particle_props['orientation'] = particle_props['orientation'] + np.pi/2
+    
     # particle localisation within avi files
     # if image is from a single avi file
     if image_info['start_avi_file'] == image_info['end_avi_file']:
