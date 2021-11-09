@@ -84,6 +84,8 @@ def segmentation_threshold(img, method="auto", threshold=0.5, var_limit=0.0015):
               computed on the input image.
             - 'otsu' uses Otsu thresholding (and disregards the `threshold`
               argument).
+            - 'q1' uses an affine transformation of q1 grey levels, and considers
+              `threshold` as the y-intercept while slope is harcoded.
         threshold (flt): grey level or percentage; all pixels darker than 
             threshold will be considered as part of particles.
         var_limit (flt): value of the variance in the grey levels of the central
@@ -111,6 +113,9 @@ def segmentation_threshold(img, method="auto", threshold=0.5, var_limit=0.0015):
             gray_threshold = np.percentile(img_c_small, (threshold))
         elif method == "otsu":
             gray_threshold = skimage.filters.threshold_otsu(img_c_small)
+        elif method == "q1":
+            q1 = np.percentile(img_c_small, 25)
+            gray_threshold = 3.80 * q1 + threshold
         else:
             raise ValueError("unknown `method` argument")
     

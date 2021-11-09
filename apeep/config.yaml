@@ -116,18 +116,15 @@ segment:
   # 'static' uses a fixed value for thresholding
   # 'percentile' considers pixels below a percentile of grey levels
   # 'otsu' uses Otsu thresholding (https://en.wikipedia.org/wiki/Otsu%27s_method)
-  # 'auto' uses 'otsu' for clean images, 'percentile' otherwise
+  # 'q1' uses an affine transformation of q1 grey levels (slope is harcoded)
   method: percentile
 
-  # Treshold
+  # Threshold
   # for method=static : grey value (where 0 is black and 100 is white) below which dark grey pixels are considered as particles
   # for method=percentile : percentage of dark grey pixels to consider as particles
   # in [0, 100]; 0 considers nothing, 100 considers all pixels
+  # for method=q1 : value of y-intercept for q1 to threshold affine transformation. Recommended value is -2.91
   threshold: 1.2
-
-  # Value of variance in grey level below which 'auto' tresholding switches from 'otsu' to 'percentile'
-  # sane values are between 0.001 and 0.002
-  var_limit: 0.001
   
   # Number of pixels to grow  by to fill gaps in particles
   # NB: when Otsu thresholding is used, increased to 4/3 * dilate

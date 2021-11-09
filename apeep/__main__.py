@@ -257,8 +257,7 @@ Other options are documented there
                     gray_threshold = apeep.segmentation_threshold(
                         output,
                         method=cfg['segment']['method'],
-                        threshold=cfg['segment']['threshold'],
-                        var_limit=cfg['segment']['var_limit']
+                        threshold=cfg['segment']['threshold']
                     )
                     
                     # store gray segmentation threshold

@@ -116,15 +116,13 @@ def configure(project_dir):
             "`segment > sem_max_area` should be an number"
     assert cfg['segment']['sem_min_area'] < cfg['segment']['sem_max_area'], \
             "`segment > sem_min_area` should smaller than `segment > sem_max_area`"
-    assert cfg['segment']['method'] in ("static", "percentile", "otsu", "auto"), \
-            "`segment > method` should be 'static', 'percentile', 'otsu' or 'auto'"
+    assert cfg['segment']['method'] in ("static", "percentile", "otsu", "q1"), \
+            "`segment > method` should be 'static', 'percentile', 'otsu' or 'q1'"
     assert isinstance(cfg['segment']['threshold'], (int, float)), \
             "`segment > threshold` should be a number"
-    assert (cfg['segment']['threshold'] >= 0 and \
-            cfg['segment']['threshold'] <= 100), \
-            "`segment > threshold` should be in [0,100] (0, no particles; 100, select everything)"
-    assert isinstance(cfg['segment']['var_limit'], (int, float)), \
-            "`segment > var_limit` should be a number"
+    if cfg['segment']['method'] in ['static', 'percentile']:
+        assert (cfg['segment']['threshold'] >= 0 and cfg['segment']['threshold'] <= 100), \
+                "if `segment > method` is 'static' or 'percentile', `segment > threshold` should be in [0,100] (0, no particles; 100, select everything)"
     assert isinstance(cfg['segment']['dilate'], (int)), \
             "`segment > dilate` should be an number"
     assert isinstance(cfg['segment']['erode'], (int)), \
