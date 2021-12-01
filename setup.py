@@ -33,7 +33,7 @@ setuptools.setup(
         'numpy>=1.17',          # array operations
         'scikit-image>=0.16',   # image manipulation
         'PyYaml',               # configuration file
-        'av==6.2.0',            # 'video' file reading
+        'av>=6.2.0',            # 'video' file reading
         #'lycon',               # image saving
         'Pillow',               # image saving
         'opencv-python',        # image saving
